@@ -61,52 +61,33 @@ export function GetTable( tableName ) {
 
 
 
-  //  useEffect(() => {
-    
-  //   const dbRef = ref(getDatabase(app), `${tableName}`);
-  //   // Fetch data once from the 'users/userId' path
-  //   get(dbRef)
-  //   //get(child(dbRef, `users/${userId}`))
-  //     .then((snapshot) => {
-  //       if (snapshot.exists()) 
-  //       {
-  //         const rec = snapshot.val();
-  //         setData(rec);
-  //       } 
-  //       else 
-  //       {
-  //         console.log("No data available at this path");
-  //         setData([]);
-  //       }
-  //     })
-  //     .catch((err) => {
-  //       console.error("Error fetching data:", err);
-  //       //setError(err.message);
-  //     })
-  //     // .finally(() => {
-  //     //   //setLoading(false);
-  //     // });
-  // }, []);
-
-
   return data;
 }
 
-export async function GetTableData2( tableName ) 
+export async function GetTableData2( tableName, recordKey ) 
 {
-  
-  const [date, setData] = useState([]);
+  var data = [];
+  //const [date, setData] = useState([]);
 
   // const fetchRecords = async () => 
   // {
 
   // useEffect(() => 
   // {
-    const dbRef = ref(database);
-    
+    var tableRef = "";
+    if (recordKey!=="")
+    {
+      tableRef = ref(database, `${tableName}/${recordKey}`);
+    }
+    else
+    {
+      tableRef = ref(database, tableName);
+    }
+
     try 
     {
-      const snapshot = await get(child(dbRef, tableName))
+      const snapshot = await get(tableRef)
+      //const snapshot = await get(child(dbRef, tableName))
             .then( snapshot => 
             {
               if (snapshot.exists()) 
@@ -114,17 +95,15 @@ export async function GetTableData2( tableName )
                 const records = snapshot.val();
                 if (records) 
                 {
-                  //console.log(data);
                   // Transform the object into an array for easier rendering
                   const itemList = Object.keys(records).map(key => 
-                  (
-                    {
-                      id: key,
-                      ...records[key]
-                    }
-                  ));
-                  
-                  setData(itemList);
+                              ({
+                                 id: key,
+                                 ...records[key]
+                               }));
+                  data = itemList;
+                  //setData(itemList);
+                  return data;
                 }
               } 
             })
@@ -145,7 +124,7 @@ export async function GetTableData2( tableName )
   // }, []);
 
 
-  return date;
+  return data;
 }
 
 export function GetTableData( tableName ) {
@@ -165,15 +144,18 @@ export function GetTableData( tableName ) {
                            const records = snapshot.val();
                            if (records) 
                            {
-                              //console.log(data);    //.child(tableName);
-                              // Transform the object into an array for easier rendering
                               const itemList = Object.keys(records).map(key => 
                               ({
                                  id: key,
                                  ...records[key]
-                               }));
-                              /// Removd id field
-                              
+                              }));
+                              setData(itemList);
+                              /// Delete 'id'
+                              // if (json["id"] !== null)
+                              // {
+                              //  const keyToRemove = 'id';
+                              //  const { [keyToRemove]: _, ...cleanValues } = itemList;
+                              //}
                               // var newList = [];
                               // for (let item of itemList) {
                               //   if (item["id"] !== null)
@@ -185,7 +167,7 @@ export function GetTableData( tableName ) {
                               // }
                                 //const aaa = [...newList, itemList];
                                 //const recs = records.map(({ id, ...object }) => object);
-                                setData(itemList);
+                                //
                                 // const itemList = () => {
                                 //   const updatedArray = records.map(({ id, ...rest }) => rest);
                                 //   setData(updatedArray);
@@ -229,6 +211,7 @@ export function GetTableData( tableName ) {
   }, []);
 
 
+
   return data;
 }
 
@@ -246,22 +229,7 @@ export async function InsertRecord( tableName, values )
               result = snapshot.key;
               values["FirebaseID"] = snapshot.key;
               values["LastUpdateDate"] = new Date.now().toLocaleString().substring(0, 10);
-              var json = values;  // JSON.stringify(values);
-            
-              if (json["id"] !== null)
-              {
-                const keyToRemove = 'id';
-                const { [keyToRemove]: _, ...cleanValues } = json;
-                
-                console.log(cleanValues);
-                /* await */ UpdateRecord(tableName, snapshot.key, cleanValues)
-                //UpdateField(tableName, snapshot.key, clean)
-              }
-              else
-              {
-                /* await */ UpdateField(tableName, snapshot.key, json)
-              }
-              return (snapshot.key);
+              // return (snapshot.key);
             }
       )
       .catch((error) => function() { 
@@ -272,6 +240,20 @@ export async function InsertRecord( tableName, values )
       );
 
 
+      var json = values;  // JSON.stringify(values);
+      if (json["id"] !== null)
+      {
+        const keyToRemove = 'id';
+        const { [keyToRemove]: _, ...cleanValues } = json;
+        
+        await UpdateRecord(tableName, result, cleanValues)
+        //UpdateField(tableName, snapshot.key, clean)
+      }
+      else
+      {
+        await UpdateField(tableName, result, json)
+      }
+
 
     return result;
 }
@@ -280,7 +262,11 @@ export async function InsertRecord( tableName, values )
 /// param 'recordKey' - The uniqee key to focus specific record
 export async function UpdateRecord( tableName, recordKey, values )
 {
-    //const [data, setData] = useState(null);
+    if (String(recordKey) === "")
+    {
+      alert("מזהה הרשומה ריק");
+      return false;
+    }
 
     const tableRef = ref(database, `${tableName}/${recordKey}`);
 
@@ -289,12 +275,6 @@ export async function UpdateRecord( tableName, recordKey, values )
               {
                 console.log("Record inserted successfull !");
                 result = true;
-                // if (snapshot.exists()) 
-                // {
-                //   const data = snapshot.val();
-                //   //setData(rec);
-                //   return data;
-                // }
                 return true;
               }
         )
@@ -306,54 +286,25 @@ export async function UpdateRecord( tableName, recordKey, values )
         );
       
 
-  // const UserProfile = ({ recordKey }) => {
-  //   const [recordData, setRecordData] = useState(null);
-
-    // useEffect(() => {
-    //   const tableRef = ref(getDatabase(app), `${tableName}/${recordKey}`);
-
-    //   // Subscribe to changes
-    //   const unsubscribe = onValue(tableRef, (snapshot) => {
-    //                         if (snapshot.exists()) 
-    //                         {
-    //                           const data = snapshot.val();
-    //                           setData(data);
-    //                         }
-    //                       });
-
-    // //   // Cleanup subscription on unmount
-    //   return () => unsubscribe();
-    //   //return data;
-    // }, [recordKey]);
-
-  //   if (!recordData) 
-  //     return <p>Loading...</p>;
-
-  //   return {recordData};
-  // };
-
-
-
-  // set(tableRef, values)
-  //     .then(() => console.log("Record updated successfully!"))
-  //     .catch((error) => console.error("Error updating record:", error));
-  // const key = push(tableRef);
-  // console.log(key);
-  // set(tableRef, values)
-  // tableRef.child(key)
-  // const addNewRecord = () => {
-  //           push(recordsRef, values)
-  //             .then(() => console.log("Record updated successfully!"))
-  //             .catch((error) => console.error("Error updating record:", error));
-  // };
-  // const itemsRef = ref(database, 'TBL_Notes/'+key);
   
     return result;
 }
 
 export async function DeleteRecord( tableName, recordKey)
 {
-  //const [data, setData] = useState([]);
+  if (String(recordKey) === "")
+  {
+    alert("מזהה הרשומה ריק");
+    return false;
+  }
+
+  const getTable = await GetTableData2(tableName, recordKey);
+
+  if (!getTable)
+  {
+    alert("לא הצלחנו למצוא את הרשומה הרצוייה");
+    return false;
+  }
 
   const tableRef = ref(database, `${tableName}/${recordKey}`);
 

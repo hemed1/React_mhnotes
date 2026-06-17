@@ -79,7 +79,9 @@ export default function App() {
 
       {selectedItem && 
           <NoteScreen 
-              selectedItem={selectedItem}/>}
+              selectedItem={selectedItem} 
+              onSelectedItem={handleSelectItem} />
+      }
 
     </div>
 
@@ -194,7 +196,7 @@ function ListData({data, selectedItem, onSelectedItem, sortByField}) {
               <button type='button' onClick={(e, text) => handleChange(e, 'date_due')}>תאריך ביצוע</button>
               <button type='button' onClick={(e, text) => handleChange(e, 'date_update')}>תאריך עדכון</button>
               <button type='button' onClick={(e, text) => handleChange(e, 'today')}>להיום</button>
-              <button type='button' style={{width: '60px'}}  onClick={handleInsert}>חדש</button>
+              <button type='button' style={{width: '60px', backgroundColor: 'green', color: 'white'}}  onClick={handleInsert}>חדש</button>
             </div>
             <input type='text' value={searchText} placeholder='חפש...'  onChange={(e) => setSearchText(e.target.value)}   style={{height: '50px', width: '700px'}}></input>
           </div>
@@ -258,7 +260,7 @@ function ListDataItem({newIndex, currOpenIndex, itemObject, selectedItem, onSele
 
 }
 
-function NoteScreen({ selectedItem }) {
+function NoteScreen({ selectedItem, onSelectedItem }) {
 
     /// Controls values
     const [title, setTitle] = useState(selectedItem?.Title || '');
@@ -338,6 +340,7 @@ function NoteScreen({ selectedItem }) {
           values['NoteID'] = noteID;
           result = await InsertRecord("TBL_Notes", values);
           result = await UpdateField('TBL_Databases', dataBaseTable[0].FirebaseID, {NumeratorNotesID: noteID});
+          setSaveMode(2);
           if (result !== '')
           {
             alert("הפריט נוסף בהצלחה!");
@@ -346,6 +349,7 @@ function NoteScreen({ selectedItem }) {
           {
             alert("שגיאה בהוספת הפריט!");
           } 
+          onSelectedItem(values);
           break;
 
         case 2:   //saveModeEn.UPDATE:
@@ -368,6 +372,7 @@ function NoteScreen({ selectedItem }) {
 
         case 3:   //saveModeEn.DELETE:
           result = await DeleteRecord("TBL_Notes", selectedItem.FirebaseID);
+          setSaveMode(2);
           if (result)
           {
             alert("הפריט נמחק בהצלחה!");

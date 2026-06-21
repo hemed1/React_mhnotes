@@ -6,24 +6,32 @@
 // src/firebase.js
 import { useEffect, useState } from 'react';
 import { initializeApp } from "firebase/app";
+import { dateFix }  from './globals.js';
+//import { getAnalytics } from "firebase/analytics";
 import { getDatabase, ref, onValue, update, set, get, push, child, remove } from "firebase/database";
 
 //import { database } from './firebase';
 
 
 
+
 const firebaseConfig = {
-  //apiKey: "YOUR_API_KEY",
+  apiKey: "AIzaSyB-eepby56Pe4LpVdQlg27XpF8aeSDma0c",
   authDomain: "meirhemed-mhnotes.firebaseapp.com",
-  databaseURL: "https://meirhemed-mhnotes-default-rtdb.firebaseio.com/",      //"https://YOUR_PROJECT_ID.firebaseio.com",
-  projectId: "meirhemed-mhnotes",        //"YOUR_PROJECT_ID",
-  storageBucket: "gs://meirhemed-mhnotes.firebasestorage.app",  //"YOUR_PROJECT_://appspot.com",
-  //messagingSenderId: "YOUR_SENDER_ID",
-  appId: "1:257753299659:ios:d273d009d5040c2ae0f94e"   //"YOUR_APP_ID"
+  databaseURL: "https://meirhemed-mhnotes-default-rtdb.firebaseio.com",
+  projectId: "meirhemed-mhnotes",
+  storageBucket: "meirhemed-mhnotes.firebasestorage.app",
+  messagingSenderId: "257753299659",
+  appId: "1:257753299659:web:9d94f62b2ea3cedee0f94e",
+  measurementId: "G-829HMJG495"
 };
 
+// Initialize Firebase
 export const app = initializeApp(firebaseConfig);
 export const database = getDatabase(app);
+//const analytics = getAnalytics(app);
+
+
 var saveModeEn = { UPDATE: 1, INSERT: 2 };
 var result = null;
 
@@ -72,6 +80,7 @@ export async function GetTableData2( tableName, recordKey )
   // const fetchRecords = async () => 
   // {
 
+  
   // useEffect(() => 
   // {
     var tableRef = "";
@@ -217,7 +226,8 @@ export function GetTableData( tableName ) {
 
 export async function InsertRecord( tableName, values )
 {
-    console.log(values);
+    values.LastUpdateDate =  dateFix(new Date());
+
 
     //const [key, setKey] = useState(null);
     const tableRef = ref(database, tableName);
@@ -228,7 +238,6 @@ export async function InsertRecord( tableName, values )
               console.log("Record inserted successfully:  " + snapshot.key);
               result = snapshot.key;
               values["FirebaseID"] = snapshot.key;
-              values["LastUpdateDate"] = new Date.now().toLocaleString().substring(0, 10);
               // return (snapshot.key);
             }
       )
@@ -240,19 +249,22 @@ export async function InsertRecord( tableName, values )
       );
 
 
-      var json = values;  // JSON.stringify(values);
-      if (json["id"] !== null)
-      {
-        const keyToRemove = 'id';
-        const { [keyToRemove]: _, ...cleanValues } = json;
-        
-        await UpdateRecord(tableName, result, cleanValues)
-        //UpdateField(tableName, snapshot.key, clean)
-      }
-      else
-      {
-        await UpdateField(tableName, result, json)
-      }
+      // Update prop 'FirebaseID'
+      var json = values;
+      await UpdateField(tableName, result, json)
+      
+      // if (json["id"] !== null)
+      // {
+      //   const keyToRemove = 'id';
+      //   const { [keyToRemove]: _, ...cleanValues } = json;
+      //  
+      //   await UpdateRecord(tableName, result, cleanValues)
+      //   //UpdateField(tableName, snapshot.key, clean)
+      // }
+      // else
+      // {
+      //  await UpdateField(tableName, result, json)
+      // }
 
 
     return result;
@@ -262,11 +274,13 @@ export async function InsertRecord( tableName, values )
 /// param 'recordKey' - The uniqee key to focus specific record
 export async function UpdateRecord( tableName, recordKey, values )
 {
-    if (String(recordKey) === "")
+    if (String(recordKey).trim() === "")
     {
       alert("מזהה הרשומה ריק");
       return false;
     }
+
+    values.LastUpdateDate =  dateFix(new Date());
 
     const tableRef = ref(database, `${tableName}/${recordKey}`);
 
@@ -292,7 +306,7 @@ export async function UpdateRecord( tableName, recordKey, values )
 
 export async function DeleteRecord( tableName, recordKey)
 {
-  if (String(recordKey) === "")
+  if (String(recordKey).trim() === "")
   {
     alert("מזהה הרשומה ריק");
     return false;

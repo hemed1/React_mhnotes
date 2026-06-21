@@ -88,7 +88,7 @@ button {
 }
 
 .button_save{
-  background-color: red;
+  background-color: green;
   color: white;
 }
 
@@ -145,16 +145,16 @@ input, select, textarea {
 
 .item {
   box-shadow: 0 0 20px rgba(216, 218, 226, 0.6);
-  /* color: rgb(233, 235, 238); */
   background-color: rgb(233, 235, 238);
   padding: 13px 12px;
   margin-bottom: 2px;
   /* border-top: 4px solid #fff;
   border-bottom: 4px solid #fff; */
   display: grid;
-  grid-template-columns: auto 1fr auto;
+  grid-template-columns: 5% 1fr 5%;     /* auto 1fr auto; */
   column-gap: 20px;
-  /* row-gap: 20px; */
+  row-gap: 20px;
+  max-height: 500px;
   font-weight: 500;
   text-align: right;
   direction: rtl;
@@ -164,15 +164,21 @@ input, select, textarea {
   white-space: 'pre-wrap';
   border-radius: 5px;
   cursor: pointer;
+  /* display: flex;
+  flex-direction: row; */
 }
 
 .content-box {
-  grid-column: 2 / -1;
+  /* grid-column: 2 / -1; */
+  display: flex;
+  flex-direction: column;
   padding-bottom: 16px;
   font-size: 23px;
   font-weight: 100;
   text-align: right;
   direction: rtl;
+  height: 300px;
+  width: 620px;
   text-wrap: 'pretty';
   overflow-wrap: 'break-word';
   white-space: 'pre-wrap';
@@ -184,7 +190,7 @@ input, select, textarea {
   margin-left: 16px;
   margin-top: 16px;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   text-align: right;
   direction: rtl;
   text-wrap: 'pretty';
@@ -252,7 +258,8 @@ input, select, textarea {
 .div_buttons_row {
   display: flex;
   flex-direction: row;
-  justify-content: space-evenly;
+  justify-content: space-between;   /* flex-end */
+  gap: 10px;
   /* background-color: rgb(9, 58, 157); */
   width: 100%;
   height: 70px;
@@ -270,11 +277,9 @@ input, select, textarea {
   width: 10px;
   height: 10px;
   background-color: transparent;
-  /* padding-bottom: 40px; */
 }
 
 .title {
-  /* color: #087f5b;  */
   font-size: 24px;
   font-weight: 500;
   text-align: right;
@@ -284,6 +289,7 @@ input, select, textarea {
 /* OPEN STATE */
 .open {
   border-top: 5px solid #087f5b;
+  border-bottom: 5px solid #087f5b;
   text-align: right;
   direction: rtl;
   max-height: 400px;

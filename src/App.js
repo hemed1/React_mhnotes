@@ -5,12 +5,6 @@ import './styles.css';
 import { useState, useMemo } from 'react';
 import {GetTableData, UpdateField, InsertRecord, UpdateRecord, DeleteRecord, GetTable, database} from './firebase';
 
-// TAODO:
-// enum saveModeEn {
-//   INSERT = 'idle',
-//   UPDATE = 'loading',
-//   DELETE = 'success',
-// }
 
 const texes = [
   {
@@ -26,6 +20,13 @@ const texes = [
     text:"Excepturi velit laborum, perspiciatis nemo perferendis reiciendis aliquam possimus dolor sed! Dolore laborum ducimus veritatis facere molestias!"
   }
 ];
+
+
+// enum saveModeEn {
+//     INSERT: 1,
+//     UPDATE: 2,
+//     DELETE: 3,
+// }
 
 var data = [];
 var dataBaseTable = [];
@@ -57,12 +58,7 @@ export default function App() {
   function handleSelectItem(selectedItem)
   { 
     f_update_mode = true;
-    // f_title = selectedItem.Title;
-    // f_desc = selectedItem.Description;
-    // f_listTypeID = Number(selectedItem.ListTypeID);
-    // f_statusID = Number(selectedItem.StatusID);
-    // f_dateDue = selectedItem.DateDue.replace(' ', 'T');
-
+  
     setSelectedItem((curr) => curr?.NoteID === selectedItem.NoteID ? null : selectedItem);
   }
 
@@ -130,29 +126,37 @@ function ListData({data, selectedItem, onSelectedItem, sortByField}) {
                               case 'date_update':
                                 //const sorted = [...data].sort((a, b) => (new Date(b.LastUpdateDate)) - (new Date(a.LastUpdateDate)));
                                 //const sorted = data.toSorted((a, b) => (new Date(b.LastUpdateDate))/* .getTime() */ - (new Date(a.LastUpdateDate))/* .getTime() */);
-                                return [...data].sort((a, b) => (new Date(b.LastUpdateDate)) - (new Date(a.LastUpdateDate)));
+                                return [...data].sort((a, b) => 
+                                                  (
+                                                    (new Date(String(b.LastUpdateDate.substring(0, 16).replace('T', ' ').replace(', ', ' '))))
+                                                    - 
+                                                    (new Date(String(a.LastUpdateDate.substring(0, 16).replace('T', ' ').replace(', ', ' '))))
+                                                  ));
                                 break;
                             
-                            case 'date_due':
-                              //const sorted = [...data].sort((a, b) => (new Date(a.DateDue)) - (new Date(b.DateDue)));
-                              //const sorted = data.toSorted((a, b) => (new Date(a.DateDue))/* .getTime() */ - (new Date(b.DateDue))/* .getTime() */);
-                              return [...data].sort((a, b) => (new Date(a.DateDue)) - (new Date(b.DateDue)));; 
-                              break;
-                          
-                            case 'title': 
-                              return [...data].sort((a, b) => String(a.Title).localeCompare(String(b.Title)));
-                              break;
+                              case 'date_due':
+                                //const sorted = [...data].sort((a, b) => (new Date(a.DateDue)) - (new Date(b.DateDue)));
+                                //const sorted = data.toSorted((a, b) => (new Date(a.DateDue))/* .getTime() */ - (new Date(b.DateDue))/* .getTime() */);
+                                return [...data].sort((a, b) => 
+                                                  (new Date(String(b.DateDue).substring(0, 16).replace('T', ', ').replace(', ', ' '))) 
+                                                  - 
+                                                  (new Date(String(a.DateDue).substring(0, 16).replace('T', ', ').replace(', ', ' '))));
+                                break;
                             
-                            case 'today':
-                              const today = new Date()/* .getTime() */;
-                              const target = new Date('2026-06-15, 10:30')/* .getTime() */;
-                              //console.log(target.toDateString() + "  -  " + today.toDateString());
-                              return [...data].filter((item) => (new Date(item.DateDue)).toDateString() === today.toDateString());
-                              break;
+                              case 'title': 
+                                return [...data].sort((a, b) => String(a.Title).localeCompare(String(b.Title)));
+                                break;
+                              
+                              case 'today':
+                                const today = new Date()/* .getTime() */;
+                                //const target = new Date('2026-06-15, 10:30')/* .getTime() */;
+                                //console.log(target.toDateString() + "  -  " + today.toDateString());
+                                return [...data].filter((item) => (new Date(item.DateDue)).toDateString() === today.toDateString());
+                                break;
 
-                            default:
-                              return [...data].sort((a, b) => (new Date(b.LastUpdateDate)) - (new Date(a.LastUpdateDate)));;
-                              break;
+                              default:
+                                return [...data].sort((a, b) => (new Date(b.LastUpdateDate)) - (new Date(a.LastUpdateDate)));;
+                                break;
                           }
                         }, [data, sortBy]);
 
@@ -172,15 +176,8 @@ function ListData({data, selectedItem, onSelectedItem, sortByField}) {
 
   function handleInsert()
   {
-      // setSaveMode(1);   //  saveModeEn.INSERT;
-      // setTitle('');  //TODO:
-      // setDesc('');
-      // setTypeListID(3);
-      // setStatusID(1);
-      // setDateDue('');
-      //document.getElementById("title").focus();
-
       const itemObject = Note();
+
       onSelectedItem(itemObject);
   }
 
@@ -198,7 +195,7 @@ function ListData({data, selectedItem, onSelectedItem, sortByField}) {
               <button type='button' onClick={(e, text) => handleChange(e, 'today')}>להיום</button>
               <button type='button' style={{width: '60px', backgroundColor: 'green', color: 'white'}}  onClick={handleInsert}>חדש</button>
             </div>
-            <input type='text' value={searchText} placeholder='חפש...'  onChange={(e) => setSearchText(e.target.value)}   style={{height: '50px', width: '700px'}}></input>
+            <input type='text' value={searchText} placeholder='חפש...'  onChange={(e) => setSearchText(e.target.value)}   style={{height: '40px', width: '700px'}}></input>
           </div>
 
           <form className="accordion">
@@ -239,28 +236,34 @@ function ListDataItem({newIndex, currOpenIndex, itemObject, selectedItem, onSele
   const isSelected = selectedItem?.id === itemObject.id;
   const [isOpen, setIsOpen] = useState(false);     //(newIndex === currOpenIndex);
 
+  //console.log(String(newIndex), itemObject.DateDue.substring(0, 16), itemObject.LastUpdateDate.substring(0, 16));
+
 
   return(
    
-    <li className={`item ${isSelected ? "open" : ""}`} onClick={() => onSelectedItem(itemObject)}>
+    <li className={`item ${isSelected /* || isOpen */ ? "open" : ""}`} onClick={() => onSelectedItem(itemObject)}>
       <p className='number'>{(newIndex < 9) ? `0${newIndex+1}` : newIndex+1}</p>
       <p className='title'>{itemObject.Title}</p>
-      <button type="button" className='icon' onClick={(e) => 
+      { children !== '' &&
+            <button type="button" className='icon' onClick={(e) => 
                                               {
                                                 e.stopPropagation();
                                                 setIsOpen(!isOpen);
                                               }}>
-        {isOpen ? "-" : "+"}
-      </button>
-      {isOpen && 
-          <div className='content-box'>{children}</div>
+                { isOpen ? '-' : '+' }
+            </button>
+      }
+      
+      {isOpen && children !=='' &&
+          <textarea readOnly='true' className='content-box' >{children}</textarea>
       }
     </li>
   );
 
 }
 
-function NoteScreen({ selectedItem, onSelectedItem }) {
+function NoteScreen({ selectedItem, onSelectedItem }) 
+{
 
     /// Controls values
     const [title, setTitle] = useState(selectedItem?.Title || '');
@@ -330,8 +333,8 @@ function NoteScreen({ selectedItem, onSelectedItem }) {
       {
         case 1:   //saveModeEn.INSERT:
           values = selectedItem;
-          values['Title'] = title;
-          values['Description'] = desc;
+          values['Title'] = String(title).trim();
+          values['Description'] = String(desc).trim();
           values['ListTypeID'] = typeListID;
           values['StatusID'] = statusID;
           values.DateDue = dateDue;
@@ -354,10 +357,11 @@ function NoteScreen({ selectedItem, onSelectedItem }) {
 
         case 2:   //saveModeEn.UPDATE:
           values = selectedItem;
-          values['Title'] = title;
-          values['Description'] = desc;
+          values['Title'] = String(title).trim();
+          values['Description'] = String(desc).trim();
           values['ListTypeID'] = typeListID;
           values['StatusID'] = statusID;
+          //console.log(String(values.LastUpdateDate).substring(0, 10) + '   ' + values.LastUpdateDate);
           values.DateDue = dateDue;
           result = await UpdateRecord("TBL_Notes", selectedItem.FirebaseID, values);
           if (result)
@@ -421,10 +425,10 @@ function NoteScreen({ selectedItem, onSelectedItem }) {
           </div>
 
 
-          <div className='div_buttons_row' style={{justifyContent: 'space-between'}}>
-            <div style={{display: 'flex', width: '580px', justifyContent: 'space-evenly'}}>
-              <button type='submit' onClick={(e) => handleDelete(e)}>מחיקה</button>
-            </div>
+          <div className='div_buttons_row'>
+            {/* <div style={{display: 'flex', width: '580px', justifyContent: 'space-evenly'}}> */}
+              <button type='submit' style={{backgroundColor: 'red', color: 'white'}} onClick={(e) => handleDelete(e)}>מחיקה</button>
+            {/* </div> */}
             <button type='submit' className='button_save' onClick={handleOK}>שמירה</button>
           </div>
     
@@ -438,7 +442,7 @@ function FieldInScreen({ captionText, fieldID, control }){
   return (
       
       <div style={{display: 'flex', flexDirection: 'column', rowGap: '6px'}}>
-        <label for={fieldID}>{captionText}</label>
+        <label htmlFor={fieldID}>{captionText}</label>
         {control}
       </div>
   );

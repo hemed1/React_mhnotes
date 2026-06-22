@@ -128,9 +128,13 @@ function ListData({data, selectedItem, onSelectedItem, sortByField}) {
                                 //const sorted = data.toSorted((a, b) => (new Date(b.LastUpdateDate))/* .getTime() */ - (new Date(a.LastUpdateDate))/* .getTime() */);
                                 return [...data].sort((a, b) => 
                                                   (
-                                                    (new Date(String(b.LastUpdateDate.substring(0, 16).replace('T', ' ').replace(', ', ' '))))
+                                                    ((b.LastUpdateDate) 
+                                                    ? (new Date(String(b.LastUpdateDate.substring(0, 16).replace('T', ' ').replace(', ', ' '))))
+                                                    : "")
                                                     - 
-                                                    (new Date(String(a.LastUpdateDate.substring(0, 16).replace('T', ' ').replace(', ', ' '))))
+                                                    ((a.LastUpdateDate)
+                                                    ? (new Date(String(a.LastUpdateDate.substring(0, 16).replace('T', ' ').replace(', ', ' '))))
+                                                    : "")
                                                   ));
                                 break;
                             
@@ -138,9 +142,14 @@ function ListData({data, selectedItem, onSelectedItem, sortByField}) {
                                 //const sorted = [...data].sort((a, b) => (new Date(a.DateDue)) - (new Date(b.DateDue)));
                                 //const sorted = data.toSorted((a, b) => (new Date(a.DateDue))/* .getTime() */ - (new Date(b.DateDue))/* .getTime() */);
                                 return [...data].sort((a, b) => 
-                                                  (new Date(String(b.DateDue).substring(0, 16).replace('T', ', ').replace(', ', ' '))) 
+                                                    ((b.DateDue) 
+                                                    ? (new Date(String(b.DateDue).substring(0, 16).replace('T', ', ').replace(', ', ' ')))
+                                                    : "") 
                                                   - 
-                                                  (new Date(String(a.DateDue).substring(0, 16).replace('T', ', ').replace(', ', ' '))));
+                                                    ((a.DateDue) 
+                                                    ? (new Date(String(a.DateDue).substring(0, 16).replace('T', ', ').replace(', ', ' '))) 
+                                                    : "")
+                                                  );
                                 break;
                             
                               case 'title': 
@@ -236,7 +245,7 @@ function ListDataItem({newIndex, currOpenIndex, itemObject, selectedItem, onSele
   const isSelected = selectedItem?.id === itemObject.id;
   const [isOpen, setIsOpen] = useState(false);     //(newIndex === currOpenIndex);
 
-  //console.log(String(newIndex), itemObject.DateDue.substring(0, 16), itemObject.LastUpdateDate.substring(0, 16));
+  console.log(String(newIndex), itemObject.DateDue);        //.substring(0, 16), itemObject.LastUpdateDate.substring(0, 16));
 
 
   return(

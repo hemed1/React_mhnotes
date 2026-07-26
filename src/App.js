@@ -296,18 +296,6 @@ function ListData({data, selectedItem, onSelectedItem, sortByField}) {
                           {
                             switch (sortBy)
                             {
-                              case 'date_update':
-                                return [...data].sort((a, b) => 
-                                                  (
-                                                    ((b.LastUpdateDate) 
-                                                    ? (new Date(String(b.LastUpdateDate.substring(0, 16).replace('T', ' ').replace(', ', ' '))))
-                                                    : "")
-                                                    - 
-                                                    ((a.LastUpdateDate)
-                                                    ? (new Date(String(a.LastUpdateDate.substring(0, 16).replace('T', ' ').replace(', ', ' '))))
-                                                    : "")
-                                                  ));
-                            
                               case 'date_due':
                                 return [...data].sort((a, b) => 
                                                     ((b.DateDue) 
@@ -326,8 +314,20 @@ function ListData({data, selectedItem, onSelectedItem, sortByField}) {
                                 const today = new Date()/* .getTime() */;
                                 return [...data].filter((item) => (new Date(item.DateDue)).toDateString() === today.toDateString());
 
+                              case 'date_update':
                               default:
-                                return [...data].sort((a, b) => (new Date(b.LastUpdateDate)) - (new Date(a.LastUpdateDate)));;
+                                return [...data].sort((a, b) => 
+                                                  (
+                                                    ((b.LastUpdateDate !== "") 
+                                                    //? String(b.LastUpdateDate).replace('T', ' ').replace(', ', ' ')
+                                                    ? (new Date(String(b.LastUpdateDate).replace('T', ' ').replace(', ', ' ')))
+                                                    : "")
+                                                  -
+                                                    ((a.LastUpdateDate !== "")
+                                                    //? String(a.LastUpdateDate).replace('T', ' ').replace(', ', ' ')
+                                                    ? (new Date(String(a.LastUpdateDate.replace('T', ' ').replace(', ', ' '))))
+                                                    : "")
+                                                  ));
 
                           }
                         }, [data, sortBy]);
@@ -442,6 +442,7 @@ function NoteScreen({ selectedItem, onSelectedItem, onSaveSubTasks })
     const [statusID, setStatusID] = useState(selectedItem?.StatusID || 1);
     const [dateDue, setDateDue] = useState(selectedItem?.DateDue || Date().toLocaleString('en-IL', { timeZone: 'Asia/Jerusalem' }).replace(', ', 'T'));
     const [subjects, setSubjects] = useState([]);
+    const [lastUpdate, setLastUpdate] = useState(selectedItem?.LastUpdateDate);
     
     /// General stateas
     const [subjectsArray, setSubjectsArray] = useState(null);
@@ -560,9 +561,10 @@ function NoteScreen({ selectedItem, onSelectedItem, onSaveSubTasks })
       //setSubObjectsList(selectedItem.SubTasks || []);
       setSaveMode((selectedItem?.NoteID===0) ? saveModeEn.INSERT : saveModeEn.UPDATE);
       setFirstSubTasks(selectedItem?.SubTasks || []);
-      setSubjectsArray(Globals.seperatedStringToLookupObject(selectedItem?.SubjectLabels, dataSubject));
+      setSubjectsArray(Globals.seperatedStringToLookupObject(selectedItem.SubjectLabels, dataSubject));
+      setLastUpdate(selectedItem.LastUpdateDate);
       setSelectedObject( selectedItem );
-      if ( selectedItem['SubTasks'] !== undefined && selectedItem?.SubTasks.length > 0)
+      if ( selectedItem['SubTasks'] !== undefined && selectedItem.SubTasks.length > 0)
       {
           setShowSubTasksScreen(true);
       }
@@ -632,8 +634,11 @@ function NoteScreen({ selectedItem, onSelectedItem, onSaveSubTasks })
           if (result)
           {
             const newArray = [...dataNotes];
+            selectedObject.LastUpdateDate = values.LastUpdateDate;
+            selectedObject.FirebaseID = values.FirebaseID;
             newArray.push({...selectedObject});
             dataNotes = newArray;
+            const objUpdated = dataNotes.find((item) => item.NoteID === noteID);
             message = "הפריט נוסף בהצלחה!";
           }
           else
@@ -647,7 +652,7 @@ function NoteScreen({ selectedItem, onSelectedItem, onSaveSubTasks })
         case saveModeEn.UPDATE:
           values = await valuesToObject(values);
           
-          result = await FirebaseHanle.UpdateRecord("TBL_Notes", selectedObject.FirebaseID, values);
+          result = await FirebaseHanle.UpdateRecord("TBL_Notes", selectedItem.FirebaseID, values);
           
           /// Save the Sub-Task
           result = await saveSubTasks();
@@ -663,6 +668,7 @@ function NoteScreen({ selectedItem, onSelectedItem, onSaveSubTasks })
             //           };
             const index = dataNotes.findIndex(task => task.NoteID === selectedObject.NoteID);
             const newArray = [...dataNotes];
+            selectedItem.LastUpdateDate = values.LastUpdateDate;
             newArray[index] = {...selectedObject};     //toggleTodo(selectedObject.NoteID);
             dataNotes = newArray;
             //dataNotes = dataNotes.map((note) => (note.NoteID === Number(values['NoteID']) ? {...note, values } : note))
@@ -939,7 +945,10 @@ function NoteScreen({ selectedItem, onSelectedItem, onSaveSubTasks })
 
 
           <div className='div_buttons_row'>
-            <button type='submit' style={{backgroundColor: 'red', color: 'white'}} onClick={(e) => handleDelete(e)}>מחיקה</button>
+            <div>
+              <button type='submit' style={{backgroundColor: 'red', color: 'white'}} onClick={(e) => handleDelete(e)}>מחיקה</button>
+              <label style={{color: '#B4B7BC', fontSize: '19', padding: '0.6rem 1.2rem'}}>נערך לאחרונה: {lastUpdate}</label>
+            </div>
             <button type='submit' className='button_save' onClick={saveObject}>שמירה</button>
           </div>
     

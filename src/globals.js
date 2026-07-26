@@ -14,8 +14,8 @@ export function dateSetFormat(date)
    //var result = date.toLocaleDateString('en-US', { weekday: 'long' }); 
    //var result = date.toLocaleString().substring(0, 16).replace(', ', ' ')/* .replace(".", "-",) */;
 
-   var res = String(result.getFullYear()) + '-' + String(result.getMonth() + 1).padStart(2, '0') + '-' + result.getDate();
-   res += ' ' + String(result.getHours()) + ':' + String(result.getMinutes());
+   var res = String(result.getFullYear()) + '-' + String(result.getMonth() + 1).padStart(2, '0') + '-' + String(result.getDate()).padStart(2, '0');
+   res += ' ' + String(result.getHours()).padStart(2, '0') + ':' + String(result.getMinutes()).padStart(2, '0');
 
 
    return res;

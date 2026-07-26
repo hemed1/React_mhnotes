@@ -100,7 +100,7 @@ body {
   /* background-color: var(--color-panel_3); */
   /* background-image: linear-gradient(45deg, var(--color-main-theme) 15%, rgba(237, 185, 113, 1.0));     /*, var(--color-main-theme)); */
   margin: 0;
-  font-family: "Arial, Helvetica, sans-serif";
+  font-family: "'Courier New', sans-serif, Arial, Helvetica";
   /* font-family: "'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif";   */
   color: #343a40;
   line-height: 1;
@@ -163,7 +163,7 @@ input, select, textarea {
   padding-left: 5px;
   padding-right: 5px;
   color: rgb(45, 45, 48);
-  font-family: "Arial, Helvetica, sans-serif";
+  font-family: "sans-serif, Arial, Helvetica";
   /* font-family: "'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif"; */
   font-size: 20px;
   font-weight: 150;
@@ -353,7 +353,7 @@ input, select, textarea {
 
 /* OPEN STATE */
 .open {
-  border-top: var(--color-card_open-border);
+  border-top: 5px solid var(--color-card_open-border);
   /* border-bottom: 5px solid #087f5b; */
   border-radius: 10px;
   direction: rtl;

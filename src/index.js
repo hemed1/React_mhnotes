@@ -11,6 +11,8 @@ var dataBaseTable = [];
 var dataListTypes = [];
 var dataStatuses = [];
 var dataSubject = [];
+var dbData = {};
+
 
 
 async function initApp() 
@@ -25,7 +27,10 @@ async function initApp()
     //const dbData = {};
     await getData();
     
-    const dbData = {'dataNotes': dataNotes, 'dataBaseTable': dataBaseTable, 'dataListTypes': dataListTypes, 'dataStatuses': dataStatuses, 'dataSubject': dataSubject};
+    dbData = {'dataNotes': dataNotes, 'dataBaseTable': dataBaseTable, 'dataListTypes': dataListTypes, 'dataStatuses': dataStatuses, 'dataSubject': dataSubject};
+
+    //handleData();
+
     //const response = await response.json();
 
     const root = ReactDOM.createRoot(document.getElementById('root'));
@@ -47,6 +52,15 @@ async function initApp()
 initApp();
 
 
+function handleData()
+{
+  const dataNew = FirebaseHanle.GetTableDataAsync("TBL_Notes");
+
+  if (dataNew.length)
+  {
+    const updateData = {...dbData, dataNotes: dataNew};
+  }
+}
 
 async function getDatabaseIndex( fileName ) 
 {

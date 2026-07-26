@@ -9,6 +9,7 @@ import * as Globals from './globals.js';
 import Select, { StylesConfig } from 'react-select';
 import FloatingWindow from './components/FloatingWindow.js';
 import MenusComponent from './components/MenusComponent.js';
+import GridWidget from './components/GridWidget.js'
 import { Plus, Trash2, X, ChevronRight, Users, Subtitles, CheckLine, Check, CheckIcon, CheckLineIcon, EllipsisVertical } from "lucide-react";
 
 // import { getDatabase, ref, onValue, update, set, get, push, child, remove, query, orderByChild, equalTo } from "firebase/database";
@@ -46,7 +47,7 @@ export default function App( {dbData, dbIndex} )      /* initialData */
   const [selectedItem, setSelectedItem] = useState(null);
   const [isWindowOpen, setIsWindowOpen] = useState(false);
   const [data, setData] = useState(dbData);
-  const [dataBaseIndex, setDataBaseIndex] = useState(dbIndex);       //useState(handleSelectDatabase(dbIndex || 0));
+  const [dataBaseIndex] = useState(dbIndex);       //useState(handleSelectDatabase(dbIndex || 0));
   //const [loading, setLoading] = useState(true);
 
 
@@ -89,6 +90,15 @@ export default function App( {dbData, dbIndex} )      /* initialData */
   //  init();
   // }
   
+  function handleData()
+  {
+    const dataNew = FirebaseHanle.GetTableDataAsync("TBL_Notes");
+    const updateData = {...dbData, dataNotes: dataNew};
+    //setData(updateData);
+
+    return dbData;
+  }
+
   function handleSelectItem(selectedItem)
   { 
     f_update_mode = 0;
@@ -188,6 +198,9 @@ export default function App( {dbData, dbIndex} )      /* initialData */
                   /* onDeleteSubTask={handleDeleteSubTask} */ />
           }
         </div>
+
+
+        <GridWidget  data={dataNotes}  />
 
         
     </div>
@@ -601,21 +614,16 @@ function NoteScreen({ selectedItem, onSelectedItem, onSaveSubTasks })
       switch (saveMode)
       {
         case saveModeEn.INSERT:
-          values['Title'] = String(title).trim();
-          values['Description'] = String(desc).trim();
-          values['ListTypeID'] = typeListID;
-          values['StatusID'] = statusID;
-          values.DateDue = dateDue;
+          values = await valuesToObject(values);
+
           values.FirebaseID='';
-          values.SubjectLabels = subjects;
           const noteID = Number(dataBaseTable[0].NumeratorNotesID)+1;
           values['NoteID'] = noteID;
-
-          /// Update the new 'NoteID'
           selectedObject.NoteID = noteID;
           selectedItem.NoteID = noteID;
           
           result = await FirebaseHanle.InsertRecord("TBL_Notes", values);
+          
           result = await FirebaseHanle.UpdateField('TBL_Databases', dataBaseTable[0].FirebaseID, {NumeratorNotesID: noteID});
 
           /// Save the Sub-Task
@@ -637,14 +645,9 @@ function NoteScreen({ selectedItem, onSelectedItem, onSaveSubTasks })
           break;
 
         case saveModeEn.UPDATE:
-          values['Title'] = String(title).trim();
-          values['Description'] = String(desc).trim();
-          values['ListTypeID'] = typeListID;
-          values['StatusID'] = statusID;
-          values.DateDue = dateDue;
-          values.SubjectLabels = subjects;
+          values = await valuesToObject(values);
           
-          result = await FirebaseHanle.UpdateRecord("TBL_Notes", selectedItem.FirebaseID, values);
+          result = await FirebaseHanle.UpdateRecord("TBL_Notes", selectedObject.FirebaseID, values);
           
           /// Save the Sub-Task
           result = await saveSubTasks();
@@ -652,7 +655,7 @@ function NoteScreen({ selectedItem, onSelectedItem, onSaveSubTasks })
           if (result)
           {
             // const toggleTodo = (id) => {
-            //             return (prevTodos => 
+            //             setData(prevTodos => 
             //               prevTodos.map(todo => 
             //                 todo.NoteID === id ? { ...todo, values } : todo
             //               )
@@ -823,6 +826,27 @@ function NoteScreen({ selectedItem, onSelectedItem, onSaveSubTasks })
 
 
       return result;
+    }
+
+    async function valuesToObject( values )
+    {
+      values['Title'] = String(title).trim();
+      values['Description'] = String(desc).trim();
+      values['ListTypeID'] = typeListID;
+      values['StatusID'] = statusID;
+      values['DateDue'] = String(dateDue).replace('T', ' ');
+      values['SubjectLabels'] = subjects;
+
+  
+      selectedObject['Title'] = String(title).trim();
+      selectedObject['Description'] = String(desc).trim();
+      selectedObject['ListTypeID'] = typeListID;
+      selectedObject['StatusID'] = statusID;
+      selectedObject['DateDue'] = String(dateDue).replace('T', ' ');
+      selectedObject['SubjectLabels'] = subjects;
+
+
+      return values;
     }
 
     function handleSubjectsChange(e)

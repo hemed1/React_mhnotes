@@ -31,8 +31,6 @@ async function initApp()
 
     //handleData();
 
-    //const response = await response.json();
-
     const root = ReactDOM.createRoot(document.getElementById('root'));
     
     // מעבירים את הנתונים כ-Props לקומפוננטה הראשית

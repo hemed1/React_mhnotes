@@ -188,7 +188,7 @@ export default function App( {dbData, dbIndex} )      /* initialData */
               data={dataNotes} 
               selectedItem ={selectedItem} 
               onSelectedItem={handleSelectItem}
-              sortByField="title" />
+              sortByField="date_update" />
 
           {selectedItem && 
               <NoteScreen 
@@ -200,7 +200,7 @@ export default function App( {dbData, dbIndex} )      /* initialData */
         </div>
 
 
-        <GridWidget  data={dataNotes}  />
+        {/* <GridWidget  data={dataNotes}  /> */}
 
         
     </div>
@@ -284,14 +284,17 @@ function subNotesToNotes(notes, subNotes)
   
 }
 
-function ListData({data, selectedItem, onSelectedItem, sortByField}) {
+function ListData({data, selectedItem, onSelectedItem, sortByField}) 
+{
   
-  const [currOpenIndex, setCurrOpenIndex] = useState(null);
+  const [selectedIndex, setSelectedIndex] = useState(null);
   const [sortBy, setSortBy] = useState('date_update'); 
   const [searchText, setSearchText] = useState('');
+  const [dateFilter, setDateFilter] = useState(null);
+
 
   
-  // Compute the sorted array dynamically 
+  // Sorted array dynamically 
   const sortedProducts = useMemo(() => 
                           {
                             switch (sortBy)
@@ -334,7 +337,7 @@ function ListData({data, selectedItem, onSelectedItem, sortByField}) {
 
 
 
-  function handleChange(e, text)
+  function handleChangeSort(e, text)
   {
     e.preventDefault();
     setSortBy(text);
@@ -346,19 +349,26 @@ function ListData({data, selectedItem, onSelectedItem, sortByField}) {
       onSelectedItem(itemObject);
   }
 
+  /// Just for update 'selectedIndex' var
+  function handleChangeSelect(itemObject, index)
+  {
+    setSelectedIndex(index);
+    onSelectedItem(itemObject);
+  }
 
 
   return (
     
-        <div style={{display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '1px', marginRight: '50px'/* , backgroundColor: 'white' */}}>
+        <div style={{display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '1px', marginRight: '50px'}}>
 
           <div style={{display: 'flex', flexDirection: 'column', gap: '10px'}}>
             <div style={{display: 'flex', flexDirection: 'row', gap: '40px', justifyContent: 'space-between'}}>
               <div style={{display: 'flex', flexDirection: 'row', gap: '15px'}}>
-                <button type='button' onClick={(e, text) => handleChange(e, 'title')}>כותרת</button>
-                <button type='button' onClick={(e, text) => handleChange(e, 'date_due')}>תאריך ביצוע</button>
-                <button type='button' onClick={(e, text) => handleChange(e, 'date_update')}>תאריך עדכון</button>
-                <button type='button' onClick={(e, text) => handleChange(e, 'today')}>להיום</button>
+                <button type='button' onClick={(e, text) => handleChangeSort(e, 'title')}>כותרת</button>
+                <button type='button' onClick={(e, text) => handleChangeSort(e, 'date_due')}>תאריך ביצוע</button>
+                <button type='button' onClick={(e, text) => handleChangeSort(e, 'date_update')}>תאריך עדכון</button>
+                <button type='button' onClick={(e, text) => handleChangeSort(e, 'today')}>להיום</button>
+                <input  type="date"  value={dateFilter}  style={{width: '150px', paddingTop: '4px', marginTop:'4px'}} onChange={(e) => setDateFilter(e.target.value)}></input>
               </div>
               <button type='button' style={{width: '60px', backgroundColor: 'green', color: 'white'}}  onClick={handleInsert}>חדש</button>
             </div>
@@ -374,15 +384,17 @@ function ListData({data, selectedItem, onSelectedItem, sortByField}) {
                         .filter((item) => 
                             (String(searchText).trim() !== '')  
                             ? ((String(item.Title).indexOf(searchText)>-1) || (String(item.Description).indexOf(searchText)>-1))
-                            : true
+                            : (dateFilter!==null)
+                              ? String(item.DateDue).substring(0, 10) === String(dateFilter)
+                              : true
                         )
                         .map((item, index) => 
                         (
-                          <ListDataItem   newIndex={index} 
-                                          currOpenIndex={currOpenIndex}
+                          <ListDataItem   index={index}
                                           itemObject={item}
+                                          selectedIndex={selectedIndex}
                                           selectedItem={selectedItem}
-                                          onSelectedItem={onSelectedItem}
+                                          onSelectedItem={handleChangeSelect}
                                           key={index}
                           >
                               {item.Description}
@@ -401,18 +413,19 @@ function ListData({data, selectedItem, onSelectedItem, sortByField}) {
 
 }
  
-function ListDataItem({newIndex, currOpenIndex, itemObject, selectedItem, onSelectedItem, children}) {
+function ListDataItem({index, selectedIndex, itemObject, selectedItem, onSelectedItem, children}) 
+{
 
-  const isSelected = selectedItem?.NoteID === itemObject.NoteID;
-  const [isOpen, setIsOpen] = useState(false);     //(newIndex === currOpenIndex);
+  const isSelected = (selectedItem?.NoteID === itemObject.NoteID);
+  const [isOpen, setIsOpen] = useState(false);     //(index === selectedIndex);
 
-  //console.log(String(newIndex), itemObject.DateDue);        //.substring(0, 16), itemObject.LastUpdateDate.substring(0, 16));
+  console.log(index, selectedIndex, selectedItem?.Title, itemObject.Title);
 
 
   return(
    
-    <li className={`item ${isSelected /* || isOpen */ ? "open" : ""}`} onClick={() => onSelectedItem(itemObject)}>
-      <p className='number'>{(newIndex < 9) ? `0${newIndex+1}` : newIndex+1}</p>
+    <li className={`item ${ isSelected ? "open" : ""}`} onClick={() => onSelectedItem(itemObject, index)}>
+      <p className='number'>{(index < 9) ? `0${index+1}` : index+1}</p>
       <p className='title'>{itemObject.Title}</p>
       { children !== '' &&
             <button type="button" className='icon' onClick={(e) => 
@@ -554,7 +567,14 @@ function NoteScreen({ selectedItem, onSelectedItem, onSaveSubTasks })
       setSubjectsArray(null);
       setTitle(selectedItem?.Title);
       setDesc(selectedItem?.Description);
-      setTypeListID(selectedItem?.ListTypeID);
+      if (saveMode === saveModeEn.INSERT)
+      {
+        setTypeListID(3);
+      }
+      else
+      {
+        setTypeListID(selectedItem?.ListTypeID);
+      }
       setStatusID(selectedItem?.StatusID);
       setDateDue(selectedItem.DateDue);
       setSubjects(selectedItem.SubjectLabels);
@@ -913,7 +933,7 @@ function NoteScreen({ selectedItem, onSelectedItem, onSaveSubTasks })
               </div>
 
               <Globals.FieldInScreen  captionText="בחר תאריך יעד"  fieldID="txt_dateDue"
-                control={<input id="txt_dateDue" name="txt_dateDue" type="datetime-local"  value={dateDue} onChange={(e) => setDateDue(e.target.value)}></input>}
+                control={<input id="txt_dateDue" name="txt_dateDue" type="datetime-local" value={dateDue} onChange={(e) => setDateDue(e.target.value)}></input>}
               />
 
               <Select 
@@ -947,7 +967,7 @@ function NoteScreen({ selectedItem, onSelectedItem, onSaveSubTasks })
           <div className='div_buttons_row'>
             <div>
               <button type='submit' style={{backgroundColor: 'red', color: 'white'}} onClick={(e) => handleDelete(e)}>מחיקה</button>
-              <label style={{color: '#B4B7BC', fontSize: '19', padding: '0.6rem 1.2rem'}}>נערך לאחרונה: {lastUpdate}</label>
+              <label style={{color: '#B4B7BC', fontSize: '16px', paddingTop: '0px', paddingRight: '20px'}}>נערך לאחרונה: {lastUpdate}</label>
             </div>
             <button type='submit' className='button_save' onClick={saveObject}>שמירה</button>
           </div>
@@ -994,7 +1014,7 @@ function SonsPanel({ noteObject, onClose, onUpdateSubTasks })
         zIndex: 50,
         display: "flex",
         justifyContent: "flex-end",
-        fontFamily: "'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif",
+        fontFamily: "'sans-serif, Segoe UI', -apple-system, BlinkMacSystemFont",
         left: 10
       }}
     >

@@ -2,13 +2,13 @@
 
 import { useState } from 'react';
 import './gridWidget.css'; // קובץ העיצוב שלנו
-import { Wheat } from 'lucide-react';
+// import { Wheat } from 'lucide-react';
 
 
 export default function GridWidget( data ) 
 {
-   const [dataItems, setDataItems] = useState(data);
-   const [selectedRow, setSelectedRow] = useState(1);
+   const [dataItems/* , setDataItems */] = useState(data);
+   // const [selectedRow, setSelectedRow] = useState(1);
 
    if (!dataItems)
    {

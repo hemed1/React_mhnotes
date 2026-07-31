@@ -298,7 +298,7 @@ export function GetQueryAsync(tableName, fieldName, fieldValue)
     // Execute the Function var
     return () => firebaseData();
 
-  }, []);    // [tableName, fieldName, fieldValue ]
+  }, [tableName, fieldName, fieldValue]);    // [tableName, fieldName, fieldValue ]
 
 
   if (loading) return <p>Loading...</p>;

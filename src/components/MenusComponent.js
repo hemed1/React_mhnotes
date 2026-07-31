@@ -92,8 +92,8 @@ export default function MenusComponent({ itemObject })
             <li key='4' className="nav-item">
                 <a key='4' className={"has-children" + (selectedCode === 4 ? " active" : "")} href="#about"  onClick={(e) => setSelectedCode(4)}>About</a>
                 <ul className="submenu">
-                    <li><a >Our Team</a></li>
-                    <li><a >Company History</a></li>
+                    <li><button>Our Team</button></li>
+                    <li><button>Company History</button></li>
                 </ul>
             </li>   
 

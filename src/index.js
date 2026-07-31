@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
@@ -17,6 +18,8 @@ var dbData = {};
 
 async function initApp() 
 {
+
+  
   try 
   {
     <h1>אנא המתן...</h1>

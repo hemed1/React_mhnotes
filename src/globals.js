@@ -1,5 +1,5 @@
 
-import { exp } from 'firebase/firestore/pipelines';
+//import { exp } from 'firebase/firestore/pipelines';
 import React from 'react';
 import { useState, useEffect, useRef } from 'react';
 
@@ -102,11 +102,11 @@ export async function ShowMessageBox(title, defaultValue, withTextbox)
    const dialogRef = useRef(null);
    const isOpen = true;
 
-  const openPrompt = () => {
-      //setIsOpen(true);
-      // Focus the dialog seamlessly when it opens
-      setTimeout(() => dialogRef.current?.showModal(), 0);
-  };
+  // const openPrompt = () => {
+  //     //setIsOpen(true);
+  //     // Focus the dialog seamlessly when it opens
+  //     setTimeout(() => dialogRef.current?.showModal(), 0);
+  // };
 
   const handleClose = (action) => {
       //setIsOpen(false);

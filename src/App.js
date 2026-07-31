@@ -57,6 +57,7 @@ export default function App( {dbData, dbIndex} )      /* initialData */
   dataStatuses = data['dataStatuses'];
   dataSubject = data['dataSubject'];
 
+  f_dataaseIndex = dataBaseIndex;
 
   // useEffect(() => 
   // {
@@ -126,7 +127,8 @@ export default function App( {dbData, dbIndex} )      /* initialData */
   {
       dataNotes = notesData;
 
-      const newList = {'dataNotes': dataNotes, 'dataBaseTable': dataBaseTable, 'dataListTypes': dataListTypes, 'dataStatuses': dataStatuses, 'dataSubject': dataSubject}; 
+      const newList = {...dbData, dataNotes: notesData }
+      dbData = newList;
 
       setData(newList);
   }
@@ -713,7 +715,6 @@ function NoteScreen({ selectedItem, onSelectedItem, onSaveSubTasks })
               return ([...dataNotes].filter(item => item.NoteID !== idToRemove));
             };
             dataNotes = handleRemove(selectedObject.NoteID);
-            //dataNotes = dataNotes.map((note) => (note.NoteID === values[NoteID] ? {...note, values } : note))
             alert("הפריט נמחק בהצלחה!");
           }
           else

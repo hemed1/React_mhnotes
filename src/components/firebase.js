@@ -5,7 +5,7 @@
 import { useEffect, useState } from 'react';
 import { dateSetFormat }  from '../globals.js';
 import { initializeApp, getApps, getApp } from "firebase/app";
-import { getDatabase, ref, onValue, update, set, get, push, child, remove, query, orderByChild, equalTo } from "firebase/database";
+import { getDatabase, ref, onValue, update, set, get, push, remove, query, orderByChild, equalTo } from "firebase/database";
 import  * as FirebaseConfig from './dataBasesConfig.js';
 //import { useSearchParams } from 'react-router-dom';
 //import { getAuth } from "firebase/auth";
@@ -237,7 +237,7 @@ export async function GetTableDataSync( tableName )
 export function GetQueryAsync(tableName, fieldName, fieldValue) 
 {
   const [data, setData] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading/* , setLoading */] = useState(true);
 
 
   // Like Using{} in C#, Clean the function
@@ -603,29 +603,29 @@ export async function UpdateField(tableName, recordKey, values) {   // , fieldNa
 
 
 
-export function MyComponent(tableName) 
-{
-  const [data, setData] = useState([]);
-  //const [loading, setLoading] = useState(true);
+// export function MyComponent(tableName) 
+// {
+//   const [data, setData] = useState([]);
+//   //const [loading, setLoading] = useState(true);
 
 
-  //const { data2, loading } = GetDataAsync(tableName);
-  //setData(data2);
-  // useEffect(() => {
-  //   const fetchUsers = async () => {
-  //     const { data, loading } = await useGetDataAsync(tableName);
-  //     setData(data);
-  //     setLoading(false);
-  //   };
+//   //const { data2, loading } = GetDataAsync(tableName);
+//   //setData(data2);
+//   // useEffect(() => {
+//   //   const fetchUsers = async () => {
+//   //     const { data, loading } = await useGetDataAsync(tableName);
+//   //     setData(data);
+//   //     setLoading(false);
+//   //   };
     
-  //   fetchUsers();
-  // }, []);
+//   //   fetchUsers();
+//   // }, []);
 
-  //if (loading) return <p>טוען...</p>;
+//   //if (loading) return <p>טוען...</p>;
 
-  return (
-    <ul>
-      {data.map(user => <li key={user.id}>{user.name}</li>)}
-    </ul>
-  );
-}
+//   return (
+//     <ul>
+//       {data.map(user => <li key={user.id}>{user.name}</li>)}
+//     </ul>
+//   );
+// }

@@ -2,15 +2,15 @@
 
 import './App.css';
 import './styles.css';
-import { useState, useEffect, useMemo, useRef } from 'react';
+import { useState, useMemo, useRef } from 'react';
 import * as FirebaseHanle from './components/firebase.js';
 //import { GetTableData, UpdateField, InsertRecord, UpdateRecord, DeleteRecord, changeDatabase, DataBasesConfigList } from './components/firebase.js';
 import * as Globals from './globals.js';
 import Select, { StylesConfig } from 'react-select';
 import FloatingWindow from './components/FloatingWindow.js';
 import MenusComponent from './components/MenusComponent.js';
-import GridWidget from './components/GridWidget.js'
-import { Plus, Trash2, X, ChevronRight, Users, Subtitles, CheckLine, Check, CheckIcon, CheckLineIcon, EllipsisVertical } from "lucide-react";
+// import GridWidget from './components/GridWidget.js'
+import { Plus, Trash2/* , X, ChevronRight, Users, Subtitles, CheckLine, Check, CheckIcon, CheckLineIcon, EllipsisVertical */ } from "lucide-react";
 
 // import { getDatabase, ref, onValue, update, set, get, push, child, remove, query, orderByChild, equalTo } from "firebase/database";
 // import { initializeApp, getApps, getApp } from "firebase/app";
@@ -211,80 +211,80 @@ export default function App( {dbData, dbIndex} )      /* initialData */
 
 }
 
-async function init()
-{
-  await FirebaseHanle.changeDatabase(FirebaseHanle.dataBaseIndex);;
+// async function init()
+// {
+//   await FirebaseHanle.changeDatabase(FirebaseHanle.dataBaseIndex);;
   
-  return await getData();
-}
+//   return await getData();
+// }
 
-async function getData() 
-{
+// async function getData() 
+// {
 
-  dataBaseTable = await FirebaseHanle.GetTableDataSync("TBL_Databases");
+//   dataBaseTable = await FirebaseHanle.GetTableDataSync("TBL_Databases");
 
-  dataNotes = await FirebaseHanle.GetTableDataSync("TBL_Notes");
+//   dataNotes = await FirebaseHanle.GetTableDataSync("TBL_Notes");
   
-  const subNotes = await FirebaseHanle.GetTableDataSync("TBL_NotesChilds");
-  const subsSorted = [...subNotes].sort((a, b) => a.NoteID - b.NoteID);
+//   const subNotes = await FirebaseHanle.GetTableDataSync("TBL_NotesChilds");
+//   const subsSorted = [...subNotes].sort((a, b) => a.NoteID - b.NoteID);
 
-  for (var i = 0; i < subsSorted.length; i++)
-  {
-    const sub = subsSorted[i];
-    const noteID = sub.NoteID;
-    const note = dataNotes.find((n) => n.NoteID === noteID);
-    // var subList = [];
-    // while (sub.NoteID === noteID)
-    // {
-    //   subList.push(sub);
-    // }
-    const subList = subsSorted.filter((sub) => sub.NoteID === noteID);
-    i = i + subList.length - 1;
-    if (note && subList.length > 0)
-    {
-      note.SubTasks = subList;
-    }
-  }
+//   for (var i = 0; i < subsSorted.length; i++)
+//   {
+//     const sub = subsSorted[i];
+//     const noteID = sub.NoteID;
+//     const note = dataNotes.find((n) => n.NoteID === noteID);
+//     // var subList = [];
+//     // while (sub.NoteID === noteID)
+//     // {
+//     //   subList.push(sub);
+//     // }
+//     const subList = subsSorted.filter((sub) => sub.NoteID === noteID);
+//     i = i + subList.length - 1;
+//     if (note && subList.length > 0)
+//     {
+//       note.SubTasks = subList;
+//     }
+//   }
 
-  dataListTypes = await  mapToLookupObject('TBL_ListTypes');
-  dataStatuses = await  mapToLookupObject('TBL_Statuses');
-  dataSubject = await  mapToLookupObject('TBL_Subjects');
+//   dataListTypes = await  mapToLookupObject('TBL_ListTypes');
+//   dataStatuses = await  mapToLookupObject('TBL_Statuses');
+//   dataSubject = await  mapToLookupObject('TBL_Subjects');
   
-  return dataNotes;
-}
+//   return dataNotes;
+// }
 
-async function mapToLookupObject(tableName)
-{
-  const date = await  FirebaseHanle.GetTableDataSync(tableName);
+// async function mapToLookupObject(tableName)
+// {
+//   const date = await  FirebaseHanle.GetTableDataSync(tableName);
 
-  const dataTable = date.map((item) => 
-                  {
-                    return {
-                      label: item.Description,
-                      value: item.ID
-                    };
-                  });
+//   const dataTable = date.map((item) => 
+//                   {
+//                     return {
+//                       label: item.Description,
+//                       value: item.ID
+//                     };
+//                   });
 
-  const result = [...dataTable].sort((a, b) => String(a.label).localeCompare(String(b.label))); 
+//   const result = [...dataTable].sort((a, b) => String(a.label).localeCompare(String(b.label))); 
 
-  return ( result );
-}
+//   return ( result );
+// }
 
-function subNotesToNotes(notes, subNotes)
-{
+// function subNotesToNotes(notes, subNotes)
+// {
 
-  for (var item in subNotes)
-  {
-    const noteID = item.NoteID;
-    const subs = subNotes.filter((sub) => sub.NoteID === noteID);
-    const note = notes.find((n) => n.NoteID === noteID);
-    if (subs.length > 0 && note)
-    {
-      note.SubTasks = subs;
-    }
-  }
+//   for (var item in subNotes)
+//   {
+//     const noteID = item.NoteID;
+//     const subs = subNotes.filter((sub) => sub.NoteID === noteID);
+//     const note = notes.find((n) => n.NoteID === noteID);
+//     if (subs.length > 0 && note)
+//     {
+//       note.SubTasks = subs;
+//     }
+//   }
   
-}
+// }
 
 function ListData({data, selectedItem, onSelectedItem, sortByField}) 
 {
@@ -502,63 +502,63 @@ function NoteScreen({ selectedItem, onSelectedItem, onSaveSubTasks })
       { value: '#987654', label: 'black' }
     ]
 
-    const colourStyles: StylesConfig<ColourOption, true> = {
-      control: (styles) => ({ ...styles, backgroundColor: 'white', height: '38px', fontSize: '28px', textAlign: 'right', direction: 'rtl' }),
-      option: (styles, { data, isDisabled, isFocused, isSelected }) => {
-        const color = '#c1b1d1';    // '#263375'
-        return {
-          ...styles, /* backgroundColor: 'white', */ fontSize: '21px'/* , height: '33px' */,
+    // const colourStyles: StylesConfig<ColourOption, true> = {
+    //   control: (styles) => ({ ...styles, backgroundColor: 'white', height: '38px', fontSize: '28px', textAlign: 'right', direction: 'rtl' }),
+    //   option: (styles, { data, isDisabled, isFocused, isSelected }) => {
+    //     const color = '#c1b1d1';    // '#263375'
+    //     return {
+    //       ...styles, /* backgroundColor: 'white', */ fontSize: '21px'/* , height: '33px' */,
 
-          /// BackColor of List
-          backgroundColor: isDisabled
-                              ? undefined
-                              : isSelected
-                                ? data.color
-                                : isFocused
-                                  ? color    // Items in list backColor on Active
-                                  : undefined,
-          color: isDisabled                 // Items in list ForeColor 
-                    ? '#ccc'
-                    : isSelected
-                      ? isFocused        //chroma.contrast(color, 'white') > 2
-                        ? '#ccc'
-                        : 'black'
-                    : data.color,    // Items in list ForColor
+    //       /// BackColor of List
+    //       backgroundColor: isDisabled
+    //                           ? undefined
+    //                           : isSelected
+    //                             ? data.color
+    //                             : isFocused
+    //                               ? color    // Items in list backColor on Active
+    //                               : undefined,
+    //       color: isDisabled                 // Items in list ForeColor 
+    //                 ? '#ccc'
+    //                 : isSelected
+    //                   ? isFocused        //chroma.contrast(color, 'white') > 2
+    //                     ? '#ccc'
+    //                     : 'black'
+    //                 : data.color,    // Items in list ForColor
                     
-          cursor: isDisabled ? 'not-allowed' : 'default',
+    //       cursor: isDisabled ? 'not-allowed' : 'default',
           
-          // Mouse Down colors
-          ':active': {
-            ...styles[':active'],
-            color: '#fff',                         /// Mouse Down ForeColor      
-            backgroundColor: !isDisabled
-                                ? isSelected
-                                  ? '#fff'
-                                  : '#3958b778'   /// Mouse Down BackColor
-                                : undefined,
-          },
-        };
-      },
-      multiValue: (styles, { data }) => {
-        const color = 'transperant';      //'#cac9b2';
-        return {
-          ...styles,
-          backgroundColor: color,
-        };
-      },
-      multiValueLabel: (styles, { data }) => ({
-        ...styles,
-        color: '#f56996',   /// Selected items in row ForeColor
-      }),
-      multiValueRemove: (styles, { data }) => ({
-        ...styles,
-        color: '#9888',
-        ':hover': {
-          backgroundColor: '#3c6c31',
-          color: 'white',
-        },
-      }),
-    };
+    //       // Mouse Down colors
+    //       ':active': {
+    //         ...styles[':active'],
+    //         color: '#fff',                         /// Mouse Down ForeColor      
+    //         backgroundColor: !isDisabled
+    //                             ? isSelected
+    //                               ? '#fff'
+    //                               : '#3958b778'   /// Mouse Down BackColor
+    //                             : undefined,
+    //       },
+    //     };
+    //   },
+    //   multiValue: (styles, { data }) => {
+    //     const color = 'transperant';      //'#cac9b2';
+    //     return {
+    //       ...styles,
+    //       backgroundColor: color,
+    //     };
+    //   },
+    //   multiValueLabel: (styles, { data }) => ({
+    //     ...styles,
+    //     color: '#f56996',   /// Selected items in row ForeColor
+    //   }),
+    //   multiValueRemove: (styles, { data }) => ({
+    //     ...styles,
+    //     color: '#9888',
+    //     ':hover': {
+    //       backgroundColor: '#3c6c31',
+    //       color: 'white',
+    //     },
+    //   }),
+    // };
 
    
     /// First time after change item
@@ -660,7 +660,7 @@ function NoteScreen({ selectedItem, onSelectedItem, onSaveSubTasks })
             selectedObject.FirebaseID = values.FirebaseID;
             newArray.push({...selectedObject});
             dataNotes = newArray;
-            const objUpdated = dataNotes.find((item) => item.NoteID === noteID);
+            //const objUpdated = dataNotes.find((item) => item.NoteID === noteID);
             message = "הפריט נוסף בהצלחה!";
           }
           else
@@ -694,7 +694,7 @@ function NoteScreen({ selectedItem, onSelectedItem, onSaveSubTasks })
             newArray[index] = {...selectedObject};     //toggleTodo(selectedObject.NoteID);
             dataNotes = newArray;
             //dataNotes = dataNotes.map((note) => (note.NoteID === Number(values['NoteID']) ? {...note, values } : note))
-            const objUpdated = dataNotes.find((item) => item.NoteID === selectedObject.NoteID);
+            //const objUpdated = dataNotes.find((item) => item.NoteID === selectedObject.NoteID);
             message = "עידכון הפריט עבר בהצלחה!";
           }
           else
@@ -1447,72 +1447,72 @@ function DatabaseChoose({ selectedItem, onSelectedItem })
   );
 }
 
-function ShowMessageBox2({title, defaultValue, withTextbox}) 
-{
-  const [isOpen, setIsOpen] = useState(false);
-  const [inputValue, setInputValue] = useState(defaultValue);
-  const [answer, setAnswer] = useState(null);
-  const dialogRef = useRef(null);
-  //const isOpen = true;
+// function ShowMessageBox2({title, defaultValue, withTextbox}) 
+// {
+//   const [isOpen, setIsOpen] = useState(false);
+//   const [inputValue, setInputValue] = useState(defaultValue);
+//   const [answer, setAnswer] = useState(null);
+//   const dialogRef = useRef(null);
+//   //const isOpen = true;
 
 
-  if (f_update_mode)
-  {
-      f_update_mode = false;
-      // Focus the dialog seamlessly when it opens
-      setTimeout(() => dialogRef.current?.showModal(), 0);
-  }
+//   if (f_update_mode)
+//   {
+//       f_update_mode = false;
+//       // Focus the dialog seamlessly when it opens
+//       setTimeout(() => dialogRef.current?.showModal(), 0);
+//   }
 
-  // const openPrompt = () => {
-  //     setIsOpen(true);
-  //     // Focus the dialog seamlessly when it opens
-  //     setTimeout(() => dialogRef.current?.showModal(), 0);
-  // };
+//   // const openPrompt = () => {
+//   //     setIsOpen(true);
+//   //     // Focus the dialog seamlessly when it opens
+//   //     setTimeout(() => dialogRef.current?.showModal(), 0);
+//   // };
 
-  const handleClose = (action) => {
-      setIsOpen(false);
-      dialogRef.current?.close();
+//   const handleClose = (action) => {
+//       setIsOpen(false);
+//       dialogRef.current?.close();
 
-      if (action === 'yes') 
-      {
-         setAnswer('yes');
-      } 
-      else 
-      {
-         setInputValue('no'); 
-      }
-      return action;
-  };
+//       if (action === 'yes') 
+//       {
+//          setAnswer('yes');
+//       } 
+//       else 
+//       {
+//          setInputValue('no'); 
+//       }
+//       return action;
+//   };
 
-  return (
+//   return (
 
-    <div >
-      {/* <button onClick={openPrompt}>Open Prompt</button> */}
+//     <div >
+//       {/* <button onClick={openPrompt}>Open Prompt</button> */}
 
-      {isOpen && (
-        <dialog ref={dialogRef} style={{ width: '400px', height: '200px', padding: '20px', borderRadius: '20px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-          <h3>{title}</h3>
+//       {isOpen && (
+//         <dialog ref={dialogRef} style={{ width: '400px', height: '200px', padding: '20px', borderRadius: '20px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+//           <h3>{title}</h3>
           
-          { withTextbox && <input 
-                              type="text" 
-                              value={""} 
-                              style={{backgroundColor: '#aba1ab', color: 'white'}}
-                              onChange={(e) => setInputValue(e.target.value) } 
-                              />
-          }
+//           { withTextbox && <input 
+//                               type="text" 
+//                               value={""} 
+//                               style={{backgroundColor: '#aba1ab', color: 'white'}}
+//                               onChange={(e) => setInputValue(e.target.value) } 
+//                               />
+//           }
 
-          <div style={{ marginTop: '15px', display: 'flex', flexDirection: 'row', gap: '20px' }}>
-            <button style={{height: '30px', fontSize: '16px', paddingTop: '26px'}} onClick={() => handleClose('no')}>ביטול</button>
-            <button style={{height: '30px', fontSize: '16px', paddingTop: '26px'}} onClick={() => handleClose('yes')}>אישור</button>
-          </div>
-        </dialog>
-      )}
+//           <div style={{ marginTop: '15px', display: 'flex', flexDirection: 'row', gap: '20px' }}>
+//             <button style={{height: '30px', fontSize: '16px', paddingTop: '26px'}} onClick={() => handleClose('no')}>ביטול</button>
+//             <button style={{height: '30px', fontSize: '16px', paddingTop: '26px'}} onClick={() => handleClose('yes')}>אישור</button>
+//           </div>
+//         </dialog>
+//       )}
 
-      {/* {answer && <p>You entered: {answer}</p>} */}
-    </div>
+//       {/* {answer && <p>You entered: {answer}</p>} */}
+//     </div>
 
-  );
-}
+//   );
+// }
 
 
 

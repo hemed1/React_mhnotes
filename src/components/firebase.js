@@ -7,7 +7,7 @@ import { dateSetFormat }  from '../globals.js';
 import { initializeApp, getApps, getApp } from "firebase/app";
 import { getDatabase, ref, onValue, update, set, get, push, child, remove, query, orderByChild, equalTo } from "firebase/database";
 import  * as FirebaseConfig from './dataBasesConfig.js';
-
+//import { useSearchParams } from 'react-router-dom';
 //import { getAuth } from "firebase/auth";
 //import { getFirestore } from "firebase/firestore";
 //import { getAnalytics } from "firebase/analytics";
@@ -21,6 +21,11 @@ import  * as FirebaseConfig from './dataBasesConfig.js';
 /// https://www.google.com/search?q=react%2C+with+Firebase+realtime+database%2C+why+i+can%27t+call+with+await+%2C+async+function+that+get+data+use+const+%5Bdata%2C+setData%5D+%3D+useState%28%5B%5D%29&sca_esv=114ce2f88324942a&sxsrf=APpeQnsNIwNRKy0AXpbyKw2qHBwFw9bbxA%3A1784032586396&source=hp&ei=Si1Was-tFfjt7_UP1e_GsQw&iflsig=ABILxe8AAAAAalY7WhInafpljqIw120OJKHYwwiauy_L&ved=0ahUKEwjP-s6kl9KVAxX49rsIHdW3McYQ4dUDCCk&uact=5&oq=react%2C+with+Firebase+realtime+database%2C+why+i+can%27t+call+with+await+%2C+async+function+that+get+data+use+const+%5Bdata%2C+setData%5D+%3D+useState%28%5B%5D%29&gs_lp=Egdnd3Mtd2l6IosBcmVhY3QsIHdpdGggRmlyZWJhc2UgcmVhbHRpbWUgZGF0YWJhc2UsIHdoeSBpIGNhbid0IGNhbGwgd2l0aCBhd2FpdCAsIGFzeW5jIGZ1bmN0aW9uIHRoYXQgZ2V0IGRhdGEgdXNlIGNvbnN0IFtkYXRhLCBzZXREYXRhXSA9IHVzZVN0YXRlKFtdKUj8gxBQAFin-A9wCXgAkAEAmAH3AaABsnKqAQYwLjk1Lje4AQPIAQD4AQH4AQKYAkqgAtNPwgILEC4YgAQYsQMYgwHCAhEQLhiABBixAxiDARjHARjRA8ICCBAuGIAEGLEDwgIOEC4YgAQYigUYsQMYgwHCAg4QABiABBiKBRixAxiDAcICFBAuGIAEGIoFGI0GGLEDGMcBGNEDwgIFEC4YgATCAg4QABiABBiKBRiNBhixA8ICCxAAGIAEGLEDGIMBwgILEC4YgAQYxwEY0QPCAgsQABiABBiKBRixA8ICCBAAGIAEGLEDwgIFEAAYgATCAg4QLhiABBixAxjHARjRA8ICChAAGIAEGMkDGArCAgsQABiABBiKBRiSA8ICBxAAGIAEGArCAgwQABiABBgKGAsYsQPCAgkQABiABBgKGAvCAgYQABgWGB7CAggQ
 /// ABgWGB4YCsICCxAAGIAEGIoFGIYDwgIFEAAY7wXCAggQABiJBRiiBMICCBAAGIAEGKIEwgIFECEYoAHCAgcQIRgKGKABwgIEECEYFcICBRAhGJ8FwgIEECEYCpgDAJIHBjcuNjEuNqAHh80CsgcGMC42MS42uAfAT8IHCTYuNDcuMjAuMcgHqgGACAE&sclient=gws-wiz
 
+
+
+
+
+
 var result = null;
 
 
@@ -30,15 +35,30 @@ var firebaseConfig = {};
 var app;
 var database;            //changeDatabase(dataBaseIndex);
 
-await init();
+await Init();
 
 
 
 
-export async function init() 
+export async function Init() 
 {
+  const queryParameters = new URLSearchParams(window.location.search)
+  const dbIndex = queryParameters.get("dbIndex")
+  //const name = queryParameters.get("name")
+
+  // יצירת אובייקט לקריאת הפרמטרים מה-URL
+  //const [searchParams] = useSearchParams();
+  // שליפת הערך של הפרמטר 'user'
+  //const dbIndex = searchParams.get('dbIndex');
+
+
   dataBaseIndex = await getDatabaseIndex("launch.json");
   
+  if (dbIndex)
+  {
+    dataBaseIndex = Number(dbIndex);
+  }
+
   database = await changeDatabase(dataBaseIndex);
 
   return database;

@@ -6,13 +6,13 @@ export const dataBasesConfigList =
 [
 
    {
-      apiKey: "AIzaSyB-eepby56Pe4LpVdQlg27XpF8aeSDma0c",
+      apiKey: "AIzaSyCGqo9-7I5lgpAfCQfahtyxTjsXgAWdfvg",
       authDomain: "meirhemed-mhnotes.firebaseapp.com",
       databaseURL: "https://meirhemed-mhnotes-default-rtdb.firebaseio.com",
       projectId: "meirhemed-mhnotes",
       storageBucket: "meirhemed-mhnotes.firebasestorage.app",
       messagingSenderId: "257753299659",
-      appId: "1:257753299659:web:9d94f62b2ea3cedee0f94e",
+      appId: "1:257753299659:ios:d273d009d5040c2ae0f94e",
       measurementId: "G-829HMJG495"
    },
 
@@ -40,6 +40,31 @@ export const dataBasesConfigList =
 
 
 ];
+
+
+//{  ANDROID config
+//     apiKey: "AIzaSyBhNpfkmYQq6OwthX-IGDGNmiWXPlyo2_I",
+//     authDomain: "meirhemed-mhnotes.firebaseapp.com",
+//     databaseURL: "https://meirhemed-mhnotes-default-rtdb.firebaseio.com",
+//     projectId: "meirhemed-mhnotes",
+//     storageBucket: "meirhemed-mhnotes.firebasestorage.app",
+//     messagingSenderId: "257753299659",
+//     appId: "1:257753299659:android:009dd870093fcaa7e0f94e",
+//     measurementId: "G-829HMJG495"
+//   },
+
+//{  WEB config
+//     apiKey: "AIzaSyB-eepby56Pe4LpVdQlg27XpF8aeSDma0c",
+//     authDomain: "meirhemed-mhnotes.firebaseapp.com",
+//     databaseURL: "https://meirhemed-mhnotes-default-rtdb.firebaseio.com",
+//     projectId: "meirhemed-mhnotes",
+//     storageBucket: "meirhemed-mhnotes.firebasestorage.app",
+//     messagingSenderId: "257753299659",
+//     appId: "1:257753299659:web:9d94f62b2ea3cedee0f94e",
+//     measurementId: "G-829HMJG495"
+//   },
+
+
 
 // Check if any Firebase apps have already been initialized
 // If yes, retrieve the existing one; if no, initialize a new one

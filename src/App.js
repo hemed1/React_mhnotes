@@ -627,11 +627,10 @@ function NoteScreen({ selectedItem, onSelectedItem, onSaveSubTasks })
       
       // Remove field 'SubTasks' before Save action
       keepSubs = selectedObject.SubTasks;
-      if (selectedObject['SubTasks'] !== undefined)
+      if (values['SubTasks'] !== undefined)
       {
-        setSelectedObject( { 'SubTasks': undefined, ...selectedObject });
-        //const { ['SubTasks']: _, ...remainingObject } = selectedObject;
-        //values = remainingObject;
+        const { SubTasks, ...otherAnimals } = values;
+        values = otherAnimals;
       }
 
 
@@ -691,10 +690,9 @@ function NoteScreen({ selectedItem, onSelectedItem, onSaveSubTasks })
             const index = dataNotes.findIndex(task => task.NoteID === selectedObject.NoteID);
             const newArray = [...dataNotes];
             selectedItem.LastUpdateDate = values.LastUpdateDate;
-            newArray[index] = {...selectedObject};     //toggleTodo(selectedObject.NoteID);
+            newArray[index] = {...selectedObject}; 
             dataNotes = newArray;
-            //dataNotes = dataNotes.map((note) => (note.NoteID === Number(values['NoteID']) ? {...note, values } : note))
-            //const objUpdated = dataNotes.find((item) => item.NoteID === selectedObject.NoteID);
+            //const objUpdated = dataNotes.find((item) => item.NoteID === noteID);
             message = "עידכון הפריט עבר בהצלחה!";
           }
           else
@@ -710,6 +708,9 @@ function NoteScreen({ selectedItem, onSelectedItem, onSaveSubTasks })
 
           if (result)
           {
+            selectedItem.SubTasks = [];
+            selectedObject.SubTasks = [];
+            setSelectedObject(selectedObject);
              // Predicate function: removes the item matching the given ID
             const handleRemove = (idToRemove) => {
               return ([...dataNotes].filter(item => item.NoteID !== idToRemove));
@@ -759,54 +760,50 @@ function NoteScreen({ selectedItem, onSelectedItem, onSaveSubTasks })
     async function saveSubTasks() 
     {
       var result = true;
-
+      var values = selectedObject;
 
 
       // Add back the field 'SubTaasks' to object
-      if (selectedObject['SubTasks'] === undefined)
+      if (values['SubTasks'] === undefined)
       {
-        setSelectedObject( {...selectedObject, SubTasks: keepSubs} );
+        setSelectedObject( {...values, SubTasks: keepSubs} );
       }
 
-      if (firstSubTasks.length === 0 && selectedObject.SubTasks.length===0)
+      if (firstSubTasks.length === 0 && values.SubTasks.length===0)
       {
         return result;
       }
 
-      if (firstSubTasks.length === selectedObject.SubTasks.length)
+      if (firstSubTasks.length === values.SubTasks.length)
       {
         // Checks if at least one item is missing
-        const isMissing1 = firstSubTasks.some((item) => !selectedObject.SubTasks.some((e) => e.Title === item.Title) || 
-                                                        !selectedObject.SubTasks.some((e) => e.IsDone === item.IsDone && e.FirebaseID === item.FirebaseID));
-        const isMissing2 = selectedObject.SubTasks.some((item) => !firstSubTasks.some((e) => e.Title === item.Title) || 
-                                                                  !firstSubTasks.some((e) => e.IsDone === item.IsDone && e.FirebaseID === item.FirebaseID))
+        const isMissing1 = firstSubTasks.some((item) => !values.SubTasks.some((e) => e.Title === item.Title) || 
+                                                        !values.SubTasks.some((e) => e.IsDone === item.IsDone && e.FirebaseID === item.FirebaseID));
+        const isMissing2 = values.SubTasks.some((item) => !firstSubTasks.some((e) => e.Title === item.Title) || 
+                                                          !firstSubTasks.some((e) => e.IsDone === item.IsDone && e.FirebaseID === item.FirebaseID))
         if (!isMissing1 && !isMissing2)
         {
           return result;
         }
       }
 
-      /// Set All SubTasks with 'NoteID'
-      selectedObject.SubTasks.map((item) => item.NoteID = selectedObject.NoteID);
-      setSelectedObject(selectedObject);
+      /// Set All SubTasks with parent 'NoteID'
+      values.SubTasks.map((item) => item.NoteID = selectedObject.NoteID);
+      setSelectedObject(values);
+
 
       /// Delete Old records
-      const dataSubs = await FirebaseHanle.GetQuerySync("TBL_NotesChilds", "NoteID", selectedObject.NoteID);
-      
-      for (let i = 0; i < dataSubs.length; i++) 
-      {
-          const item = dataSubs[i];
-          result = await FirebaseHanle.DeleteRecord("TBL_NotesChilds", item.FirebaseID);
-      }
+      result = await deleteSubTasks();
 
       if (!result)
       {
         alert("שגיאה בעידכון תתי-המשימות!");
       }
 
-      for (let i = 0; i < selectedObject.SubTasks.length; i++)
+      /// Save the New records
+      for (let i = 0; i < values.SubTasks.length; i++)
       {
-          const item = selectedObject.SubTasks[i];
+          const item = values.SubTasks[i];
           result = await FirebaseHanle.InsertRecord("TBL_NotesChilds", item);
       }
 
@@ -822,34 +819,30 @@ function NoteScreen({ selectedItem, onSelectedItem, onSaveSubTasks })
     async function deleteSubTasks() 
     {
       var result = true;
+      
 
       // Add back the field 'SubTaasks' to object
-      if (selectedObject['SubTasks'] === undefined)
-      {
-        setSelectedObject( {...selectedObject, SubTasks: keepSubs} );
-      }
-
-      selectedObject.SubTasks.map((item) => item.NoteID = selectedItem.NoteID)
-      setSelectedObject(selectedObject);
+      // var values = selectedObject;
+      // if (values['SubTasks'] === undefined || values.SubTasks.length === 0)
+      // {
+      //   setSelectedObject( {...selectedObject, SubTasks: firstSubTasks} );
+      // }
+      //selectedObject.SubTasks.map((item) => item.NoteID = selectedItem.NoteID)
+      //setSelectedObject(selectedObject);
       
       /// Delete Old record
       const dataSubs = await FirebaseHanle.GetQuerySync("TBL_NotesChilds", "NoteID", selectedObject.NoteID);
       
       for (let i = 0; i < dataSubs.length; i++) 
       {
-          const item = dataSubs[i];
-          result = await FirebaseHanle.DeleteRecord("TBL_NotesChilds", item.FirebaseID);
+        const item = dataSubs[i];
+        result = await FirebaseHanle.DeleteRecord("TBL_NotesChilds", item.FirebaseID);
       }
 
       if (!result)
       {
-        alert("שגיאה בעידכון תתי-המשימות!");
+        alert("שגיאה במחיקת תתי-המשימות!");
       }
-
-
-      selectedItem.SubTasks = [];
-      selectedObject.SubTasks = [];
-      setSelectedObject(selectedObject);
 
 
       return result;

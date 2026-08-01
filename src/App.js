@@ -2,11 +2,11 @@
 
 import './App.css';
 import './styles.css';
-import { useState, useMemo, useRef } from 'react';
+import { useState, useMemo } from 'react';
 import * as FirebaseHanle from './components/firebase.js';
 //import { GetTableData, UpdateField, InsertRecord, UpdateRecord, DeleteRecord, changeDatabase, DataBasesConfigList } from './components/firebase.js';
 import * as Globals from './globals.js';
-import Select, { StylesConfig } from 'react-select';
+import Select/* , { StylesConfig }  */from 'react-select';
 import FloatingWindow from './components/FloatingWindow.js';
 import MenusComponent from './components/MenusComponent.js';
 // import GridWidget from './components/GridWidget.js'
@@ -47,7 +47,7 @@ export default function App( {dbData, dbIndex} )      /* initialData */
   const [selectedItem, setSelectedItem] = useState(null);
   const [isWindowOpen, setIsWindowOpen] = useState(false);
   const [data, setData] = useState(dbData);
-  const [dataBaseIndex] = useState(dbIndex);       //useState(handleSelectDatabase(dbIndex || 0));
+  const [dataBaseIndex] = useState(dbIndex);
   //const [loading, setLoading] = useState(true);
 
 
@@ -91,14 +91,14 @@ export default function App( {dbData, dbIndex} )      /* initialData */
   //  init();
   // }
   
-  function handleData()
-  {
-    const dataNew = FirebaseHanle.GetTableDataAsync("TBL_Notes");
-    const updateData = {...dbData, dataNotes: dataNew};
-    //setData(updateData);
+  // function handleData()
+  // {
+  //   const dataNew = FirebaseHanle.GetTableDataAsync("TBL_Notes");
+  //   const updateData = {...dbData, dataNotes: dataNew};
+  //   //setData(updateData);
 
-    return dbData;
-  }
+  //   return dbData;
+  // }
 
   function handleSelectItem(selectedItem)
   { 
@@ -117,7 +117,7 @@ export default function App( {dbData, dbIndex} )      /* initialData */
   { 
     f_dataaseIndex = dbIndex;
 
-    await FirebaseHanle.changeDatabase(dbIndex);
+    await FirebaseHanle.changeDatabase(f_dataaseIndex);
 
     return dbIndex
   }
@@ -133,23 +133,23 @@ export default function App( {dbData, dbIndex} )      /* initialData */
       setData(newList);
   }
 
-  function handleDeleteSubTask(lineIndex)
-  {
-    if (selectedItem && selectedItem.SubTasks && selectedItem.SubTasks.length > 0)
-    {
-      const subTasksList = selectedItem.SubTasks;
+  // function handleDeleteSubTask(lineIndex)
+  // {
+  //   if (selectedItem && selectedItem.SubTasks && selectedItem.SubTasks.length > 0)
+  //   {
+  //     const subTasksList = selectedItem.SubTasks;
 
-      const removeItem = 
-              [
-                ...subTasksList.slice(0, lineIndex),
-                ...subTasksList.slice(lineIndex + 1)
-              ];
-      //const newArray = subLinesList.filter((e) => i !== subLinesList[lineIndex]);
-      selectedItem.SubTasks = removeItem;
+  //     const removeItem = 
+  //             [
+  //               ...subTasksList.slice(0, lineIndex),
+  //               ...subTasksList.slice(lineIndex + 1)
+  //             ];
+  //     //const newArray = subLinesList.filter((e) => i !== subLinesList[lineIndex]);
+  //     selectedItem.SubTasks = removeItem;
       
-      f_update_mode = 4;
-    }
-  }
+  //     f_update_mode = 4;
+  //   }
+  // }
 
 
   return (
@@ -419,9 +419,9 @@ function ListDataItem({index, selectedIndex, itemObject, selectedItem, onSelecte
 {
 
   const isSelected = (selectedItem?.NoteID === itemObject.NoteID);
-  const [isOpen, setIsOpen] = useState(false);     //(index === selectedIndex);
+  const [isOpen, setIsOpen] = useState(false);
 
-  console.log(index, selectedIndex, selectedItem?.Title, itemObject.Title);
+  //console.log(index, selectedIndex, selectedItem?.Title, itemObject.Title);
 
 
   return(
@@ -495,12 +495,12 @@ function NoteScreen({ selectedItem, onSelectedItem, onSaveSubTasks })
     }
             
 
-    const ColourOption = [
-      { value: 'rgba(239, 5, 5, 0.47)', label: 'Red' },
-      { value: '#564586', label: 'Purple' },
-      { value: '#888769', label: 'blue' },
-      { value: '#987654', label: 'black' }
-    ]
+    // const ColourOption = [
+    //   { value: 'rgba(239, 5, 5, 0.47)', label: 'Red' },
+    //   { value: '#564586', label: 'Purple' },
+    //   { value: '#888769', label: 'blue' },
+    //   { value: '#987654', label: 'black' }
+    // ]
 
     // const colourStyles: StylesConfig<ColourOption, true> = {
     //   control: (styles) => ({ ...styles, backgroundColor: 'white', height: '38px', fontSize: '28px', textAlign: 'right', direction: 'rtl' }),
@@ -621,7 +621,6 @@ function NoteScreen({ selectedItem, onSelectedItem, onSaveSubTasks })
       var message = '';
       var result = null;
       
-      //FirebaseHanle.init(f_dataaseIndex);
 
       var values = selectedObject;
 
@@ -630,8 +629,9 @@ function NoteScreen({ selectedItem, onSelectedItem, onSaveSubTasks })
       keepSubs = selectedObject.SubTasks;
       if (selectedObject['SubTasks'] !== undefined)
       {
-        const { ['SubTasks']: _, ...remainingObject } = selectedObject;
-        values = remainingObject;
+        setSelectedObject( { 'SubTasks': undefined, ...selectedObject });
+        //const { ['SubTasks']: _, ...remainingObject } = selectedObject;
+        //values = remainingObject;
       }
 
 
@@ -1297,155 +1297,155 @@ function NoteChild()
 }
 
 
-function ShowSubLines({ itemObject, subTaskList /* , onDeleteSubTask */ })
-{
-  const [subObjectsList, setSubObjectsList] = useState(subTaskList);
+// function ShowSubLines({ itemObject, subTaskList /* , onDeleteSubTask */ })
+// {
+//   const [subObjectsList, setSubObjectsList] = useState(subTaskList);
 
 
   
-  if (f_update_mode === 1)
-  {
-    f_update_mode = 2;
-    setSubObjectsList(subTaskList);
-  }
+//   if (f_update_mode === 1)
+//   {
+//     f_update_mode = 2;
+//     setSubObjectsList(subTaskList);
+//   }
 
-  function handleDeleteSubLine(lineIndex)
-  {
-      console.log(subObjectsList[lineIndex].Title);
-      const removeItem = 
-              [
-              ...subObjectsList.slice(0, lineIndex),
-              ...subObjectsList.slice(lineIndex + 1)
-              ];
-      //const newArray = subLinesList.filter((e) => i !== subLinesList[lineIndex]);
-      setSubObjectsList(removeItem);
+//   function handleDeleteSubLine(lineIndex)
+//   {
+//       console.log(subObjectsList[lineIndex].Title);
+//       const removeItem = 
+//               [
+//               ...subObjectsList.slice(0, lineIndex),
+//               ...subObjectsList.slice(lineIndex + 1)
+//               ];
+//       //const newArray = subLinesList.filter((e) => i !== subLinesList[lineIndex]);
+//       setSubObjectsList(removeItem);
 
-      //onDeleteSubTask(lineIndex);
-  }
-
-
-  return (
-
-    <div style={{display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '10px', padding: '10px', overflow: 'auto', maxHeight: '465px', paddingRight: '10px', direction: 'rtl', textAlign: 'right', backgroundColor: '#f9f9f9', border: '1px solid #ccc', borderRadius: '5px'}}>
-
-      <div style={{/* display: 'flex', flexDirection: 'column', */ gap: '0px', columnGap: '80px', border: '1px solid #ccc', padding: '10px', borderRadius: '5px', bakgroundColor: '#f9f9f9'}}>
-      {
-        subObjectsList.map((item, index) => (
-                <CreateSubNewline 
-                    key={index}
-                    itemObject={item}
-                    defaultTitle={item.Title} 
-                    defaultIsDone={item.IsDone} 
-                    onDeleteLine={handleDeleteSubLine} 
-                    lineIndex={index} />
-        ))
-      }
-      </div>
-
-    </div>
-
-  );
-}
-
-function CreateSubNewline({defaultTitle, defaultIsDone, onDeleteLine, lineIndex, itemObject})
-{
-  const [title, setTitle] = useState(defaultTitle);
-  const [isDone, setIsDone] = useState(defaultIsDone);
+//       //onDeleteSubTask(lineIndex);
+//   }
 
 
-  if (f_update_mode === 2)
-  {
-    f_update_mode = 3;
-    setTitle(defaultTitle);
-    setIsDone(defaultIsDone);
-  }
+//   return (
+
+//     <div style={{display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '10px', padding: '10px', overflow: 'auto', maxHeight: '465px', paddingRight: '10px', direction: 'rtl', textAlign: 'right', backgroundColor: '#f9f9f9', border: '1px solid #ccc', borderRadius: '5px'}}>
+
+//       <div style={{/* display: 'flex', flexDirection: 'column', */ gap: '0px', columnGap: '80px', border: '1px solid #ccc', padding: '10px', borderRadius: '5px', bakgroundColor: '#f9f9f9'}}>
+//       {
+//         subObjectsList.map((item, index) => (
+//                 <CreateSubNewline 
+//                     key={index}
+//                     itemObject={item}
+//                     defaultTitle={item.Title} 
+//                     defaultIsDone={item.IsDone} 
+//                     onDeleteLine={handleDeleteSubLine} 
+//                     lineIndex={index} />
+//         ))
+//       }
+//       </div>
+
+//     </div>
+
+//   );
+// }
+
+// function CreateSubNewline({defaultTitle, defaultIsDone, onDeleteLine, lineIndex, itemObject})
+// {
+//   const [title, setTitle] = useState(defaultTitle);
+//   const [isDone, setIsDone] = useState(defaultIsDone);
 
 
-  function handleDeleteSubLine(lineIndex)
-  { 
-    //e.preventDefault();
-    console.log(lineIndex);
-    f_update_mode = 4;
-    onDeleteLine(lineIndex);
-  }
+//   if (f_update_mode === 2)
+//   {
+//     f_update_mode = 3;
+//     setTitle(defaultTitle);
+//     setIsDone(defaultIsDone);
+//   }
+
+
+//   function handleDeleteSubLine(lineIndex)
+//   { 
+//     //e.preventDefault();
+//     console.log(lineIndex);
+//     f_update_mode = 4;
+//     onDeleteLine(lineIndex);
+//   }
   
 
 
-  return (
+//   return (
 
-    <div style={{display: 'flex', flexDirection: 'row', rowGap: '10px', gap: '50px', padding: '10px', borderRadius: '5px', justifyContent: 'right', border: '1px solid #ccc', backgroundColor: '#f9f9f9'}}>
-      <label  name='lblLineIndex'  style={{fontSize: '20px', color: 'black', marginTop: '2px'}}> {(lineIndex < 9) ? `0${lineIndex+1}` : lineIndex+1} </label>
-      <input  type="checkbox"   checked={isDone} onChange={(e) => setIsDone(e.target.checked)}  style={{height: '25', width: '25px', marginTop: '2px', backgroundColor: 'red', color: 'black'}}/> 
-      <textarea  type="multilines" value={title} maxLength={200}  onChange={(e) => setTitle(e.target.value)} style={{color: 'black', backgroundColor: 'yellow', width: '350px', direction: 'rtl', textAlign: 'right'}}/>
-      <button name='btnDeleteLine' type='button' onClick={(e) => handleDeleteSubLine(lineIndex)} style={{backgroundColor: 'transparent', color: 'black', height: '30px', width: '30px', marginTop: '0px', paddingTop: '25px'}}>
-        X
-      </button>
-    </div>
+//     <div style={{display: 'flex', flexDirection: 'row', rowGap: '10px', gap: '50px', padding: '10px', borderRadius: '5px', justifyContent: 'right', border: '1px solid #ccc', backgroundColor: '#f9f9f9'}}>
+//       <label  name='lblLineIndex'  style={{fontSize: '20px', color: 'black', marginTop: '2px'}}> {(lineIndex < 9) ? `0${lineIndex+1}` : lineIndex+1} </label>
+//       <input  type="checkbox"   checked={isDone} onChange={(e) => setIsDone(e.target.checked)}  style={{height: '25', width: '25px', marginTop: '2px', backgroundColor: 'red', color: 'black'}}/> 
+//       <textarea  type="multilines" value={title} maxLength={200}  onChange={(e) => setTitle(e.target.value)} style={{color: 'black', backgroundColor: 'yellow', width: '350px', direction: 'rtl', textAlign: 'right'}}/>
+//       <button name='btnDeleteLine' type='button' onClick={(e) => handleDeleteSubLine(lineIndex)} style={{backgroundColor: 'transparent', color: 'black', height: '30px', width: '30px', marginTop: '0px', paddingTop: '25px'}}>
+//         X
+//       </button>
+//     </div>
 
-  );
+//   );
 
-}
+// }
 
 /// Not in Use
-function DatabaseChoose({ selectedItem, onSelectedItem })
-{
+// function DatabaseChoose({ selectedItem, onSelectedItem })
+// {
 
-  const [windowEl, setWindowEl] = useState(document.getElementById('floatingWindow'));
-  const [overlayEl, setOverlayEl] = useState(document.getElementById('windowOverlay'));
+//   const [windowEl, setWindowEl] = useState(document.getElementById('floatingWindow'));
+//   const [overlayEl, setOverlayEl] = useState(document.getElementById('windowOverlay'));
 
-  function toggleWindow(show) 
-  {
-    if (show) 
-      {
-        windowEl.style.display = 'block';
-        overlayEl.style.display = 'block';
-    } 
-    else 
-      {
-        windowEl.style.display = 'none';
-        overlayEl.style.display = 'none';
-    }
-  }
+//   function toggleWindow(show) 
+//   {
+//     if (show) 
+//       {
+//         windowEl.style.display = 'block';
+//         overlayEl.style.display = 'block';
+//     } 
+//     else 
+//       {
+//         windowEl.style.display = 'none';
+//         overlayEl.style.display = 'none';
+//     }
+//   }
 
 
-  return (
+//   return (
 
-    <div style={{display: 'none', position: 'fixed', flexDirection: 'column', gap: '10px', marginTop: '10px'}}>
-      <h1>בחר מסד נתונים</h1>
-      <p>Click the button below to see the floating window in action.</p>
+//     <div style={{display: 'none', position: 'fixed', flexDirection: 'column', gap: '10px', marginTop: '10px'}}>
+//       <h1>בחר מסד נתונים</h1>
+//       <p>Click the button below to see the floating window in action.</p>
       
-      {/* <!-- Trigger Button --> */}
-      <button onclick={toggleWindow(true)}>Open Floating Window</button>
+//       {/* <!-- Trigger Button --> */}
+//       <button onclick={toggleWindow(true)}>Open Floating Window</button>
 
-      {/* <!-- Overlay background component --> */}
-      <div class="overlay" id="windowOverlay" onclick={toggleWindow(false)}></div>
+//       {/* <!-- Overlay background component --> */}
+//       <div class="overlay" id="windowOverlay" onclick={toggleWindow(false)}></div>
 
-      {/* <!-- Floating Window Structure --> */}
-      <div class="floating-window" id="floatingWindow">
-          <div class="window-header">
-              <span>Notification</span>
-              <button class="close-btn" onclick={toggleWindow(false)}>&times;</button>
-          </div>
+//       {/* <!-- Floating Window Structure --> */}
+//       <div class="floating-window" id="floatingWindow">
+//           <div class="window-header">
+//               <span>Notification</span>
+//               <button class="close-btn" onclick={toggleWindow(false)}>&times;</button>
+//           </div>
 
-          <div class="window-content">
-              <p>This is a custom floating window built using clean HTML, CSS, and basic JavaScript.</p>
+//           <div class="window-content">
+//               <p>This is a custom floating window built using clean HTML, CSS, and basic JavaScript.</p>
 
-              <select value={selectedItem} onChange={(e) => onSelectedItem(Number(e.target.value))}>
-              {
-                FirebaseHanle.DataBasesConfigList.map((item, index) =>
-                (
-                  <option value={index} key={index}>{item.projectId} {index+1}</option>
-                ))  
-              }
-              </select>
-          </div>
-      </div>
+//               <select value={selectedItem} onChange={(e) => onSelectedItem(Number(e.target.value))}>
+//               {
+//                 FirebaseHanle.DataBasesConfigList.map((item, index) =>
+//                 (
+//                   <option value={index} key={index}>{item.projectId} {index+1}</option>
+//                 ))  
+//               }
+//               </select>
+//           </div>
+//       </div>
     
       
-    </div>
+//     </div>
 
-  );
-}
+//   );
+// }
 
 // function ShowMessageBox2({title, defaultValue, withTextbox}) 
 // {

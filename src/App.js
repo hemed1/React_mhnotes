@@ -12,14 +12,7 @@ import MenusComponent from './components/MenusComponent.js';
 // import GridWidget from './components/GridWidget.js'
 import { Plus, Trash2/* , X, ChevronRight, Users, Subtitles, CheckLine, Check, CheckIcon, CheckLineIcon, EllipsisVertical */ } from "lucide-react";
 
-// import { getDatabase, ref, onValue, update, set, get, push, child, remove, query, orderByChild, equalTo } from "firebase/database";
-// import { initializeApp, getApps, getApp } from "firebase/app";
 
-
-// var dataBaseIndex = 0;
-// var firebaseConfig = FirebaseHanle.DataBasesConfigList[dataBaseIndex];
-// var app = initializeApp(firebaseConfig);
-// var database = getDatabase(app);
 
 
 const saveModeEn = { INSERT: 1, UPDATE: 2, DELETE: 3 };
@@ -39,7 +32,6 @@ let rowCounter = 0;
 const newRowId = () => `row-${Date.now()}-${rowCounter++}`;
 
 
-///* await */ init();
 
 
 export default function App( {dbData, dbIndex} )      /* initialData */
@@ -168,7 +160,7 @@ export default function App( {dbData, dbIndex} )      /* initialData */
                             <div style={{display: 'flex', flexDirection: 'column', gap: '10px', height: '300px', overflowY: 'auto', paddingRight: '10px', direction: 'rtl', textAlign: 'right'}}>
                               {/* <p>This window can be dragged by its blue header bar.</p>
                               <p>You can also minimize it or close it completely!</p> */}
-                              <ul value={dataBaseIndex}  style={{listStyleType: 'none'}}  /* onChange={(e) => handleSelectDatabase(Number(e.target.value))} */ >
+                              <ul value={f_dataaseIndex}  style={{listStyleType: 'none'}}  /* onChange={(e) => handleSelectDatabase(Number(e.target.value))} */ >
                               {
                                 FirebaseHanle.DataBasesConfigList.map((item, index) =>
                                 (

@@ -586,16 +586,16 @@ function NoteScreen({ selectedItem, onSelectedItem, onSaveSubTasks })
 
 
 
-    async function handleSubmit(e)
-    {
-      e.preventDefault();
-      //return <ShowMessageBox2 title="האם אתה בטוח?" defaultValue="" withTextbox={false} />;
-      // if ( aaa === 'yes')
-      // {
-        await saveObject(saveModeEn.UPDATE);
-      //}
+    // async function handleSubmit(e)
+    // {
+    //   e.preventDefault();
+    //   //return <ShowMessageBox2 title="האם אתה בטוח?" defaultValue="" withTextbox={false} />;
+    //   // if ( aaa === 'yes')
+    //   // {
+    //     await saveObject(saveModeEn.UPDATE);
+    //   //}
       
-    }
+    // }
 
     async function handleDelete(e)
     {
@@ -660,7 +660,7 @@ function NoteScreen({ selectedItem, onSelectedItem, onSaveSubTasks })
             newArray.push({...selectedObject});
             dataNotes = newArray;
             const objUpdated = dataNotes.find((item) => item.NoteID === noteID);
-            message = "הפריט נוסף בהצלחה!" + " (" + objUpdated.NoteID.toLocaleString() + ")";
+            message = `הפריט נוסף בהצלחה! (${objUpdated.NoteID.toLocaleString()})`;
           }
           else
           {
@@ -693,7 +693,7 @@ function NoteScreen({ selectedItem, onSelectedItem, onSaveSubTasks })
             newArray[index] = {...selectedObject}; 
             dataNotes = newArray;
             const objUpdated = dataNotes.find((item) => item.NoteID === selectedObject.NoteID);
-            message = "עידכון הפריט עבר בהצלחה!" + " (" + objUpdated.NoteID.toLocaleString() + ")";
+            message = `עידכון הפריט עבר בהצלחה! (${objUpdated.NoteID.toLocaleString()})`;
           }
           else
           {

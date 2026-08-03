@@ -592,23 +592,30 @@ function NoteScreen({ selectedItem, onSelectedItem, onSaveSubTasks })
       //return <ShowMessageBox2 title="האם אתה בטוח?" defaultValue="" withTextbox={false} />;
       // if ( aaa === 'yes')
       // {
-        await saveObject(e);
+        await saveObject(saveModeEn.UPDATE);
       //}
       
     }
 
     async function handleDelete(e)
     {
-      //e.preventDefault();
+      e.preventDefault();
       /* if (Globals.ShoeMessageBox(false) === 'yes')
       { */
-        setSaveMode(saveModeEn.DELETE);
+      setSaveMode(saveModeEn.DELETE);
+
+      await saveObject(saveModeEn.DELETE);
       //}
     }
 
-    async function saveObject(e)
+    async function saveObject( modeSave )
     {
-      e.preventDefault();
+      var save = saveMode || saveModeEn.UPDATE;
+
+      if (isNaN(modeSave) === false && modeSave !== null)
+      {
+        save = modeSave;
+      }
 
       var message = '';
       var result = null;
@@ -626,7 +633,7 @@ function NoteScreen({ selectedItem, onSelectedItem, onSaveSubTasks })
       }
 
 
-      switch (saveMode)
+      switch (save)
       {
         case saveModeEn.INSERT:
           values = await valuesToObject(values);
@@ -646,13 +653,14 @@ function NoteScreen({ selectedItem, onSelectedItem, onSaveSubTasks })
 
           if (result)
           {
+            dataBaseTable[0].NumeratorNotesID = noteID;
             const newArray = [...dataNotes];
             selectedObject.LastUpdateDate = values.LastUpdateDate;
             selectedObject.FirebaseID = values.FirebaseID;
             newArray.push({...selectedObject});
             dataNotes = newArray;
-            //const objUpdated = dataNotes.find((item) => item.NoteID === noteID);
-            message = "הפריט נוסף בהצלחה!";
+            const objUpdated = dataNotes.find((item) => item.NoteID === noteID);
+            message = "הפריט נוסף בהצלחה!" + " (" + objUpdated.NoteID.toLocaleString() + ")";
           }
           else
           {
@@ -684,8 +692,8 @@ function NoteScreen({ selectedItem, onSelectedItem, onSaveSubTasks })
             selectedItem.LastUpdateDate = values.LastUpdateDate;
             newArray[index] = {...selectedObject}; 
             dataNotes = newArray;
-            //const objUpdated = dataNotes.find((item) => item.NoteID === noteID);
-            message = "עידכון הפריט עבר בהצלחה!";
+            const objUpdated = dataNotes.find((item) => item.NoteID === selectedObject.NoteID);
+            message = "עידכון הפריט עבר בהצלחה!" + " (" + objUpdated.NoteID.toLocaleString() + ")";
           }
           else
           {
@@ -812,16 +820,6 @@ function NoteScreen({ selectedItem, onSelectedItem, onSaveSubTasks })
     {
       var result = true;
       
-
-      // Add back the field 'SubTaasks' to object
-      // var values = selectedObject;
-      // if (values['SubTasks'] === undefined || values.SubTasks.length === 0)
-      // {
-      //   setSelectedObject( {...selectedObject, SubTasks: firstSubTasks} );
-      // }
-      //selectedObject.SubTasks.map((item) => item.NoteID = selectedItem.NoteID)
-      //setSelectedObject(selectedObject);
-      
       /// Delete Old record
       const dataSubs = await FirebaseHanle.GetQuerySync("TBL_NotesChilds", "NoteID", selectedObject.NoteID);
       
@@ -897,7 +895,7 @@ function NoteScreen({ selectedItem, onSelectedItem, onSaveSubTasks })
 
     return (
 
-        <form className="form_note_screen" onSubmit={(e) => handleSubmit(e)}>
+        <form className="form_note_screen" /* onSubmit={(e) => handleSubmit(e) }*/>
           
           <div className='div_items_fields'>
             
@@ -955,7 +953,7 @@ function NoteScreen({ selectedItem, onSelectedItem, onSaveSubTasks })
               <button type='submit' style={{backgroundColor: 'red', color: 'white'}} onClick={(e) => handleDelete(e)}>מחיקה</button>
               <label style={{color: '#B4B7BC', fontSize: '16px', paddingTop: '0px', paddingRight: '20px'}}>נערך לאחרונה: {lastUpdate}</label>
             </div>
-            <button type='submit' className='button_save' onClick={saveObject}>שמירה</button>
+            <button type='button' className='button_save' onClick={saveObject}>שמירה</button>
           </div>
     
           {showSubTasksScreen /* || (selectedObject && selectedObject.SubTasks && selectedObject.SubTasks.length > 0) */  &&
@@ -1171,7 +1169,7 @@ function SonsPanel({ noteObject, onClose, onUpdateSubTasks })
                     background: "#F7F5F1",
                     borderRadius: 6,
                     padding: "7px 10px",
-                    fontSize: 14,
+                    fontSize: 23,
                     color: "#1F2937",
                     outline: "none",
                   }}

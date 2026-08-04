@@ -280,7 +280,6 @@ export default function App( {dbData, dbIndex} )      /* initialData */
 
 function ListData({data, selectedItem, onSelectedItem, sortByField}) 
 {
-  
   const [selectedIndex, setSelectedIndex] = useState(null);
   const [sortBy, setSortBy] = useState('date_update'); 
   const [searchText, setSearchText] = useState('');
@@ -438,7 +437,6 @@ function ListDataItem({index, selectedIndex, itemObject, selectedItem, onSelecte
   );
 
 }
-
 
 function NoteScreen({ selectedItem, onSelectedItem, onSaveSubTasks }) 
 {
@@ -599,7 +597,7 @@ function NoteScreen({ selectedItem, onSelectedItem, onSaveSubTasks })
 
     async function handleDelete(e)
     {
-      e.preventDefault();
+      //e.preventDefault();
       /* if (Globals.ShoeMessageBox(false) === 'yes')
       { */
       setSaveMode(saveModeEn.DELETE);
@@ -680,13 +678,6 @@ function NoteScreen({ selectedItem, onSelectedItem, onSaveSubTasks })
 
           if (result)
           {
-            // const toggleTodo = (id) => {
-            //             setData(prevTodos => 
-            //               prevTodos.map(todo => 
-            //                 todo.NoteID === id ? { ...todo, values } : todo
-            //               )
-            //             );
-            //           };
             const index = dataNotes.findIndex(task => task.NoteID === selectedObject.NoteID);
             const newArray = [...dataNotes];
             selectedItem.LastUpdateDate = values.LastUpdateDate;
@@ -846,7 +837,6 @@ function NoteScreen({ selectedItem, onSelectedItem, onSaveSubTasks })
       values['StatusID'] = statusID;
       values['DateDue'] = String(dateDue).replace('T', ' ');
       values['SubjectLabels'] = subjects;
-
   
       selectedObject['Title'] = String(title).trim();
       selectedObject['Description'] = String(desc).trim();
@@ -950,7 +940,7 @@ function NoteScreen({ selectedItem, onSelectedItem, onSaveSubTasks })
 
           <div className='div_buttons_row'>
             <div>
-              <button type='submit' style={{backgroundColor: 'red', color: 'white'}} onClick={(e) => handleDelete(e)}>מחיקה</button>
+              <button type='button' style={{backgroundColor: 'red', color: 'white'}} onClick={(e) => handleDelete(e)}>מחיקה</button>
               <label style={{color: '#B4B7BC', fontSize: '16px', paddingTop: '0px', paddingRight: '20px'}}>נערך לאחרונה: {lastUpdate}</label>
             </div>
             <button type='button' className='button_save' onClick={saveObject}>שמירה</button>

@@ -1,0 +1,87 @@
+
+/* מיכל העמוד הכללי */
+.page-container {
+ /*  position:fixed; */
+  display: flex;   /* block */
+  flex-direction: column;
+  background-color: rgb(230, 228, 228);
+  padding: 10px;
+  top: 200px;
+  left: 100px;
+  width: 1200px;
+  height: 500px;
+  max-width: 1700px;
+  margin: 0 auto;
+  font-family: sans-serif;
+}
+
+/* הגדרת הגריד */
+.grid-container {
+  display: flex;
+  flex-direction: column;
+  column-gap: 20px;               /* No Efect - Space between columns */
+  row-gap: 0px;                   /* Space between Rows */
+  overflow: auto;                /* Scrollbar for vertical overflow */
+  scrollbar-width:auto;          /* For Firefox */
+  max-height: 500px;               /* Limit the height of the grid */
+  /* gap: 30px; */
+  /* align-items: stretch; */
+  /* justify-content: center; */
+  /* display: grid; */
+  /* יצירת עמודות דינמיות: מינימום 250 פיקסלים לעמודה, מקסימום חלוקה שווה (1fr) */
+  /* grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));  */
+  /* המרווח (Gap) בין הפריטים ברשת */
+}
+
+/* עיצוב פריט בודד בתוך הגריד */
+.row-item {
+  background-color: white;
+  /* border: 1px solid #212020; */
+  border-radius: 4px;
+  padding-left: 10px;
+  padding-right: 10px;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  margin-bottom: 0px;        /* Space between Rows */
+  /* padding-bottom: 10px; */
+  /* margin-bottom: 5px; */        /* Space between Rows */
+  text-align: right;
+  direction: rtl;
+  display: flex;
+  flex-direction: row;
+  /* border-bottom: 1px solid #212020; */
+  border-top: 1px solid #212020;
+  /* align-items: center; */
+  /* border-collapse: collapse; */
+  /* border-spacing: 20px 20px; */
+  /* column-gap: 70px; */              /*  Space between Columns */
+  /* row-gap: 80px; */
+  /* gap: 0px; */
+  /* justify-content: space-between; */
+  /* box-shadow: 3px 3px 5px rgba(0, 0, 0, 0.2); */
+}
+
+/* .row-item  */.selected {
+  border-top: 1px solid #087f5b;
+  background-color: #e9b9e4c6;
+}
+
+.gridCol{
+  text-align: right;
+  direction: rtl;
+  /* align-items: center; */
+  padding-left: 7px;
+  padding-right: 7px;
+  padding-top: 7px;
+  padding-bottom: 7px;
+  font-size: 20px;
+  display: flex;
+  justify-content:flex-start;
+  overflow-wrap: 'break-word';
+  /* word-break: 'break-all'; */
+  /* white-space: 'pre-wrap'; */
+  /* text-wrap: 'pretty';   */
+  /* balance */
+  border-left: 1px solid #087f5b;
+  border-right: 1px solid #087f5b;
+}

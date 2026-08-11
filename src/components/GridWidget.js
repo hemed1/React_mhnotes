@@ -1,71 +1,198 @@
 
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import './gridWidget.css'; // קובץ העיצוב שלנו
 import { GridEdited }  from '../globals.js';
-// import { Wheat } from 'lucide-react';
+import { SaveIcon, Edit3, Edit, DeleteIcon} from "lucide-react";
+
 
 let edit = {id: 0,row: 0, col: 0, value: '', itemObject: {}, fieldName: ''};
 var itemsToSave = [];
+var f_grid_mode = 0;
+//var sortFieldName = '';
 
 
-export default function GridWidget( {data, arrayColumns, onSaveFuncName, backgroundColor = 'white', selectRowColor = '#e9b9e4c6'} ) 
+
+export function GridWidget( {data, title, tableName, arrayColumns, 
+                                     top, left, width, height,
+                                     onSaveFuncName, backgroundColor = '#e6e4e4'} ) 
 {
    const [dataItems, setDataItems] = useState(data);
    const [selectedRowIndex, setSelectedRowIndex] = useState(0);
    const [isEditMode, setIsEditMode] = useState(false);
+   const [sortDirection, setSortDirection] = useState('asc');
+   const [sortFieldName, setSortFieldName] = useState(arrayColumns[0].fieldName);
+   //const [itemsToSave, setItemsToSave] = useState([]);
+
+   
+   /// First time after change item
+   if (f_grid_mode === 0)
+   {
+      //sortFieldName = arrayColumns[0].fieldName;
+      setSortFieldName(arrayColumns[0].fieldName);
+      itemsToSave = [];
+      //setItemsToSave([]);
+      f_grid_mode = 1;
+   }
 
 
-  // נתוני דוגמה לפריטים ברשת
-//   const items = [
-//     { id: 1, title: 'כרטיס 1', desc: 'תוכן כרטיס ראשון' },
-//     { id: 2, title: 'כרטיס 2', desc: 'תוכן כרטיס שני' },
-//     { id: 3, title: 'כרטיס 3', desc: 'תוכן כרטיס שלישי' },
-//     { id: 4, title: 'כרטיס 4', desc: 'תוכן כרטיס רביעי' },
-//   ];
+   const index = arrayColumns.findIndex((item) => item.fieldName === sortFieldName);
+   var _type = 'string';
+   if (index > -1)
+   {
+      _type = arrayColumns[index].type;
+   }
+      
+   var sortedProducts = useMemo(() => 
+                        {
+                           switch (_type)
+                           {
+                              case 'number':
+                                 if (sortDirection === 'asc')
+                                 {
+                                    return [...dataItems].sort((a, b) => Number(a[sortFieldName]) - Number(b[sortFieldName]));
+                                 }
+                                 else
+                                 {
+                                    return [...dataItems].sort((a, b) => Number(b[sortFieldName]) - Number(a[sortFieldName]));
+                                 }
+                                 //break;
+
+                              case 'bool':
+                                 if (sortDirection === 'asc')
+                                 {
+                                    return [...dataItems].sort((a, b) => Number(a[sortFieldName]) - Number(b[sortFieldName]));
+                                 }
+                                 else
+                                 {
+                                    return [...dataItems].sort((a, b) => Number(b[sortFieldName]) - Number(a[sortFieldName]));
+                                 }
+                                 //break;
+
+                              case 'date':
+                                 if (sortDirection === 'asc')
+                                 {
+                                    return [...dataItems].sort((a, b) =>    
+                                             (new Date(String(a[sortFieldName]).substring(0, 16).replace('T', ', ').replace(', ', ' ')))
+                                             - 
+                                             (new Date(String(b[sortFieldName]).substring(0, 16).replace('T', ', ').replace(', ', ' '))) 
+                                          );
+                                 }
+                                 else
+                                 {
+                                    return [...dataItems].sort((a, b) =>                
+                                             (new Date(String(b[sortFieldName]).substring(0, 16).replace('T', ', ').replace(', ', ' ')))
+                                             - 
+                                             (new Date(String(a[sortFieldName]).substring(0, 16).replace('T', ', ').replace(', ', ' '))) 
+                                          );
+                                 }
+                                 //break;
+
+                              case 'string': 
+                              default:
+                                    if (sortDirection === 'asc')
+                                 {
+                                    //return [...dataItems].sort((a, b) => String(a[sortFieldName]) - String(b[sortFieldName]));
+                                    return [...dataItems].sort((a, b) => String(a[sortFieldName]).localeCompare(String(b[sortFieldName])));
+                                 }
+                                 else
+                                 {
+                                    //return [...dataItems].sort((a, b) => String(b[sortFieldName]) - String(a[sortFieldName]));
+                                    return [...dataItems].sort((a, b) => String(b[sortFieldName]).localeCompare(String(a[sortFieldName])));
+                                 }
+                                 //break;
+
+                        }
+                        
+   }, [dataItems, sortFieldName, sortDirection, _type]);
+    
 
    // פונקציה לעדכון תא ספציפי לפי שורה ועמודה
-   const updateCell = (targetRowIndex, targetColIndex, newValue) => {
-    setDataItems(prevGrid => 
-                {
-                  var items = [];
-                  prevGrid.map((item, index) =>
-                  {
-                     // Change Specific Cell with new value
-                     for (let c = 0; c < arrayColumns.length; c++)
-                     {
-                        const col = Object.keys(item).findIndex(key => key === arrayColumns[c].fieldName);
-                        // אם הגענו בדיוק לתא שרצינו לעדכן - נחזיר את הערך החדש
-                        if (col > -1 && index === targetRowIndex && c === targetColIndex /* && newValue !== item[arrayColumns[c].fieldName] */) 
+   const updateCell = (targetRowIndex, targetColIndex, newValue) => 
+         {
+            setDataItems(prevGrid => 
                         {
-                           item[arrayColumns[c].fieldName] = newValue;
-                           const res = itemsToSave.find(edit => edit.id === item.id && edit.row === targetRowIndex && edit.col === targetColIndex);
-                           if (!res) 
+                           var resultItems = [];
+                           
+                           prevGrid.map((item, index) => 
                            {
-                              const newEdit = new GridEdited(item.id, targetRowIndex, targetColIndex, newValue, item, arrayColumns[c].fieldName);
-                              itemsToSave.push(newEdit);
-                           }
-                           else
-                           {
-                              res.value = newValue;
-                           }
-                           break; // יציאה מהלולאה לאחר עדכון התא
-                        }  
-                     }
-                     items.push(item);
-                  });
-                  //setSelectedRowIndex(targetRowIndex);
-                  return items;
-                }
-     );
-  };
+                              //var foundItem = null;
+                              var updatedItem = null;
+                              // Change Specific Cell with new value
+                              for (let c = 0; c < arrayColumns.length; c++)
+                              {
+                                 const col = Object.keys(item).findIndex(key => key === arrayColumns[c].fieldName);
+                                 // אם הגענו בדיוק לתא שרצינו לעדכן - נחזיר את הערך החדש
+                                 if (col > -1 && index === targetRowIndex && c === targetColIndex /* && newValue !== item[arrayColumns[c].fieldName] */) 
+                                 {
+                                    var data = null;
+                                    switch (arrayColumns[c].type)
+                                    {
+                                       case 'number':
+                                          data = Number(newValue);
+                                          break;
+                                       case 'bool':
+                                          data = Boolean(newValue);
+                                          break;
+                                       case 'date':
+                                          data = new Date(newValue);
+                                          break;
+                                       case 'string':
+                                       default:
+                                          data = newValue;
+                                          break;
+                                    }
+
+                                    updatedItem = { ...item, [arrayColumns[c].fieldName]: data };
+                                    item[arrayColumns[c].fieldName] = data;
+                                    
+                                    const foundItem = itemsToSave.find(edit => edit.id === item.FirebaseID && edit.row === targetRowIndex && edit.col === targetColIndex);
+                                    if (!foundItem) 
+                                    {
+                                       const newEdit = new GridEdited(item.FirebaseID, targetRowIndex, targetColIndex, data, item, arrayColumns[c].fieldName);
+                                       itemsToSave.push(newEdit);
+                                       //setItemsToSave(itemsToSave);
+                                    }
+                                    else
+                                    {
+                                       foundItem.value = data;
+                                       //const list = itemsToSave.map(edit => (edit.id===foundItem.id) ? foundItem : edit);
+                                       //setItemsToSave(list);
+                                    }
+                                    
+                                    break;
+                                 }  
+                              }
+
+                              if (updatedItem && updatedItem !== null)
+                              {
+                                 //dataItems.splice(index, 1);
+                                 //const {...newItem} = updatedItem;
+                                 //resultItems = [...prevGrid, foundItem];
+                                 //const [ item, ...tmpItems ] = dataItems;
+                                  //resultItems.push(updatedItem);
+                                 resultItems = [...dataItems].map(e => (e.FirebaseID===updatedItem.FirebaseID) ? updatedItem : e );    //, updatedItem];
+                                 setDataItems(resultItems);
+                                 return updatedItem;
+                              }
+                              else
+                              {
+                                 return item;
+                              }
+                           });
+         
+                           return resultItems;
+                        }
+                     );
+         };
+
 
   async function handleSaveChanges()
   {
-    //console.log('Items to save:', itemsToSave);
     
-    await onSaveFuncName(itemsToSave);
+    const newData = await onSaveFuncName(tableName, itemsToSave);
 
+    setDataItems(newData);
     //itemsToSave = []; // נקה את הרשימה לאחר השמירה
     //setIsEditMode(false);
   }
@@ -76,63 +203,111 @@ export default function GridWidget( {data, arrayColumns, onSaveFuncName, backgro
       setIsEditMode(!isEditMode);
   }
 
+  function handleSort( fieldName )
+  {
+      //sortFieldName = fieldName;
+      setSortFieldName(fieldName);
+
+      const direction = sortDirection === 'asc' ? 'desc' : 'asc';
+      setSortDirection(direction);
+  }
+
+  function handleDeleteRecord()
+  {
+      const newEdit = new GridEdited(sortedProducts[selectedRowIndex].FirebaseID, selectedRowIndex, 0, 'deleted', sortedProducts[selectedRowIndex], sortFieldName);
+      const foundItem = itemsToSave.find(edit => edit.id === newEdit.id && edit.row === selectedRowIndex);
+      if (!foundItem) 
+      {
+         itemsToSave.push(newEdit);
+         //setItemsToSave(itemsToSave);
+      }
+      else
+      {
+         const index = itemsToSave.findIndex(edit => edit.id === newEdit.id && edit.row === selectedRowIndex);
+         //const [ foundItem, ...tmpItems ] = itemsToSave;
+         itemsToSave.splice(index, 1);
+         //setItemsToSave(itemsToSave);
+         //itemsToSave = tmpItems;
+         //const res = [...itemsToSave].filter(item => !(item.id === res.id && edit.row === selectedRowIndex));
+         //itemsToSave = res;
+      }
+  }
+
+
 
   return (
 
-    <form className="page-container">
-      <h2 style={{textAlign: 'center', color: 'white'}}>הגריד שלי ב-React</h2>
+    <form className="page-container" style={{top: top, left: left, width: width, height: height, backgroundColor: backgroundColor}}>
       
-      <br/>
-      <hr/>
-      <div style={{display: 'flex', justifyContent: 'flex-end', gap: '20px'}}>
-         <input type="button" onClick={handleSaveChanges} style={{width: '100px', padding: '5px 10px', backgroundColor: 'red' ,  color: 'white', border: 'none', borderRadius: '4px'}} value="שמירת שינויים" />
-         <input type="button" onClick={handleEndEdit}     style={{width: '100px', padding: '5px 10px', backgroundColor: 'green', color: 'white', border: 'none', borderRadius: '4px'}} value="עריכה" />
+      <h2 style={{textAlign: 'center', color: 'black'}}>{title}</h2>
+      
+      {/* <hr/> */}
+
+      <div style={{display: 'flex', flexDirection: 'row', justifyContent: 'flex-start', gap: '15px', paddingLeft: '10px', paddingRight: '10px'}}>
+         <button type="button" onClick={handleSaveChanges} style={{display: 'flex', padding: '5px 10px', backgroundColor: 'red' ,  color: 'white', border: 'none', borderRadius: '4px'}} title="שמירת שינויים" >
+            <SaveIcon size={15} />
+         </button>
+         <button type="button" onClick={handleEndEdit}     style={{display: 'flex', padding: '5px 10px', backgroundColor: 'green', color: 'white', border: 'none', borderRadius: '4px'}} title="עריכה" >
+               {isEditMode  && <Edit3 size={15} />}
+               {!isEditMode && <Edit size={15} />}
+         </button>
+         <button type="button" onClick={(e) => handleDeleteRecord()} style={{display: 'flex', padding: '5px 10px', backgroundColor: 'blue', color: 'white', border: 'none', borderRadius: '4px'}} title="עריכה" >
+               {isEditMode  && <DeleteIcon size={15} />}
+               {!isEditMode && <DeleteIcon size={15} />}
+         </button>
+         <div style={{display: 'flex', justifyContent: 'flex-end', width: '100%', paddingTop: '5px'}}>
+            <p style={{textAlign: 'left'}}>{tableName}</p>
+         </div>
       </div>
-      <br/> 
-      <br/>
+     
 
-      <table style={{borderCollapse: 'separate', borderSpacing: '40px 20px'}}>
+      <table >
 
-         <tr style={{backgroundColor: 'lightblue', color: 'black', direction: 'rtl', display: 'flex', flexDirection: 'row', borderBottom: '2px solid #212020', alignItems: 'center', paddingLeft: '10px', paddingRight: '10px', borderRadius: '5px'}}>
-               {arrayColumns.map((col, index) => (
-                  <th key={index} className='gridCol' style={{width: col.width}}>{col.caption}</th>
+         <tr style={{backgroundColor: 'lightblue', color: 'black', direction: 'rtl', display: 'flex', flexDirection: 'row', 
+                     borderBottom: '2px solid #212020', alignItems: 'center', paddingLeft: '20px', paddingRight: '4px', borderRadius: '5px'}}>
+               {arrayColumns.map((col , index) => (
+                  <th key={index} className='gridCol' style={{width: col.width}} onClick={() => handleSort(col.fieldName)}>{col.caption}</th>
                ))}
          </tr>
-
       
-         <div className="grid-container">
+         <div className="grid-container" style={{maxHeight: String(Number(height.substring(0, height.length - 2)) - 170)+'px'}}>
          {
-            dataItems.map((item, rowIndex) => (
-               <tr key={rowIndex} className={`row-item ${ selectedRowIndex === rowIndex ? "selected" : ""}`} style={{}}  onClick={() => setSelectedRowIndex(rowIndex)}>
-            
-                  {
-                     arrayColumns.map((col, colIndex) => (
-                        
-                        <td className='gridCol' title={item[col.fieldName]} style={{color: col.color, width: col.width}} onDoubleClick={() => updateCell(rowIndex, colIndex, 'X')}>
-                              {
-                                 !isEditMode
-                                    ? (String(item[col.fieldName]).length > 40)
-                                          ? String(item[col.fieldName]).substring(0, 40) + '...'
-                                          : String(item[col.fieldName])
-                                    : 
-                                    <input 
-                                       type="text"
-                                       style={{width: String(Number(col.width.substring(0, col.width.length - 2))-25)+'px'/* , boxSizing: 'border-box' */}}
-                                       value={String(item[col.fieldName])}
-                                       onChange={(e) => updateCell(rowIndex, colIndex, e.target.value)}
-                                    />
-                              }
-                        </td>
-                     ))
-                  }
-
+            sortedProducts.map((item, rowIndex) => (
+               <tr key={rowIndex} className={`row-item ${ selectedRowIndex === rowIndex ? "selected" : ""}`}  
+                  style={{color: (itemsToSave.find(edit => edit.id === item.FirebaseID && edit.row === rowIndex))
+                     ? (itemsToSave.find(edit => edit.id === item.FirebaseID && edit.row === rowIndex).value==='deleted') 
+                        ? 'red' 
+                        : 'black'
+                     : 'black'
+                  }}  
+                  onClick={() => setSelectedRowIndex(rowIndex)}>
+               {
+                  arrayColumns.map((col, colIndex) => (
+                     
+                     <td className='gridCol' title={item[col.fieldName]} style={{color: (itemsToSave.find(edit => edit.id === item.FirebaseID && edit.row === rowIndex)) ? 'red' : col.color, width: col.width}} >
+                           {
+                              !isEditMode
+                                 ? (String(item[col.fieldName]).length > 40)
+                                       ? String(item[col.fieldName]).substring(0, 40) + '...'
+                                       : String(item[col.fieldName])
+                                 : 
+                                 <input 
+                                    type="text"
+                                    style={{width: String(Number(col.width.substring(0, col.width.length - 2))-25)+'px'/* , boxSizing: 'border-box' */}}
+                                    value={String(item[col.fieldName])}
+                                    onChange={(e) => updateCell(rowIndex, colIndex, e.target.value)}
+                                 />
+                           }
+                     </td>
+                  ))
+               }
                </tr>
             ))
          }
-         
          </div>
 
       </table>
+
     </form>
 
   );
@@ -140,6 +315,10 @@ export default function GridWidget( {data, arrayColumns, onSaveFuncName, backgro
 }
 
 
+export function GridReset()
+{
+   f_grid_mode = 0;
+} 
 
 
 

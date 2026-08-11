@@ -1,16 +1,37 @@
 
+body {
+  /* background-color: var(--color-panel_3); */
+  /* background-image: linear-gradient(45deg, var(--color-main-theme) 15%, rgba(237, 185, 113, 1.0));     /*, var(--color-main-theme)); */
+  margin: 0;
+  font-family: sans-serif;  /* "sans-serif, Arial, 'Courier New', Helvetica"; */
+  /* font-family: "'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif";   */
+  color: #343a40;
+  line-height: 1;
+  display: flex;
+  flex-direction: row;
+  text-align: right;
+  direction: rtl;
+  width: 100%;
+  height: 100%;
+  background-image: linear-gradient(45deg, rgba(144, 94, 27, 1.0) 18%, rgba(237, 185, 113, 1.0) 90%);
+}
+
+
+
 /* מיכל העמוד הכללי */
 .page-container {
- /*  position:fixed; */
+  position:fixed;
   display: flex;   /* block */
   flex-direction: column;
-  background-color: rgb(230, 228, 228);
-  padding: 10px;
-  top: 200px;
+  border-radius: 10px;
+  gap: 12px;
+  /* background-color: #e6e4e4; */
+  padding: 15px;
+  /* top: 200px;
   left: 100px;
   width: 1200px;
-  height: 500px;
-  max-width: 1700px;
+  height: 500px; */
+  /* max-height: 1000px; */
   margin: 0 auto;
   font-family: sans-serif;
 }
@@ -21,9 +42,11 @@
   flex-direction: column;
   column-gap: 20px;               /* No Efect - Space between columns */
   row-gap: 0px;                   /* Space between Rows */
-  overflow: auto;                /* Scrollbar for vertical overflow */
-  scrollbar-width:auto;          /* For Firefox */
-  max-height: 500px;               /* Limit the height of the grid */
+  /* overflow: auto; */                /* Scrollbar for vertical overflow */
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: auto;          /* For Firefox */
+  /* max-height: 500px; */               /* Limit the height of the grid */
   /* gap: 30px; */
   /* align-items: stretch; */
   /* justify-content: center; */
@@ -38,10 +61,10 @@
   background-color: white;
   /* border: 1px solid #212020; */
   border-radius: 4px;
-  padding-left: 10px;
-  padding-right: 10px;
-  padding-top: 5px;
-  padding-bottom: 5px;
+  padding-left: 5px;
+  padding-right: 5px;
+  padding-top: 2px;
+  padding-bottom: 2px;
   margin-bottom: 0px;        /* Space between Rows */
   /* padding-bottom: 10px; */
   /* margin-bottom: 5px; */        /* Space between Rows */
@@ -61,9 +84,9 @@
   /* box-shadow: 3px 3px 5px rgba(0, 0, 0, 0.2); */
 }
 
-/* .row-item  */.selected {
-  border-top: 1px solid #087f5b;
-  background-color: #e9b9e4c6;
+.selected {
+  /* border-top: 1px solid #087f5b; */
+  background-color: #cac6cac6;
 }
 
 .gridCol{
@@ -80,7 +103,7 @@
   overflow-wrap: 'break-word';
   /* word-break: 'break-all'; */
   /* white-space: 'pre-wrap'; */
-  /* text-wrap: 'pretty';   */
+  text-wrap: 'pretty';  
   /* balance */
   border-left: 1px solid #087f5b;
   border-right: 1px solid #087f5b;

@@ -95,7 +95,8 @@
 /* Arrow indicator helper */
 .has-children::after {
    content: " ▾";
-   font-size: 10px;
+   font-size: 15px;
+   z-index: 5;
 }
 .submenu .has-children::after {
    content: " ▸";

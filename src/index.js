@@ -9,6 +9,7 @@ import * as FirebaseHanle from './components/firebase.js';
 
 var dataNotes = [];
 var dataBaseTable = [];
+var dataChilds = [];
 var dataListTypes = [];
 var dataStatuses = [];
 var dataSubject = [];
@@ -30,7 +31,7 @@ async function initApp()
     //const dbData = {};
     await getData();
     
-    dbData = {'dataNotes': dataNotes, 'dataBaseTable': dataBaseTable, 'dataListTypes': dataListTypes, 'dataStatuses': dataStatuses, 'dataSubject': dataSubject};
+    dbData = {'dataNotes': dataNotes, 'dataBaseTable': dataBaseTable, 'dataChilds': dataChilds, 'dataListTypes': dataListTypes, 'dataStatuses': dataStatuses, 'dataSubject': dataSubject};
 
     //handleData();
 
@@ -84,8 +85,8 @@ async function getData()
 
   dataNotes = await FirebaseHanle.GetTableDataSync("TBL_Notes");
   
-  const subNotes = await FirebaseHanle.GetTableDataSync("TBL_NotesChilds");
-  const subsSorted = [...subNotes].sort((a, b) => a.NoteID - b.NoteID);
+  dataChilds = await FirebaseHanle.GetTableDataSync("TBL_NotesChilds");
+  const subsSorted = [...dataChilds].sort((a, b) => a.NoteID - b.NoteID);
 
   for (var i = 0; i < subsSorted.length; i++)
   {

@@ -8,8 +8,9 @@ import * as FirebaseHanle from './components/firebase.js';
 import * as Globals from './globals.js';
 import Select/* , { StylesConfig }  */from 'react-select';
 import FloatingWindow from './components/FloatingWindow.js';
-import MenusComponent from './components/MenusComponent.js';
-import GridWidget from './components/GridWidget.js'
+// import MenusComponent from './components/MenusComponent.js';
+import './components/menusComponent.css';
+import * as GridHandle from './components/GridWidget.js'
 import { Plus, Trash2/* , X, ChevronRight, Users, Subtitles, CheckLine, Check, CheckIcon, CheckLineIcon, EllipsisVertical */ } from "lucide-react";
 
 
@@ -19,6 +20,7 @@ const saveModeEn = { INSERT: 1, UPDATE: 2, DELETE: 3 };
 
 var dataNotes = [];
 var dataBaseTable = [];
+var dataChilds = [];
 var dataListTypes = [];
 var dataStatuses = [];
 var dataSubject = [];
@@ -40,23 +42,24 @@ export default function App( {dbData, dbIndex} )      /* initialData */
   const [isWindowOpen, setIsWindowOpen] = useState(false);
   const [data, setData] = useState(dbData);
   const [dataBaseIndex] = useState(dbIndex);
+  const [isShowGrid, setIsShowGrid] = useState(false);
+  const [gridData, setGridData] = useState(null);
  
-
+  const [selectedCode, setSelectedCode] = useState(2);
+  const [isMenuOpen1, setIsMenuOpen1] = useState(false);
+  const [selectedDatabaseIndex, setSelectedDatabaseIndex] = useState(null);
 
   dataNotes = data['dataNotes'];
   dataBaseTable = data['dataBaseTable'];
   dataListTypes = data['dataListTypes'];
+  dataChilds = data['dataChilds'];
   dataStatuses = data['dataStatuses'];
   dataSubject = data['dataSubject'];
 
   f_dataaseIndex = dataBaseIndex;
 
-  const arrayColumns = [
-                        {caption: 'מזהה', fieldName: 'NoteID', width: '100px', color: '#303033'}, 
-                        {caption: 'כותרת', fieldName: 'Title', width: '280px', color: '#303033'},
-                        {caption: 'תיאור', fieldName: 'Description', width: '400px', color: '#303033'},
-                       ]
 
+ 
 
   // useEffect(() => 
   // {
@@ -99,6 +102,13 @@ export default function App( {dbData, dbIndex} )      /* initialData */
   //   return dbData;
   // }
 
+  
+  function toggleMenu1() 
+  {
+      setSelectedCode(2);
+      setIsMenuOpen1(!isMenuOpen1);
+  }   
+
   function handleSelectItem(selectedItem)
   { 
     f_update_mode = 0;
@@ -115,6 +125,7 @@ export default function App( {dbData, dbIndex} )      /* initialData */
   async function handleSelectDatabase(dbIndex)
   { 
     f_dataaseIndex = dbIndex;
+    setSelectedDatabaseIndex(dbIndex);
 
     await FirebaseHanle.changeDatabase(f_dataaseIndex);
 
@@ -132,7 +143,7 @@ export default function App( {dbData, dbIndex} )      /* initialData */
       setData(newList);
   }
 
-  async function onGridSaveFuncName(records)
+  async function onGridSaveFuncName( tableName, records)
   {
     var result = false;
     console.log(records);
@@ -140,10 +151,19 @@ export default function App( {dbData, dbIndex} )      /* initialData */
     for (var i=0; i<records.length; i++)
     {
       const record = records[i];
-      const values = record.itemObject;
+      const values = {};    //record.itemObject;
       values[record.fieldName] = record.value;
 
-      result = await FirebaseHanle.UpdateField("TBL_Notes", record.id, values);
+      if (record.value !== 'deleted')
+      {
+        result = await FirebaseHanle.UpdateField(tableName, record.id, values);
+        dataNotes = dataNotes.map((item) => (item.FirebaseID === record.id) ? {...record.itemObject, [record.fieldName]: record.value} : item);
+      }
+      else
+      {
+        result = await FirebaseHanle.DeleteRecord(tableName, record.id);
+        dataNotes = dataNotes.filter((item) => item.FirebaseID !== record.id);
+      }
     }
 
     if (result)
@@ -154,32 +174,156 @@ export default function App( {dbData, dbIndex} )      /* initialData */
     {
         alert("השמירה נכשלה");
     }
+
+    const newList = {...dbData, dataNotes: dataNotes }
+    dbData = newList;
+    setData(newList);
+
+    return dataNotes;
   }
 
-  // function handleDeleteSubTask(lineIndex)
-  // {
-  //   if (selectedItem && selectedItem.SubTasks && selectedItem.SubTasks.length > 0)
-  //   {
-  //     const subTasksList = selectedItem.SubTasks;
+  function showDataGridNotes()
+  {
+    setIsShowGrid(!isShowGrid);
+    setSelectedCode(21)
 
-  //     const removeItem = 
-  //             [
-  //               ...subTasksList.slice(0, lineIndex),
-  //               ...subTasksList.slice(lineIndex + 1)
-  //             ];
-  //     //const newArray = subLinesList.filter((e) => i !== subLinesList[lineIndex]);
-  //     selectedItem.SubTasks = removeItem;
-      
-  //     f_update_mode = 4;
-  //   }
-  // }
+    const arrayColumns = [
+                        {caption: 'מזהה', fieldName: 'NoteID', type: 'number', width: '100px', color: '#303033'}, 
+                        {caption: 'מזהה רשומה', fieldName: 'FirebaseID', type: 'string', width: '280px', color: '#303033'},
+                        {caption: 'כותרת', fieldName: 'Title', type: 'string', width: '280px', color: '#303033'},
+                        {caption: 'תיאור', fieldName: 'Description', type: 'string', width: '400px', color: '#303033'},
+                       ]
+
+    GridHandle.GridReset();
+
+    setGridData(
+      <GridHandle.GridWidget  data={dataNotes} title='ניהול נתונים' tableName='TBL_Notes' arrayColumns={arrayColumns} 
+                              top='200px' left='150px' width='1120px' height='850px' onSaveFuncName={onGridSaveFuncName} />
+    )
+  }
+
+  function showDataGridChilds()
+  {
+    setIsShowGrid(!isShowGrid);
+    setSelectedCode(2)
+
+     const arrayColumns = [
+                            {caption: 'מזהה רשומה', fieldName: 'FirebaseID', type: 'string', width: '280px', color: '#303033'},
+                            {caption: 'מזהה פתק', fieldName: 'NoteID', type: 'number', width: '130px', color: '#303033'}, 
+                            {caption: 'תוכן', fieldName: 'Title', type: 'string', width: '280px', color: '#303033'},
+                            {caption: 'בוצע', fieldName: 'IsDone', type: 'bool', width: '70px', color: '#303033'},
+                          ]
+    GridHandle.GridReset();
+
+    setGridData(
+      <GridHandle.GridWidget data={dataChilds} title='ניהול נתונים' tableName='TBL_NotesChilds' arrayColumns={arrayColumns} 
+                                        top='200px' left='150px' width='820px' height='850px' onSaveFuncName={onGridSaveFuncName} />
+    )
+  }
+
+  function showDataGridDatabase()
+  {
+    setIsShowGrid(!isShowGrid);
+    setSelectedCode(2)
+
+     const arrayColumns = [
+                            {caption: 'מזהה', fieldName: 'ID', type: 'number', width: '130px', color: '#303033'}, 
+                            {caption: 'מזהה רשומה', fieldName: 'FirebaseID', type: 'string', width: '270px', color: '#303033'}, 
+                            {caption: 'לינק ראשי', fieldName: 'BaseUrl', type: 'string', width: '280px', color: '#303033'}, 
+                            {caption: 'לינק לאחסון', fieldName: 'BaseUrlForStorage', type: 'string', width: '280px', color: '#303033'},
+                            {caption: 'שם', fieldName: 'DBName', type: 'string', width: '200px', color: '#303033'},
+                            {caption: 'כותרת', fieldName: 'Title', type: 'string', width: '280px', color: '#303033'},
+                            {caption: 'נומרטור', fieldName: 'NumeratorNotesID', type: 'number', width: '130px', color: '#303033'},
+                            {caption: 'סוג', fieldName: 'TypeID', type: 'number', width: '100px', color: '#303033'},
+                          ]
+
+    GridHandle.GridReset();
+
+    setGridData(
+      <GridHandle.GridWidget  data={dataBaseTable} title='ניהול נתונים' tableName='TBL_Databases' arrayColumns={arrayColumns} 
+                              top='200px' left='150px' width='1730px' height='850px' onSaveFuncName={onGridSaveFuncName} />
+    )
+  }
 
 
   return (
 
     <div className='App'>
 
-        <MenusComponent  />
+        {/* <MenusComponent  /> */}
+
+         <nav className="navbar">
+        
+                <ul className="nav-menu">
+                    
+                    <li key='1' className='nav-item'>
+                        <a key='1' className={(selectedCode === 1) ? "active" : ""} href="#home" onClick={(e) => setIsShowGrid(false)}>Home</a>
+                    </li>
+                    
+                    
+                    {/* <!-- First Dropdown Parent --> */}
+                    <li key='2'className="nav-item">
+                        <a key={2} href="#services" className={`has-children ${(selectedCode === 2) ? "active" : ""}`} onClick={(e) => setSelectedCode(2)}>Services</a>
+                        {/* <!-- Level 1 Dropdown --> */}
+                        <ul className="submenu">
+                            <li>
+                                <a href="#web-design" onClick={(e) => toggleMenu1()}>Database</a>
+                                {/* { 
+                                    //(isMenuOpen1 && ( 
+                                            <div style={{display: 'flex', flexDirection: 'column', gridColumnStartap: '10px', backgroundColor: '#f0f0f0', height: '300px', overflowY: 'auto', paddingRight: '10px', direction: 'rtl', textAlign: 'right'}}>
+                                                
+                                                {/* <ul value={selectedDatabaseIndex}  style={{listStyleType: 'none'}}  /* onChange={(e) => handleSelectDatabase(Number(e.target.value))} >
+                                                {
+                                                    // FirebaseHanle.DataBasesConfigList.map((item, index) =>
+                                                    // (
+                                                    //     <li key={index} onClick={(e) => handleSelectDatabase(Number(e.target.value))}>
+                                                    //     {/* <a href={`#${index}`} value={index}  >
+                                                    //         {item.projectId} -  {index+1}
+                                                    //     </a>  s}
+                                                    //     {item.projectId} -  {index+1}
+                                                    //     </li>
+                                                    // ))  
+                                                // }
+                                                //</li></div>
+                                                // </ul></li> 
+                                        //)
+                                    //)
+                                 } */}
+                            </li>
+                            
+                            {/* <!-- Nested Submenu Parent --> */}
+                            <li>
+                                <a href='#development' className="has-children">נתונים</a>
+                                {/* <!-- Level 2 Dropdown (Submenu) --> */}
+                                <ul className="submenu">
+                                    <li><a key={21} href='#note' onClick={(e) => showDataGridNotes()} className='has-children'>טבלת פתקים</a></li>
+                                    <li><a key={22} href="#child" onClick={(e) => showDataGridChilds()}>טבלת בנים</a></li>
+                                    <li><a key={23} href="#database" onClick={(e) => showDataGridDatabase()}>טבלת מסד-נתונים</a></li>
+                                </ul>
+                            </li>
+                            
+                            <li><a href="#marketing">SEO Marketing</a></li>
+                        </ul>
+                    </li>
+        
+                 
+                    <li key='3' className="nav-item">
+                        <a key='3' className={(selectedCode === 3) ? "active" : ""} onClick={(e) => setSelectedCode(3)} href="#contact">Contact</a>
+                    </li>
+        
+        
+                    {/* <!-- Second Dropdown Parent --> */}
+                    <li key='4' className="nav-item">
+                        <a key='4' className={"has-children" + (selectedCode === 4 ? " active" : "")} href="#about"  onClick={(e) => setSelectedCode(4)}>About</a>
+                        <ul className="submenu">
+                            <li><button>Our Team</button></li>
+                            <li><button>Company History</button></li>
+                        </ul>
+                    </li>   
+        
+                </ul>
+                
+         </nav>
 
         {isWindowOpen && <FloatingWindow 
                             title="Terminal Notes" 
@@ -208,25 +352,26 @@ export default function App( {dbData, dbIndex} )      /* initialData */
                         </FloatingWindow>
         }
 
-        <div className="app">
-          <ListData 
-              data={dataNotes} 
-              selectedItem ={selectedItem} 
-              onSelectedItem={handleSelectItem}
-              sortByField="date_update" />
+        {!isShowGrid && 
+          <div className="app"> 
+            <ListData 
+                data={dataNotes} 
+                selectedItem ={selectedItem} 
+                onSelectedItem={handleSelectItem}
+                sortByField="date_update" />
 
-          {selectedItem && 
-              <NoteScreen 
-                  selectedItem={selectedItem} 
-                  onSelectedItem={handleSelectItem}
-                  onSaveSubTasks={handleSaveSubTasks}
-                  /* onDeleteSubTask={handleDeleteSubTask} */ />
-          }
-        </div>
+            {selectedItem && 
+                <NoteScreen 
+                    selectedItem={selectedItem} 
+                    onSelectedItem={handleSelectItem}
+                    onSaveSubTasks={handleSaveSubTasks}
+                    /* onDeleteSubTask={handleDeleteSubTask} */ />
+            }
+          </div>
+        }
 
 
-        <GridWidget  data={dataNotes} arrayColumns={arrayColumns} onSaveFuncName={onGridSaveFuncName} />
-
+        { isShowGrid && gridData }
         
     </div>
 
@@ -346,12 +491,10 @@ function ListData({data, selectedItem, onSelectedItem, sortByField})
                                 return [...data].sort((a, b) => 
                                                   (
                                                     ((b.LastUpdateDate !== "") 
-                                                    //? String(b.LastUpdateDate).replace('T', ' ').replace(', ', ' ')
                                                     ? (new Date(String(b.LastUpdateDate).replace('T', ' ').replace(', ', ' ')))
                                                     : "")
                                                   -
                                                     ((a.LastUpdateDate !== "")
-                                                    //? String(a.LastUpdateDate).replace('T', ' ').replace(', ', ' ')
                                                     ? (new Date(String(a.LastUpdateDate.replace('T', ' ').replace(', ', ' '))))
                                                     : "")
                                                   ));

@@ -52,7 +52,8 @@ export async function Init()
   //const dbIndex = searchParams.get('dbIndex');
 
 
-  const tmpDataBaseIndex = await getDatabaseIndex("launch.json");
+  const tmpDataBaseIndex = await getDatabaseIndexFromFile("launch.json");
+  console.log('Firebase Init - getDatabaseIndexFromFile: ',tmpDataBaseIndex);
   
   if (dbIndex)
   {
@@ -638,7 +639,7 @@ export async function dispose()
 
 /// Get DB index from outside Jsson text file - The File Must be in 'Public' folder
 /// Fetch the JSON file directly using standard JavaScript fetch
-async function getDatabaseIndex( fileName ) 
+async function getDatabaseIndexFromFile( fileName ) 
 {
   const response = await fetch("/" + fileName);
 

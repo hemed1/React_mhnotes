@@ -11,7 +11,7 @@ import FloatingWindow from './components/FloatingWindow.js';
 // import MenusComponent from './components/MenusComponent.js';
 import './components/menusComponent.css';
 import * as GridHandle from './components/GridWidget.js'
-import { Plus, Space, Trash2/* , X, ChevronRight, Users, Subtitles, CheckLine, Check, CheckIcon, CheckLineIcon, EllipsisVertical */ } from "lucide-react";
+import { Plus, Trash2/* , X, ChevronRight, Users, Subtitles, CheckLine, Check, CheckIcon, CheckLineIcon, EllipsisVertical */ } from "lucide-react";
 
 
 
@@ -730,28 +730,28 @@ function NoteScreen({ selectedItem, onSelectedItem, onSaveSubTasks, onSaveLookup
     }
             
 
-    const ColourOption = [
-      { value: '#564586', label: 'Purple' },
-      { value: 'rgba(59, 31, 196, 0.47)', label: 'blue' },
-      { value: '#888769', label: 'blue' },
-      { value: '#987654', label: 'black' }
-    ]
+    // const ColourOption = [
+    //   { value: '#564586', label: 'Purple' },
+    //   { value: 'rgba(59, 31, 196, 0.47)', label: 'blue' },
+    //   { value: '#888769', label: 'blue' },
+    //   { value: '#987654', label: 'black' }
+    // ]
 
-    const colourStyles: StylesConfig<ColourOption, true> = {
+    const colourStyles = {      /* StylesConfig<ColourOption, true> */
       control: (styles) => ({ ...styles, backgroundColor: 'rgb(254, 254, 255)', height: '30px', width: '510px', color: 'blue', /* display: 'flex', */ /* justifyContent: 'stretch', */ fontSize: '20px', textAlign: 'right', direction: 'rtl' }),
       option: (styles, { data, isDisabled, isFocused, isSelected }) => {
-        const color = '#c1b1d1';    // '#263375'
+        const color = '#a866eb';    // '#263375'
         return {
           ...styles, /* backgroundColor: 'red', */ fontSize: '21px', height: '30px',
          
           /// BackColor of List
-          // backgroundColor: isDisabled
-          //                     ? undefined
-          //                     : isSelected
-          //                       ? data.color
-          //                       : isFocused
-          //                         ? color    // Items in list backColor on Active
-          //                         : undefined,
+          backgroundColor: isDisabled
+                              ? undefined
+                              : isSelected
+                                ? data.color
+                                : isFocused
+                                  ? color    // Items in list backColor on Active
+                                  : undefined,
        /*    color: isDisabled                 // Items in list ForeColor 
                     ? '#ccc'
                     : isSelected

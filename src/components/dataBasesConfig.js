@@ -29,10 +29,10 @@ export const dataBasesConfigList =
 
    {
       apiKey: "AIzaSyCPNLCcsZEbkkRlbZRqvXWeT2mTHiGmzDc",
-      authDomain: "mh-meir-movies.firebaseapp.com",
+      authDomain: "zuzut-mhnotes.firebaseapp.com",
       databaseURL: "https://zuzut-mhnotes-default-rtdb.firebaseio.com",
       projectId: "zuzut-mhnotes",
-      storageBucket: "mh-meir-movies.firebasestorage.app",
+      storageBucket: "zuzut-mhnotes.firebasestorage.app",
       messagingSenderId: "862575476926",
       appId: "1:862575476926:web:639ae3e4988ebbf0491eef",
       measurementId: "G-F4NRXJ854S"

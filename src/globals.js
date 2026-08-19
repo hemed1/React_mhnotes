@@ -303,12 +303,15 @@ export function LookupManage({ title, tableName, originalData, onClose, onSaveLo
 
   const addRow = () => 
   {
+    // Finf the max ID + 1
     const tmpList = data.map((e) => e.value);
     const max = Math.max(...tmpList); 
     const newItem = {label: '', value: max + 1};
     const list = [...data];
     list.push(newItem);
     setData(list);
+    handleScrollToControl();
+    //handleFocus();
   };
 
   const deleteRow = (id) => {
@@ -321,8 +324,8 @@ export function LookupManage({ title, tableName, originalData, onClose, onSaveLo
     setData(newList);
   };
 
-  const updateText = (id, value) => {
-    const newList = [...data].map((item) => (item.value === id ? { value: id, label: value } : item));
+  const updateText = (oldIndex, value) => {
+    const newList = [...data].map((item, index) => (index === oldIndex ? {...item, label: value } : item));
     setData(newList);
   };
 
@@ -344,7 +347,7 @@ export function LookupManage({ title, tableName, originalData, onClose, onSaveLo
 
     for (const item of data) 
     {
-      const obj = {ID: item.value , Description: item.label};
+      const obj = {ID: item.value , Description: String(item.label).trim()};
       result = await InsertRecord(tableName, obj);
     }
 
@@ -360,6 +363,44 @@ export function LookupManage({ title, tableName, originalData, onClose, onSaveLo
     } 
     
   }
+
+  const targetControlRef = useRef(null);
+  const handleScrollToControl = () => 
+  {
+    if (targetControlRef && targetControlRef.current)
+    {
+      // Smoothly scroll the container to make the target control visible
+      targetControlRef.current?.scrollIntoView({
+        behavior: 'smooth', 
+        block: 'nearest', // Aligns element within the scrollable area
+      });
+      // Scroll manuali
+        // Moves the inner scrollbar down by 100 pixels
+        //targetControlRef.current.scrollTop = 30;
+        //targetControlRef.current.scrollTop = targetControlRef.current.scrollHeight;
+      }
+  };
+  // const inputRef = useRef(null);
+  // const handleFocus = () => 
+  // {
+  //   // 3. Access the DOM node and trigger focus
+  //   if (inputRef.current) 
+  //   {
+  //     inputRef.current.focus();
+  //   };
+  // };
+  // useEffect(() => 
+  // {
+  //   // Triggers automatically once the component mounts
+  //   if (inputRef.current) 
+  //   {
+  //     inputRef.current.focus();
+  //   }
+  // }, []); // Empty dependency array ensures this runs only once
+
+  //const containerRef = useRef(null);
+
+
 
 
 
@@ -549,7 +590,7 @@ export function LookupManage({ title, tableName, originalData, onClose, onSaveLo
                 <input
                   type="text"
                   value={item.label}
-                  onChange={(e) => updateText(item.value, e.target.value)}
+                  onChange={(e) => updateText(index, e.target.value)}
                   placeholder="הקלד טקסט..."
                   style={{
                     border: "1px solid 'blue'",
@@ -561,6 +602,7 @@ export function LookupManage({ title, tableName, originalData, onClose, onSaveLo
                     outline: "none",
                     width: '100%',
                   }}
+                  ref={(index===data.length-1) ? targetControlRef : null}
                   onFocus={(e) => (e.target.style.borderColor = "#1B2A4A")}
                   onBlur={(e) => (e.target.style.borderColor = "transparent")}
                 />

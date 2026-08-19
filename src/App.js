@@ -2,7 +2,7 @@
 
 import './App.css';
 import './styles.css';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef } from 'react';
 import * as FirebaseHanle from './components/firebase.js';
 //import { GetTableData, UpdateField, InsertRecord, UpdateRecord, DeleteRecord, changeDatabase, DataBasesConfigList } from './components/firebase.js';
 import * as Globals from './globals.js';
@@ -135,7 +135,7 @@ export default function App( {dbData, dbIndex} )      /* initialData */
   {
       dataNotes = notesData;
 
-      const newList = {...dbData, dataNotes: notesData }
+      const newList = {...data, dataNotes: notesData }
       dbData = newList;
 
       setData(newList);
@@ -163,7 +163,7 @@ export default function App( {dbData, dbIndex} )      /* initialData */
       }
     }
 
-    const newList = {...dbData, dataNotes: dataNotes }
+    const newList = {...data, dataNotes: dataNotes }
     dbData = newList;
     setData(newList);
 
@@ -296,14 +296,16 @@ export default function App( {dbData, dbIndex} )      /* initialData */
 
 function handleSaveLookup(tableName, newData)
   {
-    dataSubject = newData;
-    const newList = {...dbData, dataSubject: dataSubject }
+    const sortedList = [...newData].sort((a, b) => String(a.label).localeCompare(String(b.label)));
+    newData = sortedList;
+    
+    dataSubject = sortedList;
+    const newList = {...data, dataSubject: dataSubject }
     
     dbData = newList;
-
     setData(newList);
-    setSelectedItem(null);
 
+    setSelectedItem(null);
     handleSelectItem(selectedItem);
   }
 
@@ -1173,7 +1175,7 @@ function NoteScreen({ selectedItem, onSelectedItem, onSaveSubTasks, onSaveLookup
               />
 
               <div style={{display: 'flex', flexDirection: 'row', gap: '0px', justifyContent: 'right'}}>
-                <Globals.FieldInScreen  captionText="תגים"  fieldID="subjects"
+                <Globals.FieldInScreen  captionText="תגים"  fieldID="subjects" width={100}
                   control={
                     <Select 
                       name="subjects"
@@ -1235,6 +1237,7 @@ function SonsPanel({ noteObject, onClose, onUpdateSubTasks })
   const addRow = () => {
     const id = newRowId();
     onUpdateSubTasks(noteObject.NoteID, [...subTasks, { id: id,  FirebaseID: id, NoteID: noteObject.NoteID, IsDone: false, Title: "" }]);
+    handleScrollToControl();
   };
 
   const deleteRow = (rowId) => {
@@ -1248,6 +1251,24 @@ function SonsPanel({ noteObject, onClose, onUpdateSubTasks })
   const updateText = (rowId, value) => {
     onUpdateSubTasks(noteObject.NoteID, subTasks.map((subTask) => (subTask.id === rowId ? { ...subTask, Title: value } : subTask)))
   };
+
+  const targetControlRef = useRef(null);
+  const handleScrollToControl = () => 
+  {
+    if (targetControlRef && targetControlRef.current)
+    {
+      // Smoothly scroll the container to make the target control visible
+      targetControlRef.current?.scrollIntoView({
+        behavior: 'smooth', 
+        block: 'nearest', // Aligns element within the scrollable area
+      });
+      // Scroll manuali
+        // Moves the inner scrollbar down by 100 pixels
+        //targetControlRef.current.scrollTop = 30;
+        //targetControlRef.current.scrollTop = targetControlRef.current.scrollHeight;
+      }
+  };
+
 
 
   return (
@@ -1393,7 +1414,7 @@ function SonsPanel({ noteObject, onClose, onUpdateSubTasks })
 
           {/* Field Rowד entry */}
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-            {subTasks.map((item) => (
+            {subTasks.map((item, index) => (
               <div
                 key={item.FirebaseID}
                 style={{
@@ -1434,6 +1455,7 @@ function SonsPanel({ noteObject, onClose, onUpdateSubTasks })
                     color: "#1F2937",
                     outline: "none",
                   }}
+                  ref={(index===subTasks.length-1) ? targetControlRef : null}
                   onFocus={(e) => (e.target.style.borderColor = "#1B2A4A")}
                   onBlur={(e) => (e.target.style.borderColor = "transparent")}
                 />

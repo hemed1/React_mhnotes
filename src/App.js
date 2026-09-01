@@ -205,14 +205,20 @@ export default function App( {dbData, dbIndex} )      /* initialData */
                         {caption: 'מזהה רשומה', fieldName: 'FirebaseID', type: 'string', width: '280px', color: '#303033'},
                         {caption: 'כותרת', fieldName: 'Title', type: 'string', width: '280px', color: '#303033'},
                         {caption: 'תיאור', fieldName: 'Description', type: 'string', width: '400px', color: '#303033'},
+                        {caption: 'סוג פריט', fieldName: 'ListTypeID', type: 'number', width: '100px', color: '#303033'},
+                        {caption: 'סטטוס', fieldName: 'StatusID', type: 'number', width: '100px', color: '#303033'},
+                        {caption: 'תגיות', fieldName: 'SubjectLabels', type: 'string', width: '400px', color: '#303033'},
+                        {caption: 'ת. ביצוע', fieldName: 'DateDue', type: 'string', width: '200px', color: '#303033'},
+                        {caption: 'במועדפים', fieldName: 'IsFavorite', type: 'number', width: '400px', color: '#303033'},
+                        {caption: 'ת. עדכון אחרון', fieldName: 'LastUpdateDate', type: 'string', width: '300px', color: '#303033'},
                        ]
 
     GridHandle.GridReset();
     //GridHandle.f_grid_mode = 0
 
     setGridData(
-      <GridHandle.GridWidget  data={dataNotes} title='ניהול נתונים' tableName='TBL_Notes' arrayColumns={arrayColumns} 
-                              top='190px' left='150px' width='1120px' height='900px' onSaveFuncName={onGridSaveFuncName} />
+      <GridHandle.GridWidget  data={dataNotes} title='ניהול פתקים' tableName='TBL_Notes' arrayColumns={arrayColumns} 
+                              top='190px' left='150px' width='2080px' height='900px' onSaveFuncName={onGridSaveFuncName} />
     );
   }
 
@@ -294,7 +300,7 @@ export default function App( {dbData, dbIndex} )      /* initialData */
     await FirebaseHanle.changeDatabase(0);
   }
 
-function handleSaveLookup(tableName, newData)
+  function handleSaveLookup(tableName, newData)
   {
     const sortedList = [...newData].sort((a, b) => String(a.label).localeCompare(String(b.label)));
     newData = sortedList;
@@ -319,74 +325,74 @@ function handleSaveLookup(tableName, newData)
 
          <nav className="navbar">
         
-                <ul className="nav-menu">
-                    
-                    <li key='1' className='nav-item'>
-                        <a key='1' className={(selectedCode === 1) ? "active" : ""} href="#home" onClick={(e) => setIsShowGrid(false)}>Home</a>
-                    </li>
-                    
-                    
-                    {/* <!-- First Dropdown Parent --> */}
-                    <li key='2'className="nav-item">
-                        <a key={2} href="#services" className={`has-children ${(selectedCode === 2) ? "active" : ""}`} onClick={(e) => setSelectedCode(2)}>שרותים</a>
-                    
-                        {/* <!-- Level 1 Dropdown --> */}
-                        <ul className="submenu">
-                            <li>
-                                <a href="#web-design" className="has-children" onClick={(e) => toggleMenu1()}>מסד-נתונים</a>
-                                {/* <!-- Level 2 Dropdown (Submenu) --> */}
-                                <ul className="submenu">
-                                    <li>
-                                      <a key={21} href='#note'  className='has-children'>החלפת מסד</a>
-                                        <ul className="submenu" value={selectedDatabaseIndex}  style={{listStyleType: 'none', direction: 'ltr', textAlign: 'left', backgroundColor: '#edcb8b'}}  onChange={(e) => handleSelectDatabase(Number(e.target.value))} >
-                                        {
-                                            FirebaseHanle.DataBasesConfigList.map((item, index) =>
-                                            (
-                                                <li key={index} style={{width: '200px'}} onClick={(e) => handleSelectDatabase(index)}>
-                                                  <a href={`#${index}`} > {`${index+1} - ${item.projectId}`} </a> 
-                                                </li>
-                                            ))
-                                        }
-                                        </ul>
-                                    </li>
-                                    
-                                    <li><a key={22} href="#child" onClick={(e) => showDataGridChilds()}>צמצום מזההי פתקים</a></li>
-                                    <li><a key={23} href="#database" onClick={(e) => showDataGridDatabase()}>טבלת מסד-נתונים</a></li>
-                                </ul>
-                            </li>
-                                
-                            {/* <!-- Nested Submenu Parent --> */}
-                            <li>
-                                <a href='#development' className="has-children">ניהול נתונים</a>
-                                <ul className="submenu">
-                                    <li><a key={21} href='#note' onClick={(e) => showDataGridNotes()} className='has-children'>טבלת פתקים</a></li>
-                                    <li><a key={22} href="#child" onClick={(e) => showDataGridChilds()}>טבלת בנים</a></li>
-                                    <li><a key={23} href="#database" onClick={(e) => showDataGridDatabase()}>טבלת מסד-נתונים</a></li>
-                                    <li><a key={23} href="#database-main" onClick={(e) => showDataGridMainDatabase()}>טבלת מסד-נתונים מרכזי</a></li>
-                                </ul>
-                            </li>
-                            
-                            <li><a href="#marketing">שוק</a></li>
-                        </ul>
-                    </li>
-        
-                 
-                    <li key='3' className="nav-item">
-                        <a key='3' className={(selectedCode === 3) ? "active" : ""} onClick={(e) => setSelectedCode(3)} href="#contact">Contact</a>
-                    </li>
-        
-        
-                    {/* <!-- Second Dropdown Parent --> */}
-                    <li key='4' className="nav-item">
-                        <a key='4' className={"has-children" + (selectedCode === 4 ? " active" : "")} href="#about"  onClick={(e) => setSelectedCode(4)}>About</a>
-                        <ul className="submenu">
-                            <li><button>Our Team</button></li>
-                            <li><button>Company History</button></li>
-                        </ul>
-                    </li>   
-        
-                </ul>
+            <ul className="nav-menu">
                 
+                <li key='1' className='nav-item'>
+                    <a key='1' className={(selectedCode === 1) ? "active" : ""} href="#home" onClick={(e) => setIsShowGrid(false)}>Home</a>
+                </li>
+                
+                
+                {/* <!-- First Dropdown Parent --> */}
+                <li key='2'className="nav-item">
+                    <a key={2} href="#services" className={`has-children ${(selectedCode === 2) ? "active" : ""}`} onClick={(e) => setSelectedCode(2)}>שרותים</a>
+                
+                    {/* <!-- Level 1 Dropdown --> */}
+                    <ul className="submenu">
+                        <li>
+                            <a href="#web-design" className="has-children" onClick={(e) => toggleMenu1()}>מסד-נתונים</a>
+                            {/* <!-- Level 2 Dropdown (Submenu) --> */}
+                            <ul className="submenu">
+                                <li>
+                                  <a key={21} href='#note'  className='has-children'>החלפת מסד</a>
+                                    <ul className="submenu" value={selectedDatabaseIndex}  style={{listStyleType: 'none', direction: 'ltr', textAlign: 'left', backgroundColor: '#edcb8b'}}  onChange={(e) => handleSelectDatabase(Number(e.target.value))} >
+                                    {
+                                        FirebaseHanle.DataBasesConfigList.map((item, index) =>
+                                        (
+                                            <li key={index} style={{width: '200px'}} onClick={(e) => handleSelectDatabase(index)}>
+                                              <a href={`#${index}`} > {`${index+1} - ${item.projectId}`} </a> 
+                                            </li>
+                                        ))
+                                    }
+                                    </ul>
+                                </li>
+                                
+                                <li><a key={22} href="#child" onClick={(e) => FirebaseHanle.changeIDs('TBL_Notes')}>צמצום מזהי פתקים</a></li>
+                                <li><a key={23} href="#database2" /* onClick={(e) => showDataGridDatabase()} */>פנויי</a></li>
+                            </ul>
+                        </li>
+                            
+                        {/* <!-- Nested Submenu Parent --> */}
+                        <li>
+                            <a href='#development' className="has-children">ניהול נתונים</a>
+                            <ul className="submenu">
+                                <li><a key={21} href='#note' onClick={(e) => showDataGridNotes()} className='has-children'>טבלת פתקים</a></li>
+                                <li><a key={22} href="#child" onClick={(e) => showDataGridChilds()}>טבלת בנים</a></li>
+                                <li><a key={23} href="#database" onClick={(e) => showDataGridDatabase()}>טבלת מסד-נתונים</a></li>
+                                <li><a key={23} href="#database-main" onClick={(e) => showDataGridMainDatabase()}>טבלת מסד-נתונים מרכזי</a></li>
+                            </ul>
+                        </li>
+                        
+                        <li><a href="#marketing">שוק</a></li>
+                    </ul>
+                </li>
+    
+              
+                <li key='3' className="nav-item">
+                    <a key='3' className={(selectedCode === 3) ? "active" : ""} onClick={(e) => setSelectedCode(3)} href="#contact">Contact</a>
+                </li>
+    
+    
+                {/* <!-- Second Dropdown Parent --> */}
+                <li key='4' className="nav-item">
+                    <a key='4' className={"has-children" + (selectedCode === 4 ? " active" : "")} href="#about"  onClick={(e) => setSelectedCode(4)}>About</a>
+                    <ul className="submenu">
+                        <li><button>Our Team</button></li>
+                        <li><button>Company History</button></li>
+                    </ul>
+                </li>   
+    
+            </ul>
+            
          </nav>
 
         {isWindowOpen && <FloatingWindow 
@@ -657,7 +663,7 @@ function ListDataItem({index, selectedIndex, itemObject, selectedItem, onSelecte
 
   return(
    
-    <li className={`item ${ isSelected ? "open" : ""}`} onClick={() => onSelectedItem(itemObject, index)}>
+    <li className={`list_item ${ isSelected ? "open" : ""}`} onClick={() => onSelectedItem(itemObject, index)}>
       <p className='number'>{(index < 9) ? `0${index+1}` : index+1}</p>
       <p className='title'>{itemObject.Title}</p>
       { children !== '' &&
@@ -681,6 +687,7 @@ function ListDataItem({index, selectedIndex, itemObject, selectedItem, onSelecte
 function NoteScreen({ selectedItem, onSelectedItem, onSaveSubTasks, onSaveLookup }) 
 {
     /// Handle Controls States values
+    const [noteID, setNoteID] = useState(selectedItem?.NoteID || '');
     const [title, setTitle] = useState(selectedItem?.Title || '');
     const [desc, setDesc] = useState(selectedItem?.Description || '');
     const [typeListID, setTypeListID] = useState(selectedItem?.ListTypeID || 3);
@@ -808,6 +815,7 @@ function NoteScreen({ selectedItem, onSelectedItem, onSaveSubTasks, onSaveLookup
       setSubjectsArray(null);
       setTitle(selectedItem?.Title);
       setDesc(selectedItem?.Description);
+      setNoteID(selectedItem?.NoteID);
       if (saveMode === saveModeEn.INSERT)
       {
         setTypeListID(3);
@@ -1155,9 +1163,12 @@ function NoteScreen({ selectedItem, onSelectedItem, onSaveSubTasks, onSaveLookup
 
             <div className='div_items_fields2'>
 
-              <div style={{display: 'flex', flexDirection: 'row', gap: '16px', justifyContent: 'space-evenly'}}>
-                <button type='button' style={{backgroundColor: 'rgb(45, 31, 172)', color: 'white', height: '30px'}} onClick={(e) => handleShowSubTasksScreen()}>תת-משימות</button>
-                <button type='button' style={{backgroundColor: 'rgb(45, 31, 172)', color: 'white', height: '30px'}} onClick={(e) => handleAddSubLine()}>תמונות</button>
+              <div style={{display: 'flex', flexDirection: 'row', justifyContent: 'space-between'}}>
+                <div style={{display: 'flex', flexDirection: 'row', gap: '16px', justifyContent: 'space-evenly', width: '80%'}}>
+                  <button type='button' style={{backgroundColor: 'rgb(45, 31, 172)', color: 'white', height: '30px'}} onClick={(e) => handleShowSubTasksScreen()}>תת-משימות</button>
+                  <button type='button' style={{backgroundColor: 'rgb(45, 31, 172)', color: 'white', height: '30px'}} onClick={(e) => handleAddSubLine()}>תמונות</button>
+                </div>
+                <label style={{fontSize: '19px', alignSelf: 'end'}}>מזהה: {noteID}</label>
               </div>
              
               <div style={{display: 'flex', flexDirection: 'row', rowGap: '6px', justifyContent: 'space-between'}}>
@@ -1536,7 +1547,7 @@ function Note()
           //TimeDue: '',
           SubTasks: [],
           //ListIndex: 0,
-          IsFavorite: false,
+          IsFavorite: 0,
           SubjectLabels: '',
           FirebaseID: '',
           //IsSelect: false,
@@ -1561,6 +1572,7 @@ function NoteChild()
 
   return noteChild;
 }
+
 
 
 // function ShowSubLines({ itemObject, subTaskList /* , onDeleteSubTask */ })

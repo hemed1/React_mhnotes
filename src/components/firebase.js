@@ -454,6 +454,52 @@ export async function UpdateRecord( tableName, recordKey, values )
     return result;
 }
 
+/// Update Specific fields to save (not All)
+export async function UpdateField(tableName, recordKey, values) 
+{
+  var result = false;
+
+  // 1. Create a reference to the specific 'table' (node) in your database
+  const tableRef = ref(database, `${tableName}/${recordKey}`);
+
+  await update(tableRef, values)
+          .then((snapshot) => 
+          {
+            console.log("Field updated successfully!");
+            result = true;
+          })
+          .catch(
+            (error) => console.error("Error updating Field:", error)
+          );
+
+  // };
+
+
+  // const UserProfile = ({ recordKey }) => {
+  //   const [recordData, setUserData] = useState(null);
+
+  //   useEffect(() => {
+  //     const userRef = ref(database, `${tableName}/${recordKey}`);
+
+  //     // Subscribe to changes
+  //     const unsubscribe = onValue(userRef, (snapshot) => {
+  //                           const data = snapshot.val();
+  //                           setUserData(data);
+  //                         });
+
+  //     // Cleanup subscription on unmount
+  //     return () => unsubscribe();
+  //   }, [recordKey]);
+
+  //   if (!recordData) 
+  //     return <p>Loading...</p>;
+
+  //   return <div>{recordData.name}'s Profile</div>;
+  // };
+  
+  return result;
+}
+
 export async function DeleteRecord( tableName, recordKey, fieldName = "FirebaseID")
 {
   if (String(recordKey).trim() === "")
@@ -560,51 +606,6 @@ export async function DeleteAllRecords( tableName )
 
 
   return false;
-}
-
-/// Update Specific fields to save (not All)
-export async function UpdateField(tableName, recordKey, values) 
-{
-  var result = false;
-
-  // 1. Create a reference to the specific 'table' (node) in your database
-  const tableRef = ref(database, `${tableName}/${recordKey}`);
-
-
-  await update(tableRef, values)
-          .then((snapshot) => 
-          {
-            console.log("Field updated successfully!");
-            result = true;
-          })
-          .catch((error) => console.error("Error updating Field:", error));
-
-  // };
-
-
-  // const UserProfile = ({ recordKey }) => {
-  //   const [recordData, setUserData] = useState(null);
-
-  //   useEffect(() => {
-  //     const userRef = ref(database, `${tableName}/${recordKey}`);
-
-  //     // Subscribe to changes
-  //     const unsubscribe = onValue(userRef, (snapshot) => {
-  //                           const data = snapshot.val();
-  //                           setUserData(data);
-  //                         });
-
-  //     // Cleanup subscription on unmount
-  //     return () => unsubscribe();
-  //   }, [recordKey]);
-
-  //   if (!recordData) 
-  //     return <p>Loading...</p>;
-
-  //   return <div>{recordData.name}'s Profile</div>;
-  // };
-  
-  return result;
 }
 
 export async function dispose()

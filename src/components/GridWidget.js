@@ -51,7 +51,7 @@ export function GridWidget( {data, title, tableName, arrayColumns,
       _type = arrayColumns[index].type;
    }
       
-   var sortedProducts = useMemo(() => 
+   const sortedProducts = useMemo(() => 
                         {
                            switch (_type)
                            {
@@ -98,7 +98,7 @@ export function GridWidget( {data, title, tableName, arrayColumns,
 
                               case 'string': 
                               default:
-                                    if (sortDirection === 'asc')
+                                 if (sortDirection === 'asc')
                                  {
                                     //return [...dataItems].sort((a, b) => String(a[sortFieldName]) - String(b[sortFieldName]));
                                     return [...dataItems].sort((a, b) => String(a[sortFieldName]).localeCompare(String(b[sortFieldName])));
@@ -109,8 +109,7 @@ export function GridWidget( {data, title, tableName, arrayColumns,
                                     return [...dataItems].sort((a, b) => String(b[sortFieldName]).localeCompare(String(a[sortFieldName])));
                                  }
                                  //break;
-
-                        }
+                           }
                         
    }, [dataItems, sortFieldName, sortDirection, _type]);
     
@@ -126,17 +125,45 @@ export function GridWidget( {data, title, tableName, arrayColumns,
                            prevGrid.map((item, index) =>  
                            {
                               var updatedItem = null;
+                              /// When exaption record without id
+                              if (item["id"] === null || item["id"] === undefined || item["id"] === '')
+                              {
+                                 item["id"] = item.Title;
+                              }
+
+                              /// Find the specific record by its ID
                               if (item.id === recordID)
                               {
                                  if (keepID === null)
                                  {
-                                    keepID = item.FirebaseID;
+                                    /// When exaption record without id
+                                    if (item["FirebaseID"] === null || item["FirebaseID"] === undefined || item["FirebaseID"] === '')
+                                    {
+                                       item["FirebaseID"] = keepID;
+                                       if (item["Title"] !== null && item["Title"] !== undefined && item["Title"] !== '' )
+                                       {
+                                          keepID = item["Title"];
+                                       }
+                                    }
+                                    else
+                                    {  
+                                       /// When Very exaption record without id
+                                       if (item["Title"] === item["id"])
+                                       {
+                                          keepID = item["id"];
+                                       }
+                                       else
+                                       {
+                                          keepID = item["FirebaseID"];
+                                       }
+                                    }
                                  }
-                                 // Change Specific Cell with new value
+
+                                 // Update Specific Cell with new value
                                  for (let c = 0; c < arrayColumns.length; c++)
                                  {
                                     const col = Object.keys(item).findIndex(key => key === arrayColumns[c].fieldName);
-                                    if (col > -1 /* && item.id === recordID */ /* && index === targetRowIndex */ && c === targetColIndex /* && newValue !== item[arrayColumns[c].fieldName] */) 
+                                    if (col > -1 && c === targetColIndex /* && item.id === recordID */ /* && index === targetRowIndex */  /* && newValue !== item[arrayColumns[c].fieldName] */) 
                                     {
                                        var data = null;
                                        switch (arrayColumns[c].type)
@@ -156,20 +183,24 @@ export function GridWidget( {data, title, tableName, arrayColumns,
                                              break;
                                        }
 
+                                       /// When exaption record without id
                                        if (arrayColumns[c].fieldName === 'FirebaseID')
                                        {
                                           const tmp = keepID;
                                           const foundItem2 = itemsToSave.find(item => item.id === tmp && item.row === targetRowIndex && item.col === targetColIndex);
-                                          if (foundItem2)
+                                          if (foundItem2 && item.Title !== item.id)
                                           {
                                              foundItem2.id = data;
                                              keepID = foundItem2.id;
                                           }
                                        }
+
+                                       /// Update direcrtly the item with new data
                                        //updatedItem = { ...item, [arrayColumns[c].fieldName]: data };
                                        item[arrayColumns[c].fieldName] = data;
                                        updatedItem = {...item}      //, [arrayColumns[c].fieldName]: data };
                                       
+                                       /// Addd to array of chaged records (itemsToSave   )
                                        const keep = keepID;;
                                        const foundItem = itemsToSave.find(item => item.id === keep && item.row === targetRowIndex && item.col === targetColIndex);
                                        if (!foundItem) 
@@ -204,6 +235,9 @@ export function GridWidget( {data, title, tableName, arrayColumns,
             );
             //setSelectedRowIndex(selectedRowIndex);
          };
+
+
+
 
 
   async function handleSaveChanges()
@@ -270,7 +304,6 @@ export function GridWidget( {data, title, tableName, arrayColumns,
 
       //return defaultColor
   }
-
 
   function handleSearch(colIndex, value)
   {
@@ -372,8 +405,8 @@ export function GridWidget( {data, title, tableName, arrayColumns,
                                  //)
                               }
                               return found;
-                           }
-                        )
+                           })
+
                      .map((item, rowIndex) => (
                         <tr key={rowIndex} className={`row-item ${ selectedRowIndex === rowIndex ? "selected" : ""}`}  
                            style={{color: getRowColor(item, itemsToSave, rowIndex, 'black')}}
@@ -393,7 +426,7 @@ export function GridWidget( {data, title, tableName, arrayColumns,
                                           type='text'     //{(col.type==='number') ? "number": "text"}
                                           style={{width: String(Number(col.width.substring(0, col.width.length - 2))-25)+'px'/* , boxSizing: 'border-box' */}}
                                           value={String(item[col.fieldName])}
-                                          onChange={(e) => updateCell(rowIndex, colIndex, item.id, e.target.value)}
+                                          onChange={(e) => updateCell(rowIndex, colIndex, (item["id"] === null || item["id"] === undefined || item["id"] === '') ? item.Title : item["id"], e.target.value)}
                                        />
                                  }
                               </td>

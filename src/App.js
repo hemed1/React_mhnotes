@@ -153,7 +153,18 @@ export default function App( {dbData, dbIndex} )      /* initialData */
 
       if (record.value !== 'deleted')
       {
+        /// When Very exaption record without id
+        // if (record.id === record.itemObject.Title)
+        // {
+        //   result = await FirebaseHanle.UpdateRecord(tableName, record.id, values);
+        // }
+        // else
+        // {
+        //  result = await FirebaseHanle.UpdateField(tableName, record.id, values);
+        // }
+        
         result = await FirebaseHanle.UpdateField(tableName, record.id, values);
+        
         dataNotes = [...dataNotes].map((item) => (item.id === record.id) ? {...record.itemObject, [record.fieldName]: record.value} : item);
       }
       else

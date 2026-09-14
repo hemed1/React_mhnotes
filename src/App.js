@@ -19,6 +19,7 @@ import { floor } from 'firebase/firestore/pipelines';
 
 const saveModeEn = { INSERT: 1, UPDATE: 2, DELETE: 3 };
 const statusesEn = { Not_done: 1, Done_partially: 2, Done: 3, Archived: 4 };
+const listTypesEn = { Reminder: 1, Note: 2, Task: 3, Event: 5, Work: 4, Recipe: 6, ShopList: 7 };
 
 var dataNotes = [];
 var dataBaseTable = [];
@@ -754,10 +755,12 @@ function ListDataItem({index, selectedIndex, itemObject, selectedItem, onSelecte
 
   //console.log(index, selectedIndex, selectedItem?.Title, itemObject.Title);
 
+  const gradientColor = getGradientColorByListType(itemObject);
+  
 
   return(
    
-    <li className={`list_item ${ isSelected ? "open" : ""}`} onClick={() => onSelectedItem(itemObject, index)}>
+    <li className={`list_item ${ isSelected ? "open" : ""}`} style={{ backgroundImage: gradientColor }} onClick={() => onSelectedItem(itemObject, index)}>
       <p className='number'>{(index < 9) ? `0${index+1}` : index+1}</p>
       <p className='title'>{itemObject.Title}</p>
       { children !== '' &&
@@ -778,14 +781,53 @@ function ListDataItem({index, selectedIndex, itemObject, selectedItem, onSelecte
 
 }
 
+function getGradientColorByListType(itemObject)
+{
+
+  let gradientColor = '';
+
+  switch (itemObject.ListTypeID)
+    {
+      case listTypesEn.Reminder:
+        gradientColor = 'linear-gradient(45deg, rgba(207, 234, 215, 0.95) 10%, rgba(240, 240, 240, 0.95) 90%)';
+        break;
+      case listTypesEn.Note:
+        gradientColor = 'linear-gradient(45deg, rgba(255, 239, 195, 0.95) 10%, rgba(240, 240, 240, 0.95) 90%)';
+        break;
+
+      case listTypesEn.Event:
+        gradientColor = 'linear-gradient(45deg, rgba(247,185,131, 0.95) 10%, rgba(240, 240, 240, 0.95) 90%)';
+        break;
+
+      case listTypesEn.Work:
+        gradientColor = 'linear-gradient(45deg, rgba(175, 203, 250, 0.95) 10%, rgba(240, 240, 240, 0.95) 90%)';
+        break;
+
+      case listTypesEn.Recipe:
+        gradientColor = 'linear-gradient(45deg, rgba(167, 204, 202, 0.95) 10%, rgba(240, 240, 240, 0.95) 90%)';
+        break;
+
+      case listTypesEn.Shopping:
+        gradientColor = 'linear-gradient(45deg, rgba(250, 210, 207, 0.95) 10%, rgba(240, 240, 240, 0.95) 90%)';
+        break;
+
+      case listTypesEn.Task:
+      default:
+              gradientColor = 'linear-gradient(45deg, rgba(225, 190, 231, 0.95) 10%, rgba(240, 240, 240, 0.95) 90%)';
+        break;
+    }
+
+  return gradientColor;
+}
+
 function NoteScreen({ selectedItem, onSelectedItem, onSaveSubTasks, onSaveLookup }) 
 {
     /// Handle Controls States values
     const [noteID, setNoteID] = useState(selectedItem?.NoteID || '');
     const [title, setTitle] = useState(selectedItem?.Title || '');
     const [desc, setDesc] = useState(selectedItem?.Description || '');
-    const [typeListID, setTypeListID] = useState(selectedItem?.ListTypeID || 3);
-    const [statusID, setStatusID] = useState(selectedItem?.StatusID || 1);
+    const [typeListID, setTypeListID] = useState(selectedItem?.ListTypeID || listTypesEn.Task);
+    const [statusID, setStatusID] = useState(selectedItem?.StatusID || statusesEn.Not_done);
     const [dateDue, setDateDue] = useState(selectedItem?.DateDue || Date().toLocaleString('en-IL', { timeZone: 'Asia/Jerusalem' }).replace(', ', 'T'));
     const [subjects, setSubjects] = useState([]);
     const [lastUpdate, setLastUpdate] = useState(selectedItem?.LastUpdateDate);
@@ -794,7 +836,7 @@ function NoteScreen({ selectedItem, onSelectedItem, onSaveSubTasks, onSaveLookup
     const [subjectsArray, setSubjectsArray] = useState(null);
     
     /// Handle Sub Tasks / Lookups
-    const [saveMode, setSaveMode] = useState((selectedItem?.MovieID===0) ? saveModeEn.INSERT : saveModeEn.UPDATE);
+    const [saveMode, setSaveMode] = useState((selectedItem?.NoteID===0) ? saveModeEn.INSERT : saveModeEn.UPDATE);
     const [firstSubTasks, setFirstSubTasks] = useState(selectedItem?.SubTasks || []);
     const [selectedObject, setSelectedObject] = useState(selectedItem);
     const [showSubTasksScreen, setShowSubTasksScreen] = useState(false);
@@ -912,13 +954,15 @@ function NoteScreen({ selectedItem, onSelectedItem, onSaveSubTasks, onSaveLookup
       setNoteID(selectedItem?.NoteID);
       if (saveMode === saveModeEn.INSERT)
       {
-        setTypeListID(3);
+        setTypeListID(listTypesEn.Task);
+        setStatusID(statusesEn.Not_done);
       }
       else
       {
-        setTypeListID(selectedItem?.ListTypeID);
+        setTypeListID(selectedItem.ListTypeID);
+        setStatusID(selectedItem?.StatusID);
       }
-      setStatusID(selectedItem?.StatusID);
+      
       setDateDue(selectedItem.DateDue);
       setSubjects(selectedItem.SubjectLabels);
       setLastUpdate(selectedItem.LastUpdateDate);

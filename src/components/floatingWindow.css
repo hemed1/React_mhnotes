@@ -1,0 +1,59 @@
+
+
+/* FloatingWindow.css */
+.floating-window {
+  display: flex;
+  flex-direction: column;
+  position: absolute;
+  min-width: 300px;
+  background-color: #ffffff;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+  overflow: auto;
+  font-family: sans-serif;
+}
+
+.window-header {
+  background-color: #0078d4;
+  color: #ffffff;
+  padding: 8px 12px;
+  height: 40px;
+  cursor: move;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  user-select: none;
+}
+
+.window-title {
+  font-weight: bold;
+  font-size: 14px;
+}
+
+.window-controls button {
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+  margin-left: 6px;
+  padding: 2px;
+  font-size: 12px;
+}
+
+.window-controls button:hover {
+  opacity: 0.7;
+}
+
+.window-content {
+  /* display: grid; */
+  /* grid-template-columns: 5% 1fr 5%; */     /*auto 1fr auto; */
+  display: flex;
+  flex-direction: column;
+  padding: 15px;
+  color: #333333;
+  min-height: 350px;
+  /* max-height: 800px; */
+  overflow-y: auto;
+}

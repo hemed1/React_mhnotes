@@ -753,14 +753,21 @@ function ListDataItem({index, selectedIndex, itemObject, selectedItem, onSelecte
   const isSelected = (selectedItem?.NoteID === itemObject.NoteID);
   const [isOpen, setIsOpen] = useState(false);
 
-  //console.log(index, selectedIndex, selectedItem?.Title, itemObject.Title);
-
-  const gradientColor = getGradientColorByListType(itemObject);
   
+
+  var style = null;
+  var gradientColor = '';
+  if (itemObject['CardBackColor'] !== null && itemObject['CardBackColor'] !== undefined && itemObject.CardBackColor !== '')
+  {
+    gradientColor = Globals.getGradientColorByListType(itemObject.ListTypeID);
+    style = { backgroundImage: gradientColor };
+  }
+  
+
 
   return(
    
-    <li className={`list_item ${ isSelected ? "open" : ""}`} style={{ backgroundImage: gradientColor }} onClick={() => onSelectedItem(itemObject, index)}>
+    <li className={`list_item ${ isSelected ? "open" : ""}`} style={style} onClick={() => onSelectedItem(itemObject, index)}>
       <p className='number'>{(index < 9) ? `0${index+1}` : index+1}</p>
       <p className='title'>{itemObject.Title}</p>
       { children !== '' &&
@@ -781,45 +788,6 @@ function ListDataItem({index, selectedIndex, itemObject, selectedItem, onSelecte
 
 }
 
-function getGradientColorByListType(itemObject)
-{
-
-  let gradientColor = '';
-
-  switch (itemObject.ListTypeID)
-    {
-      case listTypesEn.Reminder:
-        gradientColor = 'linear-gradient(45deg, rgba(207, 234, 215, 0.95) 10%, rgba(240, 240, 240, 0.95) 90%)';
-        break;
-      case listTypesEn.Note:
-        gradientColor = 'linear-gradient(45deg, rgba(255, 239, 195, 0.95) 10%, rgba(240, 240, 240, 0.95) 90%)';
-        break;
-
-      case listTypesEn.Event:
-        gradientColor = 'linear-gradient(45deg, rgba(247,185,131, 0.95) 10%, rgba(240, 240, 240, 0.95) 90%)';
-        break;
-
-      case listTypesEn.Work:
-        gradientColor = 'linear-gradient(45deg, rgba(175, 203, 250, 0.95) 10%, rgba(240, 240, 240, 0.95) 90%)';
-        break;
-
-      case listTypesEn.Recipe:
-        gradientColor = 'linear-gradient(45deg, rgba(167, 204, 202, 0.95) 10%, rgba(240, 240, 240, 0.95) 90%)';
-        break;
-
-      case listTypesEn.Shopping:
-        gradientColor = 'linear-gradient(45deg, rgba(250, 210, 207, 0.95) 10%, rgba(240, 240, 240, 0.95) 90%)';
-        break;
-
-      case listTypesEn.Task:
-      default:
-              gradientColor = 'linear-gradient(45deg, rgba(225, 190, 231, 0.95) 10%, rgba(240, 240, 240, 0.95) 90%)';
-        break;
-    }
-
-  return gradientColor;
-}
-
 function NoteScreen({ selectedItem, onSelectedItem, onSaveSubTasks, onSaveLookup }) 
 {
     /// Handle Controls States values
@@ -831,8 +799,7 @@ function NoteScreen({ selectedItem, onSelectedItem, onSaveSubTasks, onSaveLookup
     const [dateDue, setDateDue] = useState(selectedItem?.DateDue || Date().toLocaleString('en-IL', { timeZone: 'Asia/Jerusalem' }).replace(', ', 'T'));
     const [subjects, setSubjects] = useState([]);
     const [lastUpdate, setLastUpdate] = useState(selectedItem?.LastUpdateDate);
-    
-    /// General stateas
+    const [cardBackColor, setCardBackColor] = useState('');
     const [subjectsArray, setSubjectsArray] = useState(null);
     
     /// Handle Sub Tasks / Lookups
@@ -956,11 +923,16 @@ function NoteScreen({ selectedItem, onSelectedItem, onSaveSubTasks, onSaveLookup
       {
         setTypeListID(listTypesEn.Task);
         setStatusID(statusesEn.Not_done);
+        setCardBackColor('');
       }
       else
       {
         setTypeListID(selectedItem.ListTypeID);
         setStatusID(selectedItem?.StatusID);
+        if (selectedItem['CardBackColor']!==null && selectedItem['CardBackColor']!==undefined && selectedItem['CardBackColor']!=='')
+        {
+          setCardBackColor(Globals.getColorByListType(selectedItem.ListTypeID));
+        }
       }
       
       setDateDue(selectedItem.DateDue);
@@ -1221,6 +1193,7 @@ function NoteScreen({ selectedItem, onSelectedItem, onSaveSubTasks, onSaveLookup
       values['StatusID'] = statusID;
       values['DateDue'] = String(dateDue).replace('T', ' ');
       values['SubjectLabels'] = subjects;
+      values['CardBackColor'] = cardBackColor;
   
       selectedObject['Title'] = String(title).trim();
       selectedObject['Description'] = String(desc).trim();
@@ -1228,7 +1201,7 @@ function NoteScreen({ selectedItem, onSelectedItem, onSaveSubTasks, onSaveLookup
       selectedObject['StatusID'] = statusID;
       selectedObject['DateDue'] = String(dateDue).replace('T', ' ');
       selectedObject['SubjectLabels'] = subjects;
-
+      selectedObject['CardBackColor'] = cardBackColor;
 
       return values;
     }
@@ -1274,6 +1247,20 @@ function NoteScreen({ selectedItem, onSelectedItem, onSaveSubTasks, onSaveLookup
       setShowLookupScreen(true);
     }
 
+    function handleBackColor()
+    {
+   
+      if (cardBackColor==='')
+      {
+        setCardBackColor(Globals.getColorByListType(selectedItem.ListTypeID));
+      }
+      else
+      {
+        setCardBackColor('');
+      }
+      
+      //document.body.style.backgroundColor = newColor;
+    }
 
 
     return (
@@ -1292,8 +1279,9 @@ function NoteScreen({ selectedItem, onSelectedItem, onSaveSubTasks, onSaveLookup
 
               <div style={{display: 'flex', flexDirection: 'row', justifyContent: 'space-between'}}>
                 <div style={{display: 'flex', flexDirection: 'row', gap: '16px', justifyContent: 'space-evenly', width: '80%'}}>
-                  <button type='button' style={{backgroundColor: 'rgb(45, 31, 172)', color: 'white', height: '30px'}} onClick={(e) => handleShowSubTasksScreen()}>תת-משימות</button>
-                  <button type='button' style={{backgroundColor: 'rgb(45, 31, 172)', color: 'white', height: '30px'}} onClick={(e) => handleAddSubLine()}>תמונות</button>
+                  <button type='button' style={{height: '30px'}} onClick={(e) => handleShowSubTasksScreen()}>תת-משימות</button>
+                  <button type='button' style={{height: '30px'}} onClick={(e) => handleAddSubLine()}>תמונות</button>
+                  <button type='button' style={{height: '30px'}} onClick={(e) => handleBackColor()}>{(cardBackColor==='') ? 'תן צבע' : 'הסר צבע'}</button>
                 </div>
                 <label style={{fontSize: '19px', alignSelf: 'end'}}>מזהה: {noteID}</label>
               </div>

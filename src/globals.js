@@ -6,6 +6,8 @@ import {DeleteAllRecords, InsertRecord} from './components/firebase.js';
 import { Plus, Trash2/* , X, ChevronRight, Users, Subtitles, CheckLine, Check, CheckIcon, CheckLineIcon, EllipsisVertical */ } from "lucide-react";
 
 
+const listTypesEn = { Reminder: 1, Note: 2, Task: 3, Event: 5, Work: 4, Recipe: 6, ShopList: 7 };
+
 
 export function dateSetFormat(date)
 {
@@ -664,5 +666,86 @@ export function LookupManage({ title, tableName, originalData, onClose, onSaveLo
   );
 }
 
+export function getGradientColorByListType(listTypeID)
+{
+  let gradientColor = '';
+  
+  const mainColor = getColorByListType(listTypeID);
+
+  switch (listTypeID)
+    {
+      case listTypesEn.Reminder:
+        gradientColor = "linear-gradient(45deg, " + mainColor + " 10%, rgba(240, 240, 240, 0.95) 90%)";
+        break;
+      case listTypesEn.Note:
+        gradientColor = "linear-gradient(45deg, " + mainColor + " 10%, rgba(240, 240, 240, 0.95) 90%)";
+        break;
+
+      case listTypesEn.Event:
+        gradientColor = "linear-gradient(45deg, " + mainColor + " 10%, rgba(240, 240, 240, 0.95) 90%)";
+        break;
+
+      case listTypesEn.Work:
+        gradientColor = "linear-gradient(45deg, " + mainColor + " 10%, rgba(240, 240, 240, 0.95) 90%)";
+        break;
+
+      case listTypesEn.ShopList:
+        gradientColor = "linear-gradient(45deg, " + mainColor + " 10%, rgba(240, 240, 240, 0.95) 90%)";
+        break;
+
+      case listTypesEn.Task:
+      default:
+        gradientColor = "linear-gradient(45deg, " + mainColor + " 10%, rgba(240, 240, 240, 0.95) 90%)";
+        break;
+    }
+
+  return gradientColor;
+}
+
+export function getColorByListType(listTypeID)
+{
+
+  let gradientColor = '';
+
+  switch (listTypeID)
+  {
+    case listTypesEn.Reminder:
+      gradientColor = '#cfead7f2';
+      //gradientColor = 'rgba(207, 234, 215, 0.95)';
+      break;
+    case listTypesEn.Note:
+      gradientColor = '#ffefc3f2';
+      //gradientColor = 'rgba(255, 239, 195, 0.95)';
+      break;
+
+    case listTypesEn.Event:
+      gradientColor = '#f7b983f2';
+      //gradientColor = 'rgba(247,185,131, 0.95)';
+      break;
+
+    case listTypesEn.Work:
+      gradientColor = '#afcbfaf2';
+      //gradientColor = 'rgba(175, 203, 250, 0.95)';
+      break;
+
+    case listTypesEn.Recipe:
+      gradientColor = '#a7cccaf2';
+      //gradientColor = 'rgba(167, 204, 202, 0.95)';
+      break;
+
+    case listTypesEn.ShopList:
+      gradientColor = '#fad2cff2';
+      //gradientColor = 'rgba(250, 210, 207, 0.95)';
+      break;
+
+    case listTypesEn.Task:
+    default:
+      gradientColor = '#e1bee7f2';
+      //gradientColor = 'rgba(225, 190, 231, 0.95)';
+      break;
+    }
+
+  return gradientColor;
+}
 
 

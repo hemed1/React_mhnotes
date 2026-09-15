@@ -84,6 +84,8 @@ async function getData()
   dataBaseTable = await FirebaseHanle.GetTableDataSync("TBL_Databases");
 
   dataNotes = await FirebaseHanle.GetTableDataSync("TBL_Notes");
+  // const values = { CardBackColor: '' };
+  // const cc = await FirebaseHanle.UpdateField("TBL_Notes", '', values);
   
   dataChilds = await FirebaseHanle.GetTableDataSync("TBL_NotesChilds");
   const subsSorted = [...dataChilds].sort((a, b) => a.NoteID - b.NoteID);

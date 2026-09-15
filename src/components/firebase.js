@@ -460,7 +460,13 @@ export async function UpdateField(tableName, recordKey, values)
   var result = false;
 
   // 1. Create a reference to the specific 'table' (node) in your database
-  const tableRef = ref(database, `${tableName}/${recordKey}`);
+  var tableRefUrl = tableName;
+  if (recordKey.trim() !== '')
+  {
+    tableRefUrl += "/" + recordKey;
+  }
+  const tableRef = ref(database, tableRefUrl);
+  //const tableRef = ref(database, `${tableName}/${recordKey}`);
 
   await update(tableRef, values)
           .then((snapshot) => 

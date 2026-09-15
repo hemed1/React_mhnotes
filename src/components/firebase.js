@@ -435,7 +435,7 @@ export async function UpdateRecord( tableName, recordKey, values )
     const tableRef = ref(database, `${tableName}/${recordKey}`);
 
     await set(tableRef, values)
-        .then( snapshot => 
+        .then(() => 
               {
                 console.log("Record inserted successfull !");
                 result = true;
@@ -469,7 +469,7 @@ export async function UpdateField(tableName, recordKey, values)
   //const tableRef = ref(database, `${tableName}/${recordKey}`);
 
   await update(tableRef, values)
-          .then((snapshot) => 
+          .then(() => 
           {
             console.log("Field updated successfully!");
             result = true;
@@ -525,7 +525,7 @@ export async function DeleteRecord( tableName, recordKey, fieldName = "FirebaseI
   const tableRef = ref(database, `${tableName}/${recordKey}`);
 
   await remove(tableRef)
-      .then( snapshot => 
+      .then(() => 
             {
               //setRecordData(data);
               console.log("Record deleted successfull !");

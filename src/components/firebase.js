@@ -79,9 +79,9 @@ export async function Init()
 export function GetTableDataAsync( tableName ) 
 {
   const [data, setData] = useState([]);
-  const [loading, setLoading] = useState(true);
+  //const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [connectionStatus, setConnectionStatus] = useState("Checking...");
+  //const [connectionStatus, setConnectionStatus] = useState("Checking...");
 
 
 
@@ -101,12 +101,14 @@ export function GetTableDataAsync( tableName )
       {
         message = "🔴 Disconnected (Using Cache)";
       }
-      setConnectionStatus(message);
+      //setConnectionStatus(message);
       console.log(message);
     });
 
     return () => unsubscribe();
   }, []);
+
+
   //setConnectionStatus(useGetConnectionState());
 
 
@@ -116,7 +118,7 @@ export function GetTableDataAsync( tableName )
     // 1. Create a reference to the specific 'table' (node) in your database
     const dataRef = ref(database, tableName);
 
-    setLoading(true);
+    //setLoading(true);
 
     // Set up the Function var for real-time listener
     const firebaseData = onValue(dataRef, (snapshot) => 
@@ -149,10 +151,9 @@ export function GetTableDataAsync( tableName )
                                                                   {
                                                                     formattedData = record;
                                                                   }
-                                                                  dataItems.push( formattedData )
-                                                                });
+                                                                  dataItems.push( formattedData )});
                                               setData(dataItems);
-                                              setLoading(false);
+                                              //setLoading(false);
                                               /// will Fired when other device add/update records
                                               if (getFuncWhenUpdate() !== null) 
                                               {
@@ -165,7 +166,7 @@ export function GetTableDataAsync( tableName )
                                             {
                                               setData([]);
                                             }
-                                            setLoading(false);
+                                            //setLoading(false);
                                             return ([]);
                                           },
                                           (err) => 
@@ -173,7 +174,7 @@ export function GetTableDataAsync( tableName )
                                             console.error("Firebase read error: ", err);
                                             setData([]);
                                             setError(err);
-                                            setLoading(false);
+                                            //setLoading(false);
                                             return ([]);
                                           }); 
 
@@ -183,7 +184,6 @@ export function GetTableDataAsync( tableName )
   }, [tableName]);
 
 
-  
   return (data);
   //if (loading) return <p>Loading data...</p>;
   // if (error) return <p>Error loading data: {error.message}</p>;
@@ -481,58 +481,48 @@ export async function GetQuerySync( tableName, fieldName, fieldValue )
 
 export async function InsertRecord( tableName, values )
 {
-    if (values["LastUpdateDate"] !== null)
-    {
-      values.LastUpdateDate =  dateSetFormat(new Date());
-    }
+  let result = '';
+  
+  if (values["LastUpdateDate"] !== null)
+  {
+    values.LastUpdateDate =  dateSetFormat(new Date());
+  }
 
-    //const [key, setKey] = useState(null);
-    const tableRef = ref(database, tableName);
-    
-    await push(tableRef, values)
-      .then( snapshot => 
+  //const [key, setKey] = useState(null);
+  const tableRef = ref(database, tableName);
+  
+  await push(tableRef, values)
+    .then( snapshot => 
+          {
+            //console.log("Record inserted successfully:  " + snapshot.key);
+            result = snapshot.key;
+            if (values["FirebaseID"] !== null)
             {
-              console.log("Record inserted successfully:  " + snapshot.key);
-              // const listData = [];
-              // // Crucial for push(): Loop through the auto-generated IDs
-              // snapshot.forEach((childSnapshot) => {
-              //   listData.push({
-              //     id: childSnapshot.key, // This captures the push ID
-              //     ...childSnapshot.val() // This captures the record data
-              //   });
-              // });
-              result = snapshot.key;
-              if (values["FirebaseID"] !== null)
-              {
-                  values["FirebaseID"] = snapshot.key;
-              }
-              // return (snapshot.key);
+                values["FirebaseID"] = snapshot.key;
             }
-      )
-      .catch((error) => function() { 
-                console.error("Error updating record:", error);
-                result = '';
-                return '';
-              }
-      );
+            // return (snapshot.key);
+          }
+    )
+    .catch((error) => function() { 
+              console.error("Error updating record:", error);
+              result = '';
+              return '';
+            }
+    );
 
 
-      // Update field 'FirebaseID'
-      var json = values;
-      await UpdateField(tableName, result, json)
+    // // Update field 'FirebaseID'
+    // if (values["FirebaseID"] !== null && result !== '')
+    // {
+    //   const funcWhenUpdate = getFuncWhenUpdate();
+    //   setFuncWhenUpdate(null);
 
-      // if (json["id"] !== null)
-      // {
-      //   const keyToRemove = 'id';
-      //   const { [keyToRemove]: _, ...cleanValues } = json;
-      //  
-      //   await UpdateRecord(tableName, result, cleanValues)
-      //   //UpdateField(tableName, snapshot.key, clean)
-      // }
-      // else
-      // {
-      //  await UpdateField(tableName, result, json)
-      // }
+    //   var json =  {FirebaseID: result};     // values;
+
+    //   await UpdateField(tableName, result, json)
+
+    //   setFuncWhenUpdate(funcWhenUpdate);
+    //   }
 
 
     return result;

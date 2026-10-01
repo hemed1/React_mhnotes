@@ -14,7 +14,7 @@ export var f_grid_mode = 0;
 
 export function GridWidget( {data, title, tableName, arrayColumns, 
                             top, left, width, height,
-                            onSaveFuncName, backgroundColor = '#454545b3'} ) 
+                            onSaveFuncName, backgroundColor = '#454545b3'} )     /*  'transparent'*/
 {
    const [dataItems, setDataItems] = useState(data);
    const [selectedRowIndex, setSelectedRowIndex] = useState(0);
@@ -92,7 +92,7 @@ export function GridWidget( {data, title, tableName, arrayColumns,
                                  //             (new Date(String(a[sortFieldName]).substring(0, 16).replace('T', ', ').replace(', ', ' '))) 
                                  //          );
                                  // }
-                                 //break;
+                                 break;
 
                               case 'string': 
                               default:
@@ -167,8 +167,8 @@ export function GridWidget( {data, title, tableName, arrayColumns,
                                              data = Boolean(newValue);
                                              break;
                                           case 'date':
-                                             //data = new Date(newValue);
-                                             //break;
+                                             data = new Date(newValue);
+                                             break;
                                           case 'string':
                                           default:
                                              data = newValue;
@@ -348,22 +348,19 @@ export function GridWidget( {data, title, tableName, arrayColumns,
             <SaveIcon size={15} />
          </button>
 
-         <div style={{display: 'flex', justifyContent: 'flex-end', width: '100%', paddingTop: '5px'}}>
-            <p style={{textAlign: 'left', color: 'white'}}>{tableName}</p>
-         </div>
       </div>
      
 
       <div className="grid-container" >
 
          {/* // Search */}
-         <div style={{display: 'flex', flexDirection: 'row', gap: '3px', paddingRight: '6px'}}>
+         <div style={{display: 'flex', flexDirection: 'row', gap: '1px', paddingRight: '6px'}}>
             {searchArray.map((col, colIndex) =>
                <input type="text"
                      style={{
                               backgroundColor: 'rgba(164, 201, 237, 0.5)', 
                               color: '#fff',
-                              width: arrayColumns[colIndex].width,      //String(Number(arrayColumns[colIndex].width.substring(0, arrayColumns[colIndex].width.length - 2))-10)+'px',  
+                              minWidth: arrayColumns[colIndex].width,      //String(Number(arrayColumns[colIndex].width.substring(0, arrayColumns[colIndex].width.length - 2))-10)+'px',  
                               paddingLeft: '7px', 
                               paddingRight: '7px', 
                               marginBottom: '7px',

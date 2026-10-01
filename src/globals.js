@@ -793,7 +793,7 @@ export function ControMoveAndResizeInitialize(controlName, controlObj, eventName
     {
        // console.log("mousedown -  mouse state:", mouseMode, " ,mouse location -", "clientX:", e.clientX, " ,clientY:", e.clientY);
 
-        if (mouseMode == 0)
+        if (mouseMode === 0)
         {
             //console.log("mousedown -  mouse state: 0");
             mouseMode = 1;
@@ -817,30 +817,31 @@ export function ControMoveAndResizeInitialize(controlName, controlObj, eventName
         //console.log("Mouse up event - Mouse Mode: " + String(mouseMode), "Last && Current posstion:", control.style.top, control.style.left, keepLastControlTop, keepLastControlLeft, "Diff:", parseInt(control.style.top) - keepLastControlTop);
 
         // Rais ReSized event
-        if ((eventNameForReSizing != null && mouseMode == 2))
+        if ((eventNameForReSizing !== null && mouseMode === 2))
         {
             try
             {
                 //alert('Going to rais resize event: ' + controlName);
                 eventNameForReSizing(controlName);
             }
-            catch (err) {
+            catch (err) 
+            {
                 var str = err.message;
                 alert('Error: Rais ReSized event(): ' + str);
             }
         }
         // Raise Moved event
-        else if (eventNameForMoving != null && mouseMode == 1 &&
-                ((parseInt(control.style.top) - keepLastControlTop) > Math.abs(5)) ||
-                ((parseInt(control.style.left) - keepLastControlLeft) > Math.abs(5)))
+        else if (eventNameForMoving !== null && mouseMode === 1 &&
+          (Math.abs(parseInt(control.style.top) - keepLastControlTop) > 5 ||
+          Math.abs(parseInt(control.style.left) - keepLastControlLeft) > 5))
         {
             try {
                 //alert('Going to rais move event: ' + controlName);
                 eventNameForMoving(controlName);
             }
             catch (err) {
-                var str = err.message;
-                //alert('Error: Raise Moved event: ' + str);
+                var msg = err.message;
+                alert('Error: Raise Moved event: ' + msg);
             }
 
         }
@@ -857,20 +858,20 @@ export function ControMoveAndResizeInitialize(controlName, controlObj, eventName
     {
         event.preventDefault();
 
-        if (mouseMode == 0)
+        if (mouseMode === 0)
         {
             return;
         }
 
         mousePosition = { x: event.clientX, y: event.clientY };
 
-        if (mouseMode == 1)
+        if (mouseMode === 1)
         {
             control.style.left = (mousePosition.x + offsetForMove[0]) + 'px';
             control.style.top = (mousePosition.y + offsetForMove[1]) + 'px';
             //console.log("Mouse Move event - Mouse Mode 1 - Mouse location -", "clientX:", event.clientX, " clientY:",event.clientY, "top: " + String(control.style.top) + "  left: " + String(control.style.left))
         }
-        else if (mouseMode == 2)
+        else if (mouseMode === 2)
         {
             var newX = mousePosition.x + offsetForResize[0];
             var newY = mousePosition.y + offsetForResize[1];
@@ -924,7 +925,7 @@ export function PlaySound(file)
         const audio = new Audio(path);      ///* clickSound */); // Can also be a web URL like "https://example.com"
         audio.muted = false;
         // Set volume here (0.0 = muted, 0.5 = 50% volume, 1.0 = 100% volume)
-        audio.volume = 0.9;
+        audio.volume = 0.7;
         audio.play()
         // .then(() => 
         // {

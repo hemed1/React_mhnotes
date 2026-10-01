@@ -2,16 +2,21 @@
 
 import './App.css';
 import './styles.css';
-import { useState, useMemo, useRef, useEffect } from 'react';
-import * as FirebaseHanle from './components/firebase.js';
+import { useState, useMemo, useRef/* , useEffect */ } from 'react';
+// import * as FirebaseHandle from '@common/firebase.js';
+import * as FirebaseHandle  from './components/firebase.js';
+import * as GridHandle      from './components/GridWidget.js';
+// import * as GridHandle from '@common/GridWidget.js'
+
+
 //import { GetTableData, UpdateField, InsertRecord, UpdateRecord, DeleteRecord, changeDatabase, DataBasesConfigList } from './components/firebase.js';
 import * as Globals from './globals.js';
 import Select/* , { StylesConfig }  */from 'react-select';
 import FloatingWindow from './components/FloatingWindow.js';
 // import MenusComponent from './components/MenusComponent.js';
 import './components/menusComponent.css';
-import * as GridHandle from './components/GridWidget.js'
 import { Plus, Trash2/* , X, ChevronRight, Users, Subtitles, CheckLine, Check, CheckIcon, CheckLineIcon, EllipsisVertical */ } from "lucide-react";
+// import { ifNull } from 'firebase/firestore/pipelines';
 //import { floor } from 'firebase/firestore/pipelines';
 
 
@@ -19,7 +24,7 @@ import { Plus, Trash2/* , X, ChevronRight, Users, Subtitles, CheckLine, Check, C
 
 const saveModeEn = { INSERT: 1, UPDATE: 2, DELETE: 3 };
 const statusesEn = { Not_done: 1, Done_partially: 2, Done: 3, Archived: 4 };
-const listTypesEn = { Reminder: 1, Note: 2, Task: 3, Event: 5, Work: 4, Recipe: 6, ShopList: 7 };
+const listTypesEn = { Reminder: 1, Note: 2, Task: 3, Work: 4, Event: 5, Recipe: 6, ShopList: 7 };
 
 var dataNotes = [];
 var dataBaseTable = [];
@@ -33,6 +38,7 @@ var f_update_mode = 0;
 var f_dataBaseIndex = 0;
 let rowCounter = 0;
 const newRowId = () => `row-${Date.now()}-${rowCounter++}`;
+//var isShowMessageDatabaseUpdate = false;
 
 
 
@@ -49,6 +55,7 @@ export default function App( {dbData, dbIndex} )
   const [isMenuOpen1, setIsMenuOpen1] = useState(false);
   const [selectedDatabaseIndex, setSelectedDatabaseIndex] = useState(null);
   const [isListenDatabase, setIsListenDatabase] = useState(true);
+  //const [isShowMessageDatabaseUpdate, setIsShowMessageDatabaseUpdate] = useState(false);
 
 
   dataNotes = data['dataNotes'];
@@ -67,7 +74,7 @@ export default function App( {dbData, dbIndex} )
   //
   // function listenToDB() 
   // {   
-  //   const newData = FirebaseHanle.UseTableDataAsync("TBL_Notes");
+  //   const newData = FirebaseHandle.UseTableDataAsync("TBL_Notes");
   //
   //   if (newData && newData?.length > 0 && isListenDatabase) 
   //   {
@@ -96,7 +103,7 @@ export default function App( {dbData, dbIndex} )
   //     });
   //
   //     handleSaveData(newData);  
-  //     FirebaseHanle.setFuncWhenUpdate(eventWhenUpdated);
+  //     FirebaseHandle.setFuncWhenUpdate(eventWhenUpdated);
   //   }
   // }
   //
@@ -114,20 +121,20 @@ export default function App( {dbData, dbIndex} )
 
   function listenToDB() 
   {   
-    const newData = FirebaseHanle.GetTableDataAsync("TBL_Notes");
+    const newData = FirebaseHandle.GetTableDataAsync("TBL_Notes");
 
     if (isListenDatabase && newData && newData?.length > 0) 
     {
       setIsListenDatabase(false);
       const notesWithSubs = [...dataNotes].filter((item) => item["SubTasks"] !== null && item["SubTasks"] !== undefined);
       
-      /* notesWithSubs.forEach((item) => 
-      {
-        const noteID = item.NoteID;
-        //const matchedNote = newData.find((newItem) => newItem.NoteID === item.NoteID);
-        const matchedSub = notesWithSubs.find((newItem) => newItem.NoteID === item.NoteID);
-        item["SubTasks"] = matchedSub ? matchedSub["SubTasks"] : [];
-      }); */
+      // notesWithSubs.forEach((item) => 
+      // {
+      //   const noteID = item.NoteID;
+      //   //const matchedNote = newData.find((newItem) => newItem.NoteID === item.NoteID);
+      //   const matchedSub = notesWithSubs.find((newItem) => newItem.NoteID === item.NoteID);
+      //   item["SubTasks"] = matchedSub ? matchedSub["SubTasks"] : [];
+      // });
  
       for (let i = 0; i < notesWithSubs.length; i++) 
       {
@@ -139,7 +146,10 @@ export default function App( {dbData, dbIndex} )
           if (note)
           {
             note["SubTasks"] = matchedSubs ? matchedSubs["SubTasks"] : [];
-            i += note["SubTasks"].length -1;
+            if (note["SubTasks"].length > 0)
+            {
+              i += note["SubTasks"].length -1;
+            }
           }
         }
         catch (error) 
@@ -148,8 +158,20 @@ export default function App( {dbData, dbIndex} )
         } 
       } 
 
-      handleSaveData(newData);  
-      FirebaseHanle.setFuncWhenUpdate(eventWhenUpdated);
+      handleSaveData(newData, false);  
+      FirebaseHandle.setFuncWhenUpdate(eventWhenUpdated);
+
+      // TODO: 
+      // if (isShowMessageDatabaseUpdate)
+      // {
+      //     //setIsShowMessageDatabaseUpdate(false);
+      //     Globals.PlaySound("audio/dream_bonus_notification.mp3");
+      // }
+    }
+
+    if (FirebaseHandle.getFuncWhenUpdate() === null)
+    {
+      FirebaseHandle.setFuncWhenUpdate(eventWhenUpdated);
     }
   }
   
@@ -157,10 +179,7 @@ export default function App( {dbData, dbIndex} )
   function eventWhenUpdated()
   {
       setIsListenDatabase(true);
-      FirebaseHanle.setFuncWhenUpdate(null);
-      
-      const myComponent = Globals.PlaySound("audio/dream_bonus_notification.mp3");
-      console.log(myComponent);
+      FirebaseHandle.setFuncWhenUpdate(null);
   }
 
   function handleSelectItem(selectedObject)
@@ -182,14 +201,16 @@ export default function App( {dbData, dbIndex} )
   }
 
   /// When save SubTasks
-  function handleSaveData( notesData )
+  function handleSaveData( notesData, isShowNessage )
   {
       //dataNotes = notesData;
-
       const newList = {...data, dataNotes: notesData }
       //dbData = newList;
 
       setData(newList);
+
+      //isShowMessageDatabaseUpdate = isShowNessage;
+      //return isShowNessage;
   }
 
   function handleSaveLookup(tableName, newData)
@@ -222,20 +243,20 @@ export default function App( {dbData, dbIndex} )
         /// When Very exaption record without id
         // if (record.id === record.itemObject.Title)
         // {
-        //   result = await FirebaseHanle.UpdateRecord(tableName, record.id, values);
+        //   result = await FirebaseHandle.UpdateRecord(tableName, record.id, values);
         // }
         // else
         // {
-        //  result = await FirebaseHanle.UpdateField(tableName, record.id, values);
+        //  result = await FirebaseHandle.UpdateField(tableName, record.id, values);
         // }
         
-        result = await FirebaseHanle.UpdateField(tableName, record.id, values);
+        result = await FirebaseHandle.UpdateField(tableName, record.id, values);
         
         dataNotes = [...dataNotes].map((item) => (item.id === record.id) ? {...record.itemObject, [record.fieldName]: record.value} : item);
       }
       else
       {
-        result = await FirebaseHanle.DeleteRecord(tableName, record.id);
+        result = await FirebaseHandle.DeleteRecord(tableName, record.id);
         dataNotes = [...dataNotes].filter((item) => item.id !== record.id);
       }
     }
@@ -263,6 +284,7 @@ export default function App( {dbData, dbIndex} )
         return dataBaseTable;
 
       case 'TBL_NotesChilds':
+        break;
         //return dataChilds;
 
       case 'TBL_Notes':
@@ -302,7 +324,7 @@ export default function App( {dbData, dbIndex} )
 
   async function showDataGridChilds()
   {
-    const dataChilds = await FirebaseHanle.GetTableDataSync("TBL_NotesChilds");
+    const dataChilds = await FirebaseHandle.GetTableDataSync("TBL_NotesChilds");
     
     setIsShowGrid(!isShowGrid);
     setSelectedCode(2)
@@ -353,9 +375,9 @@ export default function App( {dbData, dbIndex} )
     setSelectedCode(2)
 
 
-    await FirebaseHanle.changeDatabase(3);
+    await FirebaseHandle.changeDatabase(3);
 
-    const dataBaseTable = await FirebaseHanle.GetTableDataSync('TBL_Databases');
+    const dataBaseTable = await FirebaseHandle.GetTableDataSync('TBL_Databases');
 
     const arrayColumns = [
                             {caption: 'מזהה', fieldName: 'ID', type: 'number', width: '130px', color: '#303033'},
@@ -376,14 +398,14 @@ export default function App( {dbData, dbIndex} )
                               top='210px' left='150px' width='1730px' height='870px' onSaveFuncName={onGridSaveFuncName} />
     );
 
-    await FirebaseHanle.changeDatabase(0);
+    await FirebaseHandle.changeDatabase(0);
   }
 
   async function showDataGridStatuses()
   {
     if (!isShowGrid)
     {
-      const data = await  FirebaseHanle.GetTableDataSync('TBL_Statuses');
+      const data = await  FirebaseHandle.GetTableDataSync('TBL_Statuses');
 
       const arrayColumns = [
                             {caption: 'מזהה', fieldName: 'ID', type: 'number', width: '100px', color: '#303033'},
@@ -415,7 +437,7 @@ export default function App( {dbData, dbIndex} )
   {
     if (!isShowGrid)
     {
-      const data = await  FirebaseHanle.GetTableDataSync('TBL_ListTypes');
+      const data = await  FirebaseHandle.GetTableDataSync('TBL_ListTypes');
 
       const arrayColumns = [
                             {caption: 'מזהה', fieldName: 'ID', type: 'number', width: '100px', color: '#303033'},
@@ -470,7 +492,7 @@ export default function App( {dbData, dbIndex} )
                                   <a key={21} href='#note'  className='has-children'>החלפת מסד</a>
                                     <ul className="submenu" value={selectedDatabaseIndex}  style={{listStyleType: 'none', direction: 'ltr', textAlign: 'left', backgroundColor: '#edcb8b'}}  onChange={(e) => handleSelectDatabase(Number(e.target.value))} >
                                     {
-                                        FirebaseHanle.DataBasesConfigList.map((item, index) =>
+                                        FirebaseHandle.DataBasesConfigList.map((item, index) =>
                                         (
                                             <li key={index} style={{width: '200px'}} onClick={(e) => handleSelectDatabase(index)}>
                                               <a href={`#${index}`} > {`${index+1} - ${item.projectId}`} </a> 
@@ -480,7 +502,7 @@ export default function App( {dbData, dbIndex} )
                                     </ul>
                                 </li>
                                 
-                                <li><a key={22} href="#child" onClick={(e) => FirebaseHanle.changeIDs('TBL_Notes')}>צמצום מזהי פתקים</a></li>
+                                <li><a key={22} href="#child" onClick={(e) => FirebaseHandle.changeIDs('TBL_Notes')}>צמצום מזהי פתקים</a></li>
                                 <li><a key={23} href="#database2" /* onClick={(e) => showDataGridDatabase()} */>פנויי</a></li>
                             </ul>
                         </li>
@@ -528,9 +550,15 @@ export default function App( {dbData, dbIndex} )
     f_dataBaseIndex = dbIndex;
     setSelectedDatabaseIndex(dbIndex);
 
-    await FirebaseHanle.changeDatabase(dbIndex);
+    await FirebaseHandle.changeDatabase(dbIndex);
 
     setIsShowGrid(false);
+  }
+
+  async function handleInsert()
+  {
+      const itemObject = Note();
+      handleSelectItem(itemObject);
   }
 
   function toggleMenu1() 
@@ -547,7 +575,6 @@ export default function App( {dbData, dbIndex} )
     <div className='App'>
 
         {GetMenuComponent()}
-    
 
 
         {isWindowOpen && <FloatingWindow 
@@ -560,7 +587,7 @@ export default function App( {dbData, dbIndex} )
                             <div style={{display: 'flex', flexDirection: 'column', gap: '10px', height: '300px', overflowY: 'auto', paddingRight: '10px', direction: 'rtl', textAlign: 'right'}}>
                               <ul value={f_dataBaseIndex}  style={{listStyleType: 'none'}}  /* onChange={(e) => handleSelectDatabase(Number(e.target.value))} */ >
                               {
-                                FirebaseHanle.DataBasesConfigList.map((item, index) =>
+                                FirebaseHandle.DataBasesConfigList.map((item, index) =>
                                 (
                                   <li key={index} onClick={(e) => handleSelectDatabase(Number(e.target.value))}>
                                     {item.projectId} -  {index+1}
@@ -572,14 +599,29 @@ export default function App( {dbData, dbIndex} )
                         </FloatingWindow>
         }
 
+        <buttom type='button' style={{position: 'absolute', display: 'flex', left: '80px', top: '950px', width: '90px', height: '90px', objectFit: 'cover'}}
+          onClick={handleInsert}
+          >
+          {/* /* borderRadius: '50%', */ /* objectFit: 'cover '/* , backgroundColor: 'yellow' */ }
+          <img 
+            src="./assets/images/plus3.png" 
+            alt="Avatar" 
+            backgroundColor="transparent"
+            style={{/* width: '100%', height: '100%', */ objectFit: 'fill', /* borderRadius: '50%' */}} 
+          >
+          </img>
+        </buttom>
 
         {!isShowGrid && 
           <div className="app"> 
+
+            
             <ListData 
                 data={dataNotes} 
                 selectedItem ={selectedItem} 
                 onSelectedItem={handleSelectItem} 
-                onSaveData={handleSaveData} />
+                onSaveData={handleSaveData} 
+            />
 
             {selectedItem && 
                 <NoteScreen 
@@ -604,7 +646,7 @@ export default function App( {dbData, dbIndex} )
 
 // async function init()
 // {
-//   await FirebaseHanle.changeDatabase(FirebaseHanle.dataBaseIndex);;
+//   await FirebaseHandle.changeDatabase(FirebaseHandle.dataBaseIndex);;
   
 //   return await getData();
 // }
@@ -612,11 +654,11 @@ export default function App( {dbData, dbIndex} )
 // async function getData() 
 // {
 
-//   dataBaseTable = await FirebaseHanle.GetTableDataSync("TBL_Databases");
+//   dataBaseTable = await FirebaseHandle.GetTableDataSync("TBL_Databases");
 
-//   dataNotes = await FirebaseHanle.GetTableDataSync("TBL_Notes");
+//   dataNotes = await FirebaseHandle.GetTableDataSync("TBL_Notes");
   
-//   const subNotes = await FirebaseHanle.GetTableDataSync("TBL_NotesChilds");
+//   const subNotes = await FirebaseHandle.GetTableDataSync("TBL_NotesChilds");
 //   const subsSorted = [...subNotes].sort((a, b) => a.NoteID - b.NoteID);
 
 //   for (var i = 0; i < subsSorted.length; i++)
@@ -646,7 +688,7 @@ export default function App( {dbData, dbIndex} )
 
 // async function mapToLookupObject(tableName)
 // {
-//   const date = await  FirebaseHanle.GetTableDataSync(tableName);
+//   const date = await  FirebaseHandle.GetTableDataSync(tableName);
 
 //   const dataTable = date.map((item) => 
 //                   {
@@ -684,14 +726,31 @@ function ListData({data, selectedItem, onSelectedItem, onSaveData})
   const [searchText, setSearchText] = useState('');
   const [dateFilter, setDateFilter] = useState(null);
   const [isWithArchive, setIsWithArchive] = useState(false);
+  const [currentValue, setCurrenqtValue] = useState([{label: 'הכל, בלי ארכיון', value: 98}]);
 
 
+  const styleFilter = 
+  [
+    {label: 'הכל', value: 99},
+    {label: 'הכל, בלי ארכיון', value: 98},
+    {label: 'משימות להיום', value: 97},
+    {label: 'משימות', value: listTypesEn.Task},
+    {label: 'פתקים', value: listTypesEn.Note},
+    {label: 'תזכורות', value: listTypesEn.Reminder},
+    {label: 'אירועים ביומן', value: listTypesEn.Event},
+    {label: 'קשור לעבודה', value: listTypesEn.Work},
+    {label: 'מתכונים', value: listTypesEn.Recipe},
+    {label: 'סלי-קניות', value: listTypesEn.ShopList}
+  ]
 
-  if (!isWithArchive)
-  {
-     const filteredData = [...data].filter((item) => item.StatusID !== Number(statusesEn.Archived)); 
-     data = filteredData;
-  }
+  
+
+
+  // if (!isWithArchive)
+  // {
+  //    const filteredData = [...data].filter((item) => item.StatusID !== Number(statusesEn.Archived)); 
+  //    data = filteredData;
+  // }
   
   // Sorted array dynamically 
   const sortedProducts = useMemo(() => 
@@ -713,9 +772,18 @@ function ListData({data, selectedItem, onSelectedItem, onSaveData})
                                 return [...data].sort((a, b) => String(a.Title).localeCompare(String(b.Title)));
                               
                               case 'today':
-                                const today = new Date()/* .getTime() */;
-                                return [...data].filter((item) => (new Date(item.DateDue)).toDateString() === today.toDateString());
-
+                                const today = new Date();
+                                const dataTmp = [...data].filter((item) => (new Date(item.DateDue)).toDateString() === today.toDateString());
+                                return [...dataTmp].sort((a, b) =>
+                                (
+                                                    ((b.DateDue!==null && b.DateDue !== "") 
+                                                    ? (new Date(String(b.DateDue).replace('T', ' ').replace(', ', ' ')))
+                                                    : "")
+                                                  -
+                                                    ((a.DateDue !== null && a.DateDue !== "")
+                                                    ? (new Date(String(a.DateDue.replace('T', ' ').replace(', ', ' '))))
+                                                    : "")
+                                                  ));
                               case 'date_update':
                               default:
                                 return [...data].sort((a, b) => 
@@ -734,6 +802,68 @@ function ListData({data, selectedItem, onSelectedItem, onSaveData})
 
 
 
+  const colourStyles = {
+      control: (styles) => ({ ...styles, backgroundColor: 'rgb(254, 254, 255)', height: '41px' , minWidth: '219px', color: 'blue', /* display: 'flex', */ /* justifyContent: 'stretch', */ fontSize: '20px', textAlign: 'right', direction: 'rtl' }),
+      option: (styles, { data, isDisabled, isFocused, isSelected }) => {
+        const color = '#acadde';    // '#263375'
+        return {
+          ...styles, /* backgroundColor: 'red', */ fontSize: '21px', height: '30px',
+         
+          /// BackColor of List
+          backgroundColor: isDisabled
+                              ? undefined
+                              : isSelected
+                                ? data.color
+                                : isFocused
+                                  ? color    // Items in list backColor on Active
+                                  : undefined,
+       /*    color: isDisabled                 // Items in list ForeColor 
+                    ? '#ccc'
+                    : isSelected
+                      ? isFocused        //chroma.contrast(color, 'white') > 2
+                        ? '#ccc'
+                        : 'black'
+                    : data.color,    // Items in  /*list ForColor*/
+                    
+          cursor: isDisabled ? 'not-allowed' : 'default',
+          
+          // Mouse Down colors
+          ':active': {
+            ...styles[':active'],
+            color: '#fff',                         /// Mouse Down ForeColor      
+            backgroundColor: !isDisabled
+                                ? isSelected
+                                  ? '#fff'
+                                  : '#3958b778'   /// Mouse Down BackColor
+                                : undefined,
+          },
+        };
+      },
+      multiValue: (styles, { data }) => {
+        const color = 'rgb(224, 222, 214)';
+        return {
+          ...styles,
+          backgroundColor: color,
+          color: 'blue'
+          /* width: '100px' */
+        };
+      },
+      multiValueLabel: (styles, { data }) => ({
+        ...styles,
+        color: '#1b06b7',   /// Selected items in row ForeColor
+      }),
+      multiValueRemove: (styles, { data }) => ({
+        ...styles,
+        color: '#9888',
+        ':hover': {
+          backgroundColor: '#3c6c31',
+          color: 'white',
+        },
+      }),
+  };
+
+    
+                        
   function handleChangeSort(e, text)
   {
     e.preventDefault();
@@ -746,11 +876,11 @@ function ListData({data, selectedItem, onSelectedItem, onSaveData})
     setSortBy(text);
   }
 
-  async function handleInsert()
-  {
-      const itemObject = Note();
-      onSelectedItem(itemObject);
-  }
+  // async function handleInsert()
+  // {
+  //     const itemObject = Note();
+  //     onSelectedItem(itemObject);
+  // }
 
   /// Just for update 'selectedIndex' var
   function handleChangeSelect(itemObject, index)
@@ -759,7 +889,67 @@ function ListData({data, selectedItem, onSelectedItem, onSaveData})
     onSelectedItem(itemObject);
   }
 
+  function handleFilterChange(selectedValues)
+  {
+    // setSubjectsArray(e);
+    // /// Transfer from combo objects to seperated string
+    // const result = Globals.lookupObjectToSeperatedString(e);
+    // setSubjects(result);
+
+    setCurrenqtValue(selectedValues);
+    setDateFilter();
+  }
   
+  const getFilterQuery = (record) => 
+  {
+    var result = (currentValue.length === 0);
+
+
+    if (result)
+    {
+      return true;
+    }
+
+    for (let i=0; i<currentValue.length; i++)
+    {
+      const item = currentValue[i];
+      
+      switch (item.value)
+      {
+        // Today
+        case 97:
+          const today = new Date();
+            return (new Date(item.DateDue)).toDateString() === today.toDateString();
+
+        // All
+        case 99:
+            return true;
+
+        // All - WithOut archive
+        case 98:
+            return (record.StatusID!==statusesEn.Archived);
+
+        case listTypesEn.Reminder:
+        case listTypesEn.Note:
+        case listTypesEn.Task:
+        case listTypesEn.Event:
+        case listTypesEn.Work:
+        case listTypesEn.Recipe:
+        case listTypesEn.ShopList:
+          result = (record.ListTypeID === item.value);
+          if (result)
+          {
+            return true;
+          }
+          break;
+
+        default:
+          break;
+      } 
+    }
+
+    return result;
+  }
 
 
 
@@ -768,17 +958,28 @@ function ListData({data, selectedItem, onSelectedItem, onSaveData})
         <div style={{display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '1px', marginRight: '50px'}}>
 
           <div style={{display: 'flex', flexDirection: 'column', gap: '10px'}}>
-            <div style={{display: 'flex', flexDirection: 'row', gap: '10px', justifyContent: 'space-between'}}>
-              <div style={{display: 'flex', flexDirection: 'row', gap: '15px'}}>
+            {/* <div style={{display: 'flex', flexDirection: 'row', gap: '10px', justifyContent: 'space-between'}}> */}
+              <div style={{display: 'flex', flexDirection: 'row', gap: '15px', zIndex: '7', direction: 'rtl', textAlign: 'right'}}>
                 <button type='button' onClick={(e, text) => handleChangeSort(e, 'title')}>כותרת</button>
                 <button type='button' onClick={(e, text) => handleChangeSort(e, 'date_due')}>תאריך ביצוע</button>
                 <button type='button' onClick={(e, text) => handleChangeSort(e, 'date_update')}>תאריך עדכון</button>
                 <button type='button' onClick={(e, text) => handleChangeSort(e, 'today')}>להיום</button>
-                <input  type="date"  value={dateFilter}  style={{width: '150px', paddingTop: '4px', marginTop:'4px'}} onChange={(e) => setDateFilter(e.target.value)}></input>
+                <Select 
+                      name="subjects"
+                      value={currentValue}
+                      options={styleFilter} 
+                      defaultValue={currentValue}
+                      isMulti                                                                                                        
+                      closeMenuOnSelect={false}
+                      onChange={(items) => handleFilterChange(items)}
+                      isClearable={true}
+                      isRtl={true}
+                      styles={colourStyles}/>
+                {/* <input  type="date"  value={dateFilter}  style={{width: '150px', paddingTop: '4px', marginTop:'4px'}} onChange={(e) => setDateFilter(e.target.value)}></input> */}
               </div>
-              <button type='button' style={{width: '60px', backgroundColor: 'green', color: 'white'}}  onClick={handleInsert}>חדש</button>
-            </div>
-            <input type='text' value={searchText} placeholder='חפש...'  onChange={(e) => setSearchText(e.target.value)}   style={{height: '40px', width: '700px'}}></input>
+              {/* <button type='button' style={{width: '60px', backgroundColor: 'green', color: 'white'}}  onClick={handleInsert}>חדש</button> */}
+            {/* </div> */}
+            <input type='text' value={searchText} placeholder='חפש...'  onChange={(e) => setSearchText(e.target.value)}  style={{height: '40px', width: '700px'}}></input>
           </div>
 
 
@@ -791,7 +992,8 @@ function ListData({data, selectedItem, onSelectedItem, onSaveData})
                             (String(searchText).trim() !== '')  
                             ? ((String(item.Title).indexOf(searchText)>-1) || (String(item.Description).indexOf(searchText)>-1))
                             : (dateFilter!==null)
-                              ? String(item.DateDue).substring(0, 10) === String(dateFilter)
+                              ? getFilterQuery(item)
+                              // ? String(item.DateDue).substring(0, 10) === String(dateFilter)
                               : true
                         )
                         .map((item, index) => 
@@ -811,13 +1013,32 @@ function ListData({data, selectedItem, onSelectedItem, onSaveData})
             
           </form>
 
-          <label style={{marginTop: '10px', fontSize: '19px', color: 'white', display: 'flex', justifyContent: 'start'}}>{isWithArchive ? 'עם ארכיון' : 'ללא ארכיון'}</label>
+          {/* // Footer */}
+          <div style={{display: 'flex', flexDirection: 'row', gap: '40px'}}>
+            <label style={{marginTop: '10px', fontSize: '20px', color: 'white', direction: 'rtl', textAlign: 'right'}}>
+                <span>מס׳ פריטים:</span>  
+                &nbsp;
+                <span style={{color: 'yellow', fontWeight: '600px'}}>{sortedProducts
+                                                .filter((item) => 
+                                                  (String(searchText).trim() !== '')  
+                                                  ? ((String(item.Title).indexOf(searchText)>-1) || (String(item.Description).indexOf(searchText)>-1))
+                                                  : (dateFilter!==null)
+                                                    ? getFilterQuery(item)
+                                                    : true
+                                                  ).length}
+                </span>
+            </label>
+
+            <label style={{marginTop: '10px', fontSize: '22px', color: 'white', direction: 'rtl', textAlign: 'right'}}>
+                <span style={{color: '#434040 ', fontWeight: '700px'}}>{(isWithArchive ? 'עם ארכיון' : 'ללא ארכיון')}</span>  
+            </label>
+          </div>
 
         </div>
       
   );
 
-
+                       
 
 }
  
@@ -854,7 +1075,7 @@ function ListDataItem({index, selectedIndex, itemObject, selectedItem, onSelecte
     
     const values = { CardBackColor: cardBackColor };
     
-    const result = await FirebaseHanle.UpdateField("TBL_Notes", itemObject.FirebaseID, values);
+    const result = await FirebaseHandle.UpdateField("TBL_Notes", itemObject.FirebaseID, values);
           
     if (result)
     {
@@ -866,7 +1087,7 @@ function ListDataItem({index, selectedIndex, itemObject, selectedItem, onSelecte
       //alert(`עיqדכון הפריט עבר בהצלחה! (${cardBackColor})`);
 
       /// Refresh Note data table
-      onSaveData(dataNotes);
+      onSaveData(dataNotes, false);
       //onSelectedItem(selectedItem);
     }
     
@@ -892,7 +1113,7 @@ function ListDataItem({index, selectedIndex, itemObject, selectedItem, onSelecte
             <div style={{width: '100%', display: 'flex', flexDirection: 'row', gap: '0px', justifyContent: 'space-between'}}>
               <p className='title'>{itemObject.Title}</p>        
               { children !== '' &&
-                    <button type="button" className='icon' onClick={(e) => 
+                    <button type="button" style={{width: '30px', height: '20px', backgroundColor: '#ffffffc8'}} className='icon' onClick={(e) => 
                                                       {
                                                         e.stopPropagation();
                                                         setIsOpen(!isOpen);
@@ -974,9 +1195,9 @@ function NoteScreen({ selectedItem, onSelectedItem, onSaveData, onSaveLookup })
     //   { value: '#888769', label: 'blue' },
     //   { value: '#987654', label: 'black' }
     // ]
-
     const colourStyles = {      /* StylesConfig<ColourOption, true> */
-      control: (styles) => ({ ...styles, backgroundColor: 'rgb(254, 254, 255)', height: '30px', width: '510px', color: 'blue', /* display: 'flex', */ /* justifyContent: 'stretch', */ fontSize: '20px', textAlign: 'right', direction: 'rtl' }),
+
+      control: (styles) => ({ ...styles, backgroundColor: 'rgb(254, 254, 255)', height: '30px', width: '110px', color: 'blue', /* display: 'flex', */ /* justifyContent: 'stretch', */ fontSize: '20px', textAlign: 'right', direction: 'rtl' }),
       option: (styles, { data, isDisabled, isFocused, isSelected }) => {
         const color = '#a866eb';    // '#263375'
         return {
@@ -1023,11 +1244,11 @@ function NoteScreen({ selectedItem, onSelectedItem, onSaveData, onSaveLookup })
       },
       multiValueLabel: (styles, { data }) => ({
         ...styles,
-        color: '#f56996',   /// Selected items in row ForeColor
+        color: '#1b06b7',   /// Selected items in row ForeColor
       }),
       multiValueRemove: (styles, { data }) => ({
         ...styles,
-        color: '#9888',
+        color: 'rgba(192, 124, 124, 0.51)',
         ':hover': {
           backgroundColor: '#3c6c31',
           color: 'white',
@@ -1122,13 +1343,30 @@ function NoteScreen({ selectedItem, onSelectedItem, onSaveData, onSaveLookup })
           values['NoteID'] = noteID;
           selectedObject.NoteID = noteID;
           selectedItem.NoteID = noteID;
+
+          const funcWhenUpdate = FirebaseHandle.getFuncWhenUpdate();
+          FirebaseHandle.setFuncWhenUpdate(null);
+
+          result = await FirebaseHandle.InsertRecord("TBL_Notes", values);
           
-          result = await FirebaseHanle.InsertRecord("TBL_Notes", values);
-          
-          result = await FirebaseHanle.UpdateField('TBL_Databases', dataBaseTable[0].FirebaseID, {NumeratorNotesID: noteID});
+          if (result==='')
+          {
+            return false;
+          }
+
+           // Update field 'FirebaseID'
+          if (values["FirebaseID"] !== null && result !== '')
+          {
+            FirebaseHandle.setFuncWhenUpdate(null);
+            var json =  {FirebaseID: result};     // values;
+            await FirebaseHandle.UpdateField("TBL_Notes", result, json)
+          }
+          result = await FirebaseHandle.UpdateField('TBL_Databases', dataBaseTable[0].FirebaseID, {NumeratorNotesID: noteID});
 
           /// Save the Sub-Task
           result = await saveSubTasks();
+
+          FirebaseHandle.setFuncWhenUpdate(funcWhenUpdate);
 
           if (result)
           {
@@ -1136,7 +1374,8 @@ function NoteScreen({ selectedItem, onSelectedItem, onSaveData, onSaveLookup })
             const newArray = [...dataNotes];
             selectedObject.LastUpdateDate = values.LastUpdateDate;
             selectedObject.FirebaseID = values.FirebaseID;
-            //newArray.push({...selectedObject});
+            selectedItem.FirebaseID = values.FirebaseID;
+            newArray.push({...selectedObject});
             dataNotes = newArray;
             const objUpdated = dataNotes.find((item) => item.NoteID === noteID);
             message = `הפריט נוסף בהצלחה! (${objUpdated.NoteID.toLocaleString()})`;
@@ -1150,12 +1389,16 @@ function NoteScreen({ selectedItem, onSelectedItem, onSaveData, onSaveLookup })
           break;
 
         case saveModeEn.UPDATE:
+          const funcWhenUpdate2 = FirebaseHandle.getFuncWhenUpdate();
+          FirebaseHandle.setFuncWhenUpdate(null);
+
           values = await valuesToObject(values);
-          
-          result = await FirebaseHanle.UpdateRecord("TBL_Notes", selectedItem.FirebaseID, values);
+          result = await FirebaseHandle.UpdateRecord("TBL_Notes", selectedObject.FirebaseID, values);
           
           /// Save the Sub-Task
           result = await saveSubTasks();
+
+          FirebaseHandle.setFuncWhenUpdate(funcWhenUpdate2);
 
           if (result)
           {
@@ -1174,9 +1417,14 @@ function NoteScreen({ selectedItem, onSelectedItem, onSaveData, onSaveLookup })
           break;
 
         case saveModeEn.DELETE:
-          result = await FirebaseHanle.DeleteRecord("TBL_Notes", selectedObject.FirebaseID);
+          const funcWhenUpdate3 = FirebaseHandle.getFuncWhenUpdate();
+          FirebaseHandle.setFuncWhenUpdate(null);
+
+          result = await FirebaseHandle.DeleteRecord("TBL_Notes", selectedObject.FirebaseID);
 
           result = await deleteSubTasks();
+
+          FirebaseHandle.setFuncWhenUpdate(funcWhenUpdate3);
 
           if (result)
           {
@@ -1210,7 +1458,7 @@ function NoteScreen({ selectedItem, onSelectedItem, onSaveData, onSaveLookup })
       }
 
       /// Refresh Note data table
-      onSaveData(dataNotes);
+      onSaveData(dataNotes, false);
 
       /// After Refresh records, Point to the Updated note
       if (saveMode === saveModeEn.INSERT || saveMode === saveModeEn.UPDATE)
@@ -1276,7 +1524,7 @@ function NoteScreen({ selectedItem, onSelectedItem, onSaveData, onSaveLookup })
       for (let i = 0; i < values.SubTasks.length; i++)
       {
           const item = values.SubTasks[i];
-          result = await FirebaseHanle.InsertRecord("TBL_NotesChilds", item);
+          result = await FirebaseHandle.InsertRecord("TBL_NotesChilds", item);
       }
 
       if (!result)
@@ -1293,12 +1541,12 @@ function NoteScreen({ selectedItem, onSelectedItem, onSaveData, onSaveLookup })
       var result = true;
       
       /// Delete Old record
-      const dataSubs = await FirebaseHanle.GetQuerySync("TBL_NotesChilds", "NoteID", selectedObject.NoteID);
+      const dataSubs = await FirebaseHandle.GetQuerySync("TBL_NotesChilds", "NoteID", selectedObject.NoteID);
       
       for (let i = 0; i < dataSubs.length; i++) 
       {
         const item = dataSubs[i];
-        result = await FirebaseHanle.DeleteRecord("TBL_NotesChilds", item.FirebaseID);
+        result = await FirebaseHandle.DeleteRecord("TBL_NotesChilds", item.FirebaseID);
       }
 
       if (!result)
@@ -1449,9 +1697,6 @@ function NoteScreen({ selectedItem, onSelectedItem, onSaveData, onSaveLookup })
                 <button type='button'  style={{width: '11px', height: '10px', alignSelf: 'AlignLeft'}} onClick={(e) => handleAddLookupItem('תגים', 'TBL_Subjects', dataSubject)}>+</button>
               </div>
 
-
-              
-          
             </div>
 
           </div>
@@ -1957,7 +2202,7 @@ function NoteChild()
 
 //               <select value={selectedItem} onChange={(e) => onSelectedItem(Number(e.target.value))}>
 //               {
-//                 FirebaseHanle.DataBasesConfigList.map((item, index) =>
+//                 FirebaseHandle.DataBasesConfigList.map((item, index) =>
 //                 (
 //                   <option value={index} key={index}>{item.projectId} {index+1}</option>
 //                 ))  

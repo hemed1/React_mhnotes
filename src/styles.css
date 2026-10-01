@@ -103,7 +103,7 @@ button {
   transition: 0.3s;
   /* width: 100px; */
   height: 40px;
-  display: inline-flex; 
+  display: inline-flex;; 
   align-items:center;
   justify-content: center;
   line-height: 18px;
@@ -156,7 +156,7 @@ input, select, textarea {
   overflow: auto;
   text-align: right;
   direction: rtl;
-  z-index: 7;
+  z-index: 1;
   /* justify-content:center; */
 }
 

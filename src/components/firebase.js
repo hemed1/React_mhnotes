@@ -394,83 +394,67 @@ export async function GetQuerySync( tableName, fieldName, fieldValue )
 
 
 
-  /// Like 'Using()' in C#. Clean vars
-  // useEffect(() => 
-  // {   
 
-      try 
-      {
-        const dataRef = ref(database, tableName);
-        
-        var filteredQuery;
-        if (fieldName !== null && fieldValue !==null)
-        {
-          // 2. Build the query (Filtering items where status equals "active")
-          filteredQuery = query(
-                            dataRef, 
-                            orderByChild(fieldName), 
-                            equalTo(fieldValue)
-                          );
-        }
-        else
-        {
-          filteredQuery = dataRef;
-        }
+  try 
+  {
+    const dataRef = ref(database, tableName);
+    
+    var filteredQuery;
+    if (fieldName !== null && fieldValue !==null)
+    {
+      // 2. Build the query (Filtering items where status equals "active")
+      filteredQuery = query(
+                        dataRef, 
+                        orderByChild(fieldName), 
+                        equalTo(fieldValue)
+                      );
+    }
+    else
+    {
+      filteredQuery = dataRef;
+    }
 
 
-        await get(filteredQuery)
-                .then((snapshot) => 
-                      {
-                        //console.log(tableName + " - Async All Data:", snapshot); 
-                        //var data = [];
-                        if (snapshot.exists()) 
-                        {
-                            const dataItems = [];
-                            let formattedData;
-                            snapshot.forEach( (childSnapshot) => 
-                                              {
-                                                const record = childSnapshot.val();
-                                                if (record['FirebaseID'])
-                                                {
-                                                  formattedData = {...record, id: record['FirebaseID']}      //Object.keys(record).map(key => ({...record, id: key }));
-                                                }
-                                                else if (record['ID'])
-                                                {
-                                                  formattedData = {...record, id: record['ID']}      //Object.keys(record).map(key => ({...record, id: key }));
-                                                }
-                                                else
-                                                {
-                                                  formattedData = record;
-                                                }
-                                                dataItems.push( formattedData )
-                                              });
-                            data = dataItems;
-                            //console.log(tableName + " - Sync Child Data:", dataItems.length);
-                            //setData(dataItems);
-                            //const records = snapshot.val();
-                            //const formattedData = Object.keys(records).map(key => ({ id: key, ...records[key] }));
-                            //data = formattedData;
-                            //setData(formattedData);
-                        }
-                        else 
-                        {
-                          data = [];
-                          //setData([]);
-                        }
-                        return data;
-                      }
-                    )
-      }
-      catch (error) 
-      {
-        console.error("Error fetching data:", error);
-      } 
-      // finally 
-      // {
-      //   setLoading(false);
-      // }
-
-  //}, []); // תלויות כדי שירוץ מחדש אם הפרמטרים משתנים
+    await get(filteredQuery)
+            .then((snapshot) => 
+              {
+                if (snapshot.exists()) 
+                {
+                    const dataItems = [];
+                    let formattedData;
+                    snapshot.forEach( (childSnapshot) => 
+                                      {
+                                        var record = childSnapshot.val();
+                                        formattedData = record;
+                                        if (record['FirebaseID'])
+                                        {
+                                          formattedData = {...formattedData, FirebaseID: childSnapshot.key}      //Object.keys(record).map(key => ({...record, id: key }));
+                                        }
+                                        if (record['id'])
+                                        {
+                                          formattedData = {...formattedData, id: childSnapshot.key} ;     //Object.keys(record).map(key => ({...record, id: key }));
+                                        }
+                                        // if (record['ID'])
+                                        // {
+                                        //   formattedData = {...formattedData, id: childSnapshot.key} ;     //Object.keys(record).map(key => ({...record, id: key }));
+                                        // }
+                                        dataItems.push( formattedData )
+                                      });
+                    data = dataItems;
+                }
+                else 
+                {
+                  data = [];
+                }
+                return data;
+              }
+            )
+  }
+  catch (error) 
+  {
+    console.error("Error fetching data:", error);
+  } 
+  
 
 
   //if (loading) return ( <p>טוען נתונים ...</p> )
@@ -500,6 +484,10 @@ export async function InsertRecord( tableName, values )
             {
                 values["FirebaseID"] = snapshot.key;
             }
+            if (values["id"] !== null)
+            {
+                values["id"] = snapshot.key;
+            }
             // return (snapshot.key);
           }
     )
@@ -511,18 +499,22 @@ export async function InsertRecord( tableName, values )
     );
 
 
-    // // Update field 'FirebaseID'
-    // if (values["FirebaseID"] !== null && result !== '')
-    // {
-    //   const funcWhenUpdate = getFuncWhenUpdate();
-    //   setFuncWhenUpdate(null);
+    // Update field 'FirebaseID'
+    if (values["FirebaseID"] !== null && result !== '')
+    {
+      const funcWhenUpdate = getFuncWhenUpdate();
+      setFuncWhenUpdate(null);
 
-    //   var json =  {FirebaseID: result};     // values;
+      var json =  {FirebaseID: result};     // values;
+      if (values["id"] !== null)
+      {
+        json["id"] = result;
+      }
 
-    //   await UpdateField(tableName, result, json)
+      await UpdateField(tableName, result, json)
 
-    //   setFuncWhenUpdate(funcWhenUpdate);
-    //   }
+      setFuncWhenUpdate(funcWhenUpdate);
+      }
 
 
     return result;
@@ -625,13 +617,13 @@ export async function DeleteRecord( tableName, recordKey, fieldName = "FirebaseI
     return false;
   }
 
-  const getTable = await GetQuerySync(tableName, fieldName, recordKey);
-
-  if (!getTable)
-  {
-    alert("לא הצלחנו למצוא את הרשומה הרצוייה");
-    return false;
-  }
+  // const getTable = await GetQuerySync(tableName, fieldName, recordKey);
+  //
+  // if (!getTable)
+  // {
+  //   alert("לא הצלחנו למצוא את הרשומה הרצוייה");
+  //   return false;
+  // }
 
   const tableRef = ref(database, `${tableName}/${recordKey}`);
 
@@ -651,45 +643,6 @@ export async function DeleteRecord( tableName, recordKey, fieldName = "FirebaseI
             }
       );
 
-
-
-  // const UserProfile = ({ recordKey }) => {
-  //   const [recordData, setRecordData] = useState(null);
-
-    // useEffect(() => {
-    //   const tableRef = ref(getDatabase(app), `${tableName}/${recordKey}`);
-
-    //   // Subscribe to changes
-    //   const unsubscribe = onValue(tableRef, (snapshot) => {
-    //                         const data = snapshot.remove();
-    //                         setData(data);
-    //                       });
-
-    //   // Cleanup subscription on unmount
-    //   return () => unsubscribe();
-    // }, [recordKey]);
-
-    // if (!recordData) 
-    //   return <p>Loading...</p>;
-
-  //   return {recordData};
-  // };
-
-  // set(tableRef, values)
-  //     .then(() => console.log("Record updated successfully!"))
-  //     .catch((error) => console.error("Error updating record:", error));
-  // const key = push(tableRef);
-  // console.log(key);
-  // set(tableRef, values)
-  // tableRef.child(key)
-  // const addNewRecord = () => {
-  //           push(recordsRef, values)
-  //             .then(() => console.log("Record updated successfully!"))
-  //             .catch((error) => console.error("Error updating record:", error));
-  // };
-  // const itemsRef = ref(database, 'TBL_Notes/'+key);
-
-  //return data;
 
   return result;
 }

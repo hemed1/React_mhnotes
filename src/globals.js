@@ -1019,3 +1019,31 @@ export function PlaySound(file)
   //       // );
 
 }
+/// Set the Sub-Tasks objects to the Parent Task object, based on the NoteID
+export function setSubTasksToParent(dataNotes, dataChilds)
+{
+  const subsSorted = [...dataChilds].sort((a, b) => a.NoteID - b.NoteID);
+
+  for (var i = 0; i < subsSorted.length; i++)
+  {
+    const sub = subsSorted[i];
+    const noteID = sub.NoteID;
+    const note = dataNotes.find((n) => n.NoteID === noteID);
+    
+    const subList = subsSorted.filter((sub) => sub.NoteID === noteID);
+    i = i + subList.length - 1;
+    if (note)
+    {
+      if (subList.length > 0)
+      {
+        note["SubTasks"] = subList;
+      }
+      else
+      {
+        note["SubTasks"] = [];
+      }
+    }
+  }
+
+  return dataNotes;
+}

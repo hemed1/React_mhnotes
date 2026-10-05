@@ -3,6 +3,7 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
 import * as FirebaseHanle from './components/firebase.js';
+import {setSubTasksToParent} from './globals.js';
 //import {PublicFileComponent} from './components/FileReader.js';
 
 
@@ -88,32 +89,26 @@ async function getData()
   // const cc = await FirebaseHanle.UpdateField("TBL_Notes", '', values);
   
   dataChilds = await FirebaseHanle.GetTableDataSync("TBL_NotesChilds");
-  const subsSorted = [...dataChilds].sort((a, b) => a.NoteID - b.NoteID);
 
-  for (var i = 0; i < subsSorted.length; i++)
-  {
-    const sub = subsSorted[i];
-    const noteID = sub.NoteID;
-    const note = dataNotes.find((n) => n.NoteID === noteID);
-    // var subList = [];
-    // while (sub.NoteID === noteID)
-    // {
-    //   subList.push(sub);
-    // }
-    const subList = subsSorted.filter((sub) => sub.NoteID === noteID);
-    i = i + subList.length - 1;
-    if (note)
-    {
-      if (subList.length > 0)
-      {
-        note["SubTasks"] = subList;
-      }
-      else
-      {
-        note["SubTasks"] = [];
-      }
-    }
-  }
+  // const data158 = await FirebaseHanle.GetQuerySync("TBL_NotesChilds", "NoteID", 158)
+  //                                 .then((data) => 
+  //                                 {
+  //                                   console.log("Data for NoteID 158:", data);
+  //                                   return data;
+  //                                 }).catch((error) => {
+  //                                   console.error("Error fetching data for NoteID 158:", error);
+  //                                 });
+//
+// for (let i = 0; i < data158.length; i++) 
+// {
+//   const item = data158[i];
+//   const result = await FirebaseHanle.DeleteRecord("TBL_NotesChilds", item.FirebaseID);
+// }
+
+  //dataChilds = await setFix(dataChilds);
+
+  /// Set the Sub-Tasks objects to the Parent Task object, based on the NoteID
+  dataNotes = setSubTasksToParent(dataNotes, dataChilds);
 
   dataListTypes = await  mapToLookupObject('TBL_ListTypes');
   dataStatuses = await  mapToLookupObject('TBL_Statuses');
@@ -137,4 +132,20 @@ async function mapToLookupObject(tableName)
   const result = [...dataTable].sort((a, b) => String(a.label).localeCompare(String(b.label))); 
 
   return ( result );
+}
+
+async function setFix(data)
+{
+    // Implementation for fixing data
+    var dataChilds = data.filter((item) => item.NoteID === 158);
+    const subsSorted = [...dataChilds].sort((a, b) => a.NoteID - b.NoteID);
+    dataChilds = subsSorted;
+
+    const data1 = dataChilds.filter((item) => item.id !== item.FirebaseID);
+    const data2 = dataChilds.filter((item) => item.id === item.FirebaseID);
+    
+    
+    //dataChilds = [...dataChilds, ...values.SubTasks];
+
+  return data;
 }

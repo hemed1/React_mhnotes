@@ -85,6 +85,7 @@ async function getData()
   dataBaseTable = await FirebaseHanle.GetTableDataSync("TBL_Databases");
 
   dataNotes = await FirebaseHanle.GetTableDataSync("TBL_Notes");
+  dataNotes = [...dataNotes].sort((a, b) => a.ID - b.ID);
   // const values = { CardBackColor: '' };
   // const cc = await FirebaseHanle.UpdateField("TBL_Notes", '', values);
   
@@ -98,13 +99,12 @@ async function getData()
   //                                 }).catch((error) => {
   //                                   console.error("Error fetching data for NoteID 158:", error);
   //                                 });
-//
-// for (let i = 0; i < data158.length; i++) 
-// {
-//   const item = data158[i];
-//   const result = await FirebaseHanle.DeleteRecord("TBL_NotesChilds", item.FirebaseID);
-// }
-
+  //
+  // for (let i = 0; i < data158.length; i++) 
+  // {
+  //   const item = data158[i];
+  //   const result = await FirebaseHanle.DeleteRecord("TBL_NotesChilds", item.FirebaseID);
+  // }
   //dataChilds = await setFix(dataChilds);
 
   /// Set the Sub-Tasks objects to the Parent Task object, based on the NoteID

@@ -126,51 +126,13 @@ export default function App( {dbData, dbIndex} )
     if (isListenDatabase && newData && newData?.length > 0) 
     {
       setIsListenDatabase(false);
-
       /// Set the Sub-Tasks objects to the Parent Task object, based on the NoteID
       newData = Globals.setSubTasksToParent(newData, dataChilds);
-      const newList = {...data, dataNotes: newData }
+      //const newList = {...data, dataNotes: newData }
       //dbData = newList;
       handleSaveData(newData, false); 
 
       FirebaseHandle.setFuncWhenUpdate(eventWhenUpdated);
-
-      // const notesWithSubs = [...dataNotes].filter((item) => item["SubTasks"] !== null && item["SubTasks"] !== undefined);
-      // notesWithSubs.forEach((item) => 
-      // {
-      //   const noteID = item.NoteID;
-      //   //const matchedNote = newData.find((newItem) => newItem.NoteID === item.NoteID);
-      //   const matchedSub = notesWithSubs.find((newItem) => newItem.NoteID === item.NoteID);
-      //   item["SubTasks"] = matchedSub ? matchedSub["SubTasks"] : [];
-      // });
-      // for (let i = 0; i < notesWithSubs.length; i++) 
-      // {
-      //   try
-      //   {
-      //     const id = notesWithSubs[i].NoteID;
-      //     let note = newData.find((newItem) => newItem.NoteID === id);
-      //     const matchedSubs = notesWithSubs.find((subItem) => subItem.NoteID === id);
-      //     if (note)
-      //     {
-      //       note["SubTasks"] = matchedSubs ? matchedSubs["SubTasks"] : [];
-      //       if (note["SubTasks"].length > 0)
-      //       {
-      //         i += note["SubTasks"].length -1;
-      //       }
-      //     }
-      //   }
-      //   catch (error) 
-      //   {
-      //     console.log(error);
-      //   } 
-      // } 
-      //
-      // TODO: 
-      // if (isShowMessageDatabaseUpdate)
-      // {
-      //     //setIsShowMessageDatabaseUpdate(false);
-      //     Globals.PlaySound("audio/dream_bonus_notification.mp3");
-      // }
     }
 
     // if (FirebaseHandle.getFuncWhenUpdate() === null)
@@ -333,10 +295,10 @@ export default function App( {dbData, dbIndex} )
     setSelectedCode(2)
 
      const arrayColumns = [
-                            {caption: 'מזהה רשומה', fieldName: 'FirebaseID', type: 'string', width: '280px', color: '#303033'},
-                            {caption: 'מזהה פתק', fieldName: 'NoteID', type: 'number', width: '130px', color: '#303033'}, 
-                            {caption: 'תוכן', fieldName: 'Title', type: 'string', width: '280px', color: '#303033'},
-                            {caption: 'בוצע', fieldName: 'IsDone', type: 'bool', width: '70px', color: '#303033'},
+       {caption: 'מזהה פתק', fieldName: 'NoteID', type: 'number', width: '130px', color: '#303033'}, 
+       {caption: 'תוכן', fieldName: 'Title', type: 'string', width: '350px', color: '#303033'},
+       {caption: 'בוצע', fieldName: 'IsDone', type: 'bool', width: '70px', color: '#303033'},
+       {caption: 'מזהה רשומה', fieldName: 'FirebaseID', type: 'string', width: '280px', color: '#303033'},
                           ]
     GridHandle.GridReset();
 
@@ -743,7 +705,10 @@ function ListData({data, selectedItem, onSelectedItem, onSaveData})
     {label: 'אירועים ביומן', value: listTypesEn.Event},
     {label: 'קשור לעבודה', value: listTypesEn.Work},
     {label: 'מתכונים', value: listTypesEn.Recipe},
-    {label: 'סלי-קניות', value: listTypesEn.ShopList}
+    {label: 'סלי-קניות', value: listTypesEn.ShopList},
+    {label: 'ארכיון', value: 96},
+    {label: 'הושלמו', value: 95},
+    {label: 'הושלמו חלקית', value: 94}
   ]
 
   
@@ -806,7 +771,7 @@ function ListData({data, selectedItem, onSelectedItem, onSaveData})
 
 
   const colourStyles = {
-      control: (styles) => ({ ...styles, backgroundColor: '#ff922b', height: '41px' , minWidth: '235px', color: 'blue', fontSize: '20px', textAlign: 'right', direction: 'rtl' }),
+      control: (styles) => ({ ...styles, backgroundColor: '#ff922b', height: '41px' , minWidth: '235px', maxWidth: '330px', color: 'blue', fontSize: '20px', textAlign: 'right', direction: 'rtl' }),
       option: (styles, { data, isDisabled, isFocused, isSelected }) => {
         const color = '#acadde';    // '#263375'
         return {
@@ -914,6 +879,18 @@ function ListData({data, selectedItem, onSelectedItem, onSaveData})
       
       switch (item.value)
       {
+        // Atchived
+        case 96:
+          return (record.StatusID===Number(statusesEn.Archived));
+
+        // Completed
+        case 95:
+          return (record.StatusID===statusesEn.Done);
+
+        // Partially completed
+        case 94:
+          return (record.StatusID===statusesEn.Done_partially);
+
         // Today
         case 97:
           const today = new Date();
@@ -1114,7 +1091,8 @@ function ListDataItem({index, selectedIndex, itemObject, selectedItem, onSelecte
             <div style={{width: '100%', display: 'flex', flexDirection: 'row', gap: '0px', justifyContent: 'space-between'}}>
               <p className='title'>{itemObject.Title}</p>        
               { children !== '' &&
-                    <button type="button" style={{width: '30px', height: '20px', backgroundColor: '#ffffffc8'}} className='icon' onClick={(e) => 
+                    <button type="button" style={{width: '25px', height: '15px', backgroundColor: '#ffffffc8'}} className='icon' 
+                                                      onClick={(e) => 
                                                       {
                                                         e.stopPropagation();
                                                         setIsOpen(!isOpen);
@@ -1126,7 +1104,7 @@ function ListDataItem({index, selectedIndex, itemObject, selectedItem, onSelecte
           </div>
           
           <p style={{ fontSize: '14px', color: '#000', textAlign: 'right', direction: 'ltr', paddingRight: '36px', paddingBottom: (itemObject.DateDue ? '0px' : '18px')}}>{itemObject.DateDue}</p>
-      </div> 
+        </div> 
 
       {isOpen && children !=='' &&
           <textarea readOnly='true' className='content-box' >{children}</textarea>
@@ -1534,7 +1512,7 @@ function NoteScreen({ selectedItem, onSelectedItem, onSaveData, onSaveLookup })
 
       if (!result)
       {
-        alert("שגיאה בעידכון תתי-המשימות!");
+        alert("שיאה בעידכון בפעילות");
       }
 
       /// Save the New records
@@ -1554,7 +1532,7 @@ function NoteScreen({ selectedItem, onSelectedItem, onSaveData, onSaveLookup })
 
       if (!result)
       {
-        alert("שגיאה בעידכון תתי-המשימות!");
+        alert("שגיאה בעידכון פעילות!");
       }
 
 
@@ -1578,7 +1556,7 @@ function NoteScreen({ selectedItem, onSelectedItem, onSaveData, onSaveLookup })
 
       if (!result)
       {
-        alert("שגיאה במחיקת תתי-המשימות!");
+        alert("שגיאה במחיקת פעילות!");
       }
 
 
@@ -1680,7 +1658,7 @@ function NoteScreen({ selectedItem, onSelectedItem, onSaveData, onSaveLookup })
 
               <div style={{display: 'flex', flexDirection: 'row', justifyContent: 'space-between'}}>
                 <div style={{display: 'flex', flexDirection: 'row', gap: '16px', justifyContent: 'space-evenly', width: '80%'}}>
-                  <button type='button' style={{height: '30px'}} onClick={(e) => handleShowSubTasksScreen()}>תת-משימות</button>
+                  <button type='button' style={{height: '30px'}} onClick={(e) => handleShowSubTasksScreen()}>פעילות</button>
                   <button type='button' style={{height: '30px'}} onClick={(e) => handleAddSubLine()}>תמונות</button>
                   <button type='button' style={{height: '30px'}} onClick={(e) => handleBackColor()}>{(cardBackColor==='') ? 'תן צבע' : 'הסר צבע'}</button>
                 </div>
@@ -1698,7 +1676,7 @@ function NoteScreen({ selectedItem, onSelectedItem, onSaveData, onSaveLookup })
               </div>
 
               <Globals.FieldInScreen  captionText="בחר תאריך יעד"  fieldID="txt_dateDue"
-                control={<input id="txt_dateDue" name="txt_dateDue" type="datetime-local" value={dateDue} onChange={(e) => setDateDue(e.target.value)}></input>}
+                control={<input id="txt_dateDue" name="txt_dateDue" type="datetime-local" value={dateDue} style={{width: '250px'}} onChange={(e) => setDateDue(e.target.value)}></input>}
               />
 
               <div style={{display: 'flex', flexDirection: 'row', gap: '0px', justifyContent: 'right'}}>
@@ -1867,7 +1845,7 @@ function SonsPanel({ noteObject, onClose, onUpdateSubTasks })
                 //justifyContent: 'flex-end'
               }}
             >
-              תתי-משימות
+              פעילות
             </div>
 
             {/* <div style={{ fontSize: 19, fontWeight: 700, color: "#FBFAF8" }}>
@@ -1930,7 +1908,7 @@ function SonsPanel({ noteObject, onClose, onUpdateSubTasks })
                 borderRadius: 10,
               }}
             >
-              אין תתי-משימות. לחץ על ׳הוסף׳
+             לחץ על ׳הוסף שורה׳ לפעילות חדשה
             </div>
           )}
 
@@ -1979,8 +1957,9 @@ function SonsPanel({ noteObject, onClose, onUpdateSubTasks })
                     background: "#F7F5F1",
                     borderRadius: 6,
                     padding: "7px 10px",
-                    fontSize: 23,
+                    fontSize: '23px',
                     overflowY: "auto",
+                    minHeight: 40,
                     color: "#1F2937",
                     flexShrink: 1,
                     // outline: "none",

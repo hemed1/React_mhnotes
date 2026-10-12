@@ -47,7 +47,19 @@ export const dataBasesConfigList =
       messagingSenderId: "489835116396",
       appId: "1:489835116396:web:19a72c1c925b3b40342549",
       measurementId: "G-KLVXNEE1RD"
-   }
+   },
+
+   {
+      apiKey: "AIzaSyDg8tMZLLSIMwX3ZgsVSxwYQIFFFdvtAQ8",
+      authDomain: "notes-karur-33939.firebaseapp.com",
+      databaseURL: "https://notes-karur-33939-default-rtdb.firebaseio.com",
+      projectId: "notes-karur-33939",
+      storageBucket: "notes-karur-33939.firebasestorage.app",
+      messagingSenderId: "860233673370",
+      appId: "1:860233673370:web:5d2cbecc82961cd12e4d23",
+      measurementId: "G-0NE6VYYM7P"  
+   },
+
 ];
 
 

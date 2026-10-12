@@ -798,6 +798,8 @@ export async function changeIDs(mainTableName)
       }
   }
 
+  alert("Done!");
+
 }
 
 // export function MyComponent(tableName) 

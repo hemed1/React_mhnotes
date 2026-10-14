@@ -976,7 +976,7 @@ function ListData({data, selectedItem, onSelectedItem, onSaveData})
         <div style={{display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '1px', marginRight: '50px'}}>
 
           {/* Buttons above the list*/}
-          <div style={{display: 'flex', flexDirection: 'column', gap: '10px'}}>
+          <div style={{display: 'flex', flexDirection: 'column', gap: '10px', width: '33.7vw'}}>
               <div style={{display: 'flex', flexDirection: 'row', gap: '15px', zIndex: '7', direction: 'rtl', textAlign: 'right'}}>
                 <button type='button' onClick={(e, text) => handleChangeSort(e, 'title')}>כותרת</button>
                 <button type='button' onClick={(e, text) => handleChangeSort(e, 'date_due')}>תאריך ביצוע</button>
@@ -996,7 +996,7 @@ function ListData({data, selectedItem, onSelectedItem, onSaveData})
                 {/* <input  type="date"  value={dateFilter}  style={{width: '150px', paddingTop: '4px', marginTop:'4px'}} onChange={(e) => setDateFilter(e.target.value)}></input> */}
               </div>
               {/* <button type='button' style={{width: '60px', backgroundColor: 'green', color: 'white'}}  onClick={handleInsert}>חדש</button> */}
-            <input type='text' value={searchText} placeholder='חפש...'  onChange={(e) => setSearchText(e.target.value)}  style={{height: '40px', width: '720px'}}></input>
+            <input type='text' value={searchText} placeholder='חפש...'  onChange={(e) => setSearchText(e.target.value)}  style={{height: '40px', width: '33.7vw'}}></input>
           </div>
 
 
@@ -1963,7 +1963,7 @@ function SonsPanel({ noteObject, onClose, onUpdateSubTasks })
                 color: "#9CA3AF",
                 fontSize: 14,
                 border: "1.5px dashed #E4E0D8",
-                borderRadius: 10,
+                borderRadius: 8,
               }}
             >
              לחץ על ׳הוסף שורה׳ לפעילות חדשה
@@ -1974,80 +1974,81 @@ function SonsPanel({ noteObject, onClose, onUpdateSubTasks })
 
           {/* Field Rowד entry */}
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-            {subTasks.map((item, index) => (
-              
-              <div
-                key={item.FirebaseID}
-                style={{
-                  display: "flex",
-                  flexDirection: "row",
-                  alignItems: "center",
-                  gap: 10,
-                  background: "#fff",
-                  border: "1px solid #E4E0D8",
-                  borderRadius: 8,
-                  padding: "10px 12px",
-                }}
-              >
-                <input
-                  type="checkbox"
-                  checked={item.IsDone}
-                  onChange={() => toggleChecked(item.id)}
+            
+            {subTasks.map((item, index) => 
+            (
+                <div
+                  key={item.FirebaseID}
                   style={{
-                    width: 18,
-                    height: 18,
-                    accentColor: "#1B2A4A",
-                    cursor: "pointer",
-                    flexShrink: 0,
-                  }}
-                />
-
-                <textarea
-                  type="multiline"
-                  minRows='1'
-                  maxRows='4'
-                  value={item.Title}
-                  onChange={(e) => updateText(item.id, e.target.value)}
-                  placeholder="הקלד טקסט..."
-                  style={{
-                    flex: 1,
-                    border: "1px solid transparent",
-                    background: "#F7F5F1",
-                    borderRadius: 6,
-                    padding: "7px 10px",
-                    fontSize: '23px',
-                    overflowY: "auto",
-                    minHeight: 40,
-                    color: "#1F2937",
-                    flexShrink: 1,
-                    // outline: "none",
-                  }}
-                  ref={(index===subTasks.length-1) ? targetControlRef : null}
-                  onFocus={(e) => (e.target.style.borderColor = "#1B2A4A")}
-                  onBlur={(e) => (e.target.style.borderColor = "transparent")}
-                />
-
-                <button
-                  onClick={() => deleteRow(item.FirebaseID)}
-                  type='button'
-                  style={{
-                    border: "none",
-                    background: "transparent",
-                    cursor: "pointer",
-                    color: "#B0473F",
                     display: "flex",
+                    flexDirection: "row",
                     alignItems: "center",
-                    justifyContent: "center",
-                    padding: 6,
-                    borderRadius: 6,
-                    flexShrink: 0,
-                    boxShadow: '0px 0px 0px transparent'
+                    gap: 10,
+                    background: "#fff",
+                    border: "1px solid #E4E0D8",
+                    borderRadius: 8,
+                    padding: "10px 12px",
                   }}
-                  aria-label="מחק שורה"
-                  title="מחק שורה"
                 >
-                  <Trash2 size={20} />
-                </button>
+                  <input
+                    type="checkbox"
+                    checked={item.IsDone}
+                    onChange={() => toggleChecked(item.id)}
+                    style={{
+                      width: 18,
+                      height: 18,
+                      accentColor: "#1B2A4A",
+                      cursor: "pointer",
+                      flexShrink: 0,
+                    }}
+                  />
+
+                  <textarea
+                    type="multiline"
+                    minRows='1'
+                    maxRows='5'
+                    value={item.Title}
+                    onChange={(e) => updateText(item.id, e.target.value)}
+                    placeholder="הקלד טקסט..."
+                    style={{
+                      flex: 1,
+                      border: "1px solid transparent",
+                      background: "#F7F5F1",
+                      borderRadius: 6,
+                      padding: "7px 10px",
+                      fontSize: '23px',
+                      overflowY: "auto",
+                      minHeight: 40,
+                      color: "#1F2937",
+                      // flexShrink: 1,
+                      // outline: "none",
+                    }}
+                    ref={(index===subTasks.length-1) ? targetControlRef : null}
+                    onFocus={(e) => (e.target.style.borderColor = "#1B2A4A")}
+                    onBlur={(e) => (e.target.style.borderColor = "transparent")}
+                  />
+
+                  <button
+                    onClick={() => deleteRow(item.FirebaseID)}
+                    type='button'
+                    style={{
+                      border: "none",
+                      background: "transparent",
+                      cursor: "pointer",
+                      color: "#B0473F",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      padding: 6,
+                      borderRadius: 6,
+                      flexShrink: 0,
+                      boxShadow: '0px 0px 0px transparent'
+                    }}
+                    aria-label="מחק שורה"
+                    title="מחק שורה"
+                  >
+                    <Trash2 size={20} />
+                  </button>
               </div>
             ))}
           </div>

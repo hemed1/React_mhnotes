@@ -430,6 +430,11 @@ export async function GetQuerySync( tableName, fieldName, fieldValue )
                                         {
                                           formattedData = {...formattedData, FirebaseID: childSnapshot.key}      //Object.keys(record).map(key => ({...record, id: key }));
                                         }
+                                        else // field 'FirebaaseID'
+                                        {
+                                          formattedData['FirebaseID'] = childSnapshot.key;
+                                          //formattedData = {...formattedData, FirebaseID: childSnapshot.key}      //Object.keys(record).map(key => ({...record, id: key }));
+                                        }
                                         if (record['id'])
                                         {
                                           formattedData = {...formattedData, id: childSnapshot.key} ;     //Object.keys(record).map(key => ({...record, id: key }));
@@ -558,16 +563,20 @@ export async function UpdateRecord( tableName, recordKey, values )
 }
 
 /// Update Specific fields to save (not All)
+/// Asume that the record have field 'FirebasID' to find the record
 export async function UpdateField(tableName, recordKey, values) 
 {
   var result = false;
 
-  // 1. Create a reference to the specific 'table' (node) in your database
-  var tableRefUrl = tableName;
-  if (recordKey.trim() !== '')
+  if (String(recordKey).trim() === "")
   {
-    tableRefUrl += "/" + recordKey;
+    alert("מזהה הרשומה ריק");
+    return false;
   }
+
+  // 1. Create a reference to the specific 'table' (node) in your database
+  var tableRefUrl = tableName + "/" + recordKey;
+  
   const tableRef = ref(database, tableRefUrl);
   //const tableRef = ref(database, `${tableName}/${recordKey}`);
 

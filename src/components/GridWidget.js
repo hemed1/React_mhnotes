@@ -3,7 +3,8 @@
 import { useState, useMemo } from 'react';
 import './gridWidget.css'; // קובץ העיצוב שלנו
 import { GridEdited }  from '../globals.js';
-import { SaveIcon, Edit3, Edit, DeleteIcon} from "lucide-react";
+import { SaveIcon, Edit3, Edit, Trash2 /*, Calendar1Icon */} from "lucide-react";
+
 
 
 
@@ -98,12 +99,10 @@ export function GridWidget( {data, title, tableName, arrayColumns,
                               default:
                                  if (sortDirection === 'asc')
                                  {
-                                    //return [...dataItems].sort((a, b) => String(a[sortFieldName]) - String(b[sortFieldName]));
                                     return [...dataItems].sort((a, b) => String(a[sortFieldName]).localeCompare(String(b[sortFieldName])));
                                  }
                                  else
                                  {
-                                    //return [...dataItems].sort((a, b) => String(b[sortFieldName]) - String(a[sortFieldName]));
                                     return [...dataItems].sort((a, b) => String(b[sortFieldName]).localeCompare(String(a[sortFieldName])));
                                  }
                                  //break;
@@ -118,44 +117,55 @@ export function GridWidget( {data, title, tableName, arrayColumns,
          {
             setDataItems(prevGrid => 
                         {
-                           var resultItems = [];
-                           
-                           prevGrid.map((item, index) =>  
-                           {
-                              var updatedItem = null;
-                              /// When exaption record without id
-                              if (item["FirebaseID"] === null || item["FirebaseID"] === undefined || item["FirebaseID"] === '')
-                              {
-                                 try
-                                 {
-                                    item["FirebaseID"] = item.Title;
-                                 }
-                                 catch (error) 
-                                 {
-                                    console.log(error);
-                                 } 
-                              }
+                           var resultItems = [...dataItems];
+                           var updatedItem = null;
+                           let id;
 
-                              /// Find the specific record by its ID
-                              if (item.FirebaseID === recordID)
+                           const item = prevGrid.find((item3) =>
+                                                      (item3['FirebaseID']!== undefined && item3.FirebaseID===recordID) ||
+                                                      (item3['id']!== undefined && item3.id===recordID) ||
+                                                      (item3['ID']!== undefined && item3.ID===recordID));
+                           
+                              if (item)            //(id === recordID)
                               {
+                                 /// Find the ID of the record
+                                 if (item["id"] !== null || item["id"] !== undefined)
+                                 {
+                                    id = item["id"];
+                                 }
+                                 else if (item["ID"] !== null && item["ID"] !== undefined)
+                                 {
+                                    id = item["ID"];
+                                 }
+                                 else if (item["FirebaseID"] !== null && item["FirebaseID"] !== undefined && item["FirebaseID"] !== '')
+                                 {
+                                    id = item["FirebaseID"];
+                                 }
+                                 else if ((item["FirebaseID"] === null || 
+                                    item["FirebaseID"] === undefined || 
+                                    item["FirebaseID"] === '') &&
+                                    item["Title"] !== null && item["Title"] !== undefined && item["Title"] !== '' )
+                                 {
+                                    try
+                                    {
+                                       item["FirebaseID"] = item.Title;
+                                    }
+                                    catch (error) 
+                                    {
+                                       console.log(error);
+                                    } 
+                                 }
+
                                  if (keepID === null)
                                  {
-                                    if (item["Title"] !== null && item["Title"] !== undefined && item["FirebaseID"] === item["Title"])
-                                    {
-                                       keepID = item["Title"];
-                                    }
-                                    else
-                                    {  
-                                       keepID = item["FirebaseID"];
-                                    }
+                                    keepID = id;
                                  }
 
                                  // Update Specific Cell with new value
                                  for (let c = 0; c < arrayColumns.length; c++)
                                  {
                                     const col = Object.keys(item).findIndex(key => key === arrayColumns[c].fieldName);
-                                    if (col > -1 && c === targetColIndex /* && item.id === recordID */ /* && index === targetRowIndex */  /* && newValue !== item[arrayColumns[c].fieldName] */) 
+                                    if (col > -1 && c === targetColIndex)            /* && item.id === recordID */
                                     {
                                        var data = null;
                                        switch (arrayColumns[c].type)
@@ -188,9 +198,8 @@ export function GridWidget( {data, title, tableName, arrayColumns,
                                        }
 
                                        /// Update direcrtly the item with new data
-                                       //updatedItem = { ...item, [arrayColumns[c].fieldName]: data };
                                        item[arrayColumns[c].fieldName] = data;
-                                       updatedItem = {...item}      //, [arrayColumns[c].fieldName]: data };
+                                       updatedItem = {...item} ;
                                       
                                        /// Add to array of chaged records (itemsToSave   )
                                        const keep = keepID;;
@@ -210,24 +219,22 @@ export function GridWidget( {data, title, tableName, arrayColumns,
                                  }
                               }
 
+                              /// Update
                               if (updatedItem && updatedItem !== null)
                               {
-                                 resultItems = [...dataItems].map((item2, index2) => (item2.FirebaseID===updatedItem.FirebaseID) ? updatedItem : item2 );
-                                 
-                                 return updatedItem;
+                                 resultItems = [...dataItems].map((item2, index2) => 
+                                    (item2['FirebaseID']!== undefined && item2.FirebaseID===updatedItem.FirebaseID) ||
+                                    (item2['id']!== undefined && item2.id===updatedItem.id) ||
+                                    (item2['ID']!== undefined && item2.ID===updatedItem.ID)
+                                    ? updatedItem 
+                                    : item2 );
+                                 //return updatedItem;
                               }
-                              else
-                              {
-                                 return item;
-                              }
-                           });
          
                            return resultItems;
                         }
             );
-            //setSelectedRowIndex(selectedRowIndex);
          };
-
 
 
 
@@ -332,21 +339,21 @@ export function GridWidget( {data, title, tableName, arrayColumns,
       
       <h2 style={{textAlign: 'center', color: 'white'}}>{title}</h2>
 
-      <div style={{display: 'flex', flexDirection: 'row', justifyContent: 'flex-start', gap: '15px', paddingLeft: '10px', paddingRight: '10px'}}>
-         <button type="button" onClick={handleSaveChanges} style={{display: 'flex', padding: '5px 10px', backgroundColor: 'red' ,  color: 'white', border: 'none', borderRadius: '4px'}} title="שמירת שינויים" >
-            <SaveIcon size={15} />
+      <div style={{display: 'flex', flexDirection: 'row', justifyContent: 'flex-start', gap: '15px', paddingLeft: '10px', paddingRight: '10px', paddingTop: '10px'}}>
+         <button type="button" onClick={handleSaveChanges} style={{width: '70px', display: 'flex', padding: '5px 10px', backgroundColor: 'red' ,  color: 'white', border: 'none', borderRadius: '4px'}} title="שמירת שינויים" >
+            <SaveIcon size={25} />
          </button>
-         <button type="button" onClick={handleEndEdit} style={{display: 'flex', padding: '5px 10px', backgroundColor: 'green', color: 'white', border: 'none', borderRadius: '4px'}} title="עריכה" >
-               {isEditMode  && <Edit3 size={15} />}
-               {!isEditMode && <Edit size={15} />}
+         <button type="button" onClick={handleEndEdit} style={{width: '70px', display: 'flex', padding: '5px 10px', backgroundColor: 'green', color: 'white', border: 'none', borderRadius: '4px'}} title="עריכה" >
+               {isEditMode  && <Edit3 size={25} />}
+               {!isEditMode && <Edit size={25} />}
          </button>
-         <button type="button" onClick={(e) => handleDeleteRecord()} style={{display: 'flex', padding: '5px 10px', backgroundColor: 'blue', color: 'white', border: 'none', borderRadius: '4px'}} title="מחיקה" >
-               {isEditMode  && <DeleteIcon size={15} />}
-               {!isEditMode && <DeleteIcon size={15} />}
+         <button type="button" onClick={(e) => handleDeleteRecord()} style={{width: '70px', display: 'flex', padding: '5px 10px', backgroundColor: 'blue', color: 'white', border: 'none', borderRadius: '4px'}} title="מחיקה" >
+               {isEditMode  && <Trash2 size={25} />}
+               {!isEditMode && <Trash2 size={25} />}
          </button>
-         <button type="button" onClick={(e) => handleFilter(1)} style={{display: 'flex', padding: '5px 10px', backgroundColor: '#ffa94d',  color: 'white', border: 'none', borderRadius: '4px'}} title="להיום" >
-            <SaveIcon size={15} />
-         </button>
+         {/* <button type="button" onClick={(e) => handleFilter(1)} style={{width: '70px', display: 'flex', padding: '5px 10px', backgroundColor: '#ffa94d',  color: 'white', border: 'none', borderRadius: '4px'}} title="להיום" >
+            <Calendar1Icon size={25} />
+         </button> */}
 
       </div>
      
@@ -414,13 +421,14 @@ export function GridWidget( {data, title, tableName, arrayColumns,
                               return found;
                            })
 
-                     .map((item, rowIndex) => (
+                     .map((item, rowIndex) => 
+                     (
                         <tr key={rowIndex} className={`row-item ${ selectedRowIndex === rowIndex ? "selected" : ""}`}  
                            style={{color: getRowColor(item, itemsToSave, rowIndex, 'black')}}
                            onClick={(e) => setSelectedRowIndex(rowIndex)}>
                         {
-                           arrayColumns.map((col, colIndex) => (
-                           
+                           arrayColumns.map((col, colIndex) => 
+                           (
                               <td key={colIndex} className='gridCol' title={item[col.fieldName]} 
                                   style={{
                                     width: col.width, 
@@ -429,17 +437,15 @@ export function GridWidget( {data, title, tableName, arrayColumns,
                                     textAlign: (col.fieldName!=='FirebaseID' || col.type==='date') ? 'right' : 'left'}}> 
                                  {
                                     !isEditMode
-                                       ? String(item[col.fieldName])
-                                       // ? (String(item[col.fieldName]).length > 40)
-                                       //       ? String(item[col.fieldName]).substring(0, 30) + '...'
-                                       //       : String(item[col.fieldName])
-                                       : 
-                                       <input 
+                                       ?  (col.lookupTable === undefined || col.lookupTable === null || col.lookupTable.length === 0) 
+                                          ? String(item[col.fieldName]) 
+                                          : (col.lookupTable.find((lookupItem) => lookupItem.value === item[col.fieldName]))?.label || String(item[col.fieldName])
+                                       : <input 
                                           type='text'     //{(col.type==='number') ? "number": "text"}
-                                          style={{width: String(Number(col.width.substring(0, col.width.length - 2))-25)+'px'/* , boxSizing: 'border-box' */}}
+                                          style={{width: String(Number(col.width.substring(0, col.width.length - 2))-25)+'px'}}
                                           value={String(item[col.fieldName])}
                                           onChange={(e) => updateCell(rowIndex, colIndex, (item["id"] === null || item["id"] === undefined || item["id"] === '') ? item.Title : item["id"], e.target.value)}
-                                       />
+                                        />
                                  }
                               </td>
                            ))

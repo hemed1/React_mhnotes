@@ -134,18 +134,18 @@ async function mapToLookupObject(tableName)
   return ( result );
 }
 
-async function setFix(data)
-{
-    // Implementation for fixing data
-    var dataChilds = data.filter((item) => item.NoteID === 158);
-    const subsSorted = [...dataChilds].sort((a, b) => a.NoteID - b.NoteID);
-    dataChilds = subsSorted;
+// async function setFix(data)
+// {
+//     // Implementation for fixing data
+//     var dataChilds = data.filter((item) => item.NoteID === 158);
+//     const subsSorted = [...dataChilds].sort((a, b) => a.NoteID - b.NoteID);
+//     dataChilds = subsSorted;
 
-    const data1 = dataChilds.filter((item) => item.id !== item.FirebaseID);
-    const data2 = dataChilds.filter((item) => item.id === item.FirebaseID);
+//     const data1 = dataChilds.filter((item) => item.id !== item.FirebaseID);
+//     const data2 = dataChilds.filter((item) => item.id === item.FirebaseID);
     
     
-    //dataChilds = [...dataChilds, ...values.SubTasks];
+//     //dataChilds = [...dataChilds, ...values.SubTasks];
 
-  return data;
-}
+//   return data;
+// }

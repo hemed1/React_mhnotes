@@ -46,7 +46,7 @@ const newRowId = () => `row-${Date.now()}-${rowCounter++}`;
 export default function App( {dbData, dbIndex} )
 {
   const [selectedItem, setSelectedItem] = useState(null);
-  const [isWindowOpen, setIsWindowOpen] = useState(false);
+  //const [isWindowOpen, setIsWindowOpen] = useState(false);
   const [data, setData] = useState(dbData);
   const [dataBaseIndex] = useState(dbIndex);
   const [isShowGrid, setIsShowGrid] = useState(false);
@@ -59,11 +59,11 @@ export default function App( {dbData, dbIndex} )
 
 
   dataNotes = data['dataNotes'];
-  dataBaseTable = data['dataBaseTable'];
-  dataListTypes = data['dataListTypes'];
   dataChilds = data['dataChilds'];
+  dataListTypes = data['dataListTypes'];
   dataStatuses = data['dataStatuses'];
   dataSubject = data['dataSubject'];
+  dataBaseTable = data['dataBaseTable'];
 
   f_dataBaseIndex = dataBaseIndex;
 
@@ -114,8 +114,9 @@ export default function App( {dbData, dbIndex} )
 
 
 
-
   listenToDB();
+
+
 
 
 
@@ -134,11 +135,6 @@ export default function App( {dbData, dbIndex} )
 
       FirebaseHandle.setFuncWhenUpdate(eventWhenUpdated);
     }
-
-    // if (FirebaseHandle.getFuncWhenUpdate() === null)
-    // {
-    //   FirebaseHandle.setFuncWhenUpdate(eventWhenUpdated);
-    // }
   }
   
   /// Fired when other device add/update records
@@ -198,39 +194,49 @@ export default function App( {dbData, dbIndex} )
   {
     var result = false;
 
+
     for (var i=0; i<records.length; i++)
     {
       const record = records[i];
       const values = {}; 
       values[record.fieldName] = record.value;
 
-      if (record.value !== 'deleted')
-      {
-        /// When Very exaption record without id
-        // if (record.id === record.itemObject.Title)
-        // {
-        //   result = await FirebaseHandle.UpdateRecord(tableName, record.id, values);
-        // }
-        // else
-        // {
-        //  result = await FirebaseHandle.UpdateField(tableName, record.id, values);
-        // }
-        
-        result = await FirebaseHandle.UpdateField(tableName, record.id, values);
-        
-        dataNotes = [...dataNotes].map((item) => (item.id === record.id) ? {...record.itemObject, [record.fieldName]: record.value} : item);
-      }
-      else
+      if (record.value === 'deleted')
       {
         result = await FirebaseHandle.DeleteRecord(tableName, record.id);
         dataNotes = [...dataNotes].filter((item) => item.id !== record.id);
       }
+      else
+      {
+        /// Check if record haz field 'FierebaseID' to find the record in Firebase
+        if (record.itemObject && record.itemObject['FirebaseID'] === undefined)
+        {
+          const dataFound = await FirebaseHandle.GetQuerySync(tableName, "ID", record.id)
+                        .then((data) => 
+                              {
+                                return data;
+                              })
+                        .catch((error) => function() 
+                              { 
+                                console.error("Error updating record:", error);
+                              });
+          if (dataFound && dataFound.length > 0 && dataFound[0]['FirebaseID'] !== undefined)
+          {
+            record.id = dataFound[0]['FirebaseID'];
+          }
+        }
+        
+        result = await FirebaseHandle.UpdateField(tableName, record.id, values);
+        
+        if (tableName === 'TBL_Notes')
+        {
+          dataNotes = [...dataNotes].map((item) => (item.id === record.id) ? {...record.itemObject, [record.fieldName]: record.value} : item);
+        }
+      }
+    
     }
 
-    const newList = {...data, dataNotes: dataNotes }
-    dbData = newList;
-    setData(newList);
-
+  
     if (records.length>0)
     {
       if (result)
@@ -244,19 +250,46 @@ export default function App( {dbData, dbIndex} )
     }
 
 
+    let newList;
+    let newData;
+
     switch (tableName)
     {
       case 'TBL_Databases':
-        return dataBaseTable;
+        newData = await FirebaseHandle.GetTableDataSync("TBL_Databases");
+        newList = {...data, dataBaseTable: newData };
+        break;
 
       case 'TBL_NotesChilds':
-        return dataChilds;
+        newData = await FirebaseHandle.GetTableDataSync("TBL_NotesChilds");
+        newList = {...data, dataChilds: newData };
+        break;
+
+      case 'TBL_ListTypes':
+        newData = await FirebaseHandle.GetTableDataSync("TBL_ListTypes");
+        newList = {...data, dataListTypes: newData }
+        break;
+
+      case 'TBL_Statuses':
+        newData = await FirebaseHandle.GetTableDataSync("TBL_Statuses");
+        newList = {...data, dataStatuses: newData }
+        break;
+      case 'TBL_Subjects':
+        newData = await FirebaseHandle.GetTableDataSync("TBL_Subjects");
+        newList = {...data, dataSubject: newData }
+        break;
 
       case 'TBL_Notes':
       default:
-        return dataNotes;
+        newData = await FirebaseHandle.GetTableDataSync("TBL_Notes");
+        newList = {...data, dataNotes: newData }
     }
     
+
+    dbData = newList;
+    setData(newList);
+
+    return newData;
   }
 
   function showDataGridNotes()
@@ -269,11 +302,11 @@ export default function App( {dbData, dbIndex} )
                           {caption: 'מזהה', fieldName: 'NoteID', type: 'number', width: '100px', color: '#303033'}, 
                           {caption: 'כותרת', fieldName: 'Title', type: 'string', width: '320px', color: '#c73c20'},
                           {caption: 'תיאור', fieldName: 'Description', type: 'string', width: '400px', color: '#303033'},
-                          {caption: 'סוג פריט', fieldName: 'ListTypeID', type: 'number', width: '90px', color: '#303033'},
-                          {caption: 'סטטוס', fieldName: 'StatusID', type: 'number', width: '90px', color: '#303033'},
+                          {caption: 'סוג פריט', fieldName: 'ListTypeID', type: 'number', width: '160px', color: '#303033', lookupTable: dataListTypes},
+                          {caption: 'סטטוס', fieldName: 'StatusID', type: 'number', width: '160px', color: '#303033', lookupTable: dataStatuses},
                           {caption: 'תגיות', fieldName: 'SubjectLabels', type: 'string', width: '230px', color: '#303033'},
                           {caption: 'ת. ביצוע', fieldName: 'DateDue', type: 'date', width: '200px', color: '#303033'},
-                          {caption: 'במועדפים', fieldName: 'IsFavorite', type: 'number', width: '70px', color: '#303033'},
+                          {caption: 'מועדפים', fieldName: 'IsFavorite', type: 'number', width: '110px', color: '#303033'},
                           {caption: 'מזהה רשומה', fieldName: 'FirebaseID', type: 'string', width: '280px', color: '#303033'},
                           {caption: 'ת. עדכון אחרון', fieldName: 'LastUpdateDate', type: 'date', width: '240px', color: '#303033'},
                         ]
@@ -542,15 +575,14 @@ export default function App( {dbData, dbIndex} )
         {GetMenuComponent()}
 
 
-        {isWindowOpen && <FloatingWindow 
+      {/*   {isWindowOpen && <FloatingWindow 
                             title="Terminal Notes" 
                             isOpen={isWindowOpen} 
                             onClose={() => setIsWindowOpen(false)}
                             onSelectedItem={handleSelectDatabase}
                           >
-                            {/* children  */}
                             <div style={{display: 'flex', flexDirection: 'column', gap: '10px', height: '300px', overflowY: 'auto', paddingRight: '10px', direction: 'rtl', textAlign: 'right'}}>
-                              <ul value={f_dataBaseIndex}  style={{listStyleType: 'none'}}  /* onChange={(e) => handleSelectDatabase(Number(e.target.value))} */ >
+                              <ul value={f_dataBaseIndex}  style={{listStyleType: 'none'}} >
                               {
                                 FirebaseHandle.DataBasesConfigList.map((item, index) =>
                                 (
@@ -563,13 +595,12 @@ export default function App( {dbData, dbIndex} )
                             </div>
                         </FloatingWindow>
         }
+    */}
 
-        <buttom type='button' style={{position: 'absolute', display: 'flex', left: '80px', top: '950px', width: '90px', height: '90px', objectFit: 'cover'}}
-          onClick={handleInsert}
-          >
-          {/* /* borderRadius: '50%', */ /* objectFit: 'cover '/* , backgroundColor: 'yellow' */ }
+
+        <buttom type='button' style={{position: 'absolute', display: 'flex', left: '80px', top: '950px', width: '90px', height: '90px', objectFit: 'cover'}} onClick={handleInsert}>
           <img 
-            src="./assets/images/plus3.png" 
+            src="./plus3.png" 
             alt="Avatar" 
             backgroundColor="transparent"
             style={{/* width: '100%', height: '100%', */ objectFit: 'fill', /* borderRadius: '50%' */}} 
@@ -601,6 +632,18 @@ export default function App( {dbData, dbIndex} )
 
         { isShowGrid && gridData }
 
+
+        <footer style={{position: 'absolute', display: 'flex', gap: '700px', flexDirection: 'row', justifyContent: 'left', 
+                        bottom: '0', left: '0', width: '100%', height: '35px', backgroundColor: '#c8c8cd', fontSize: '17px', textAlign: 'left', direction: 'ltr', paddingTop: '7px'}}>
+
+          <p style={{margin: '0', paddingLeft: '30px', textAlign: 'left'}}>© 2024 Hemed. All rights reserved.</p>
+          <p style={{textAlign: 'center'}}>Version: <span style={{color: 'white'}}>2.3.3</span></p>
+          {/* <p style={{color: 'white', direction: 'rtl', textAlign: 'right', fontSize: '20px', paddingRight: '30px'}}>
+              <span>מס׳ פריטים:</span>  
+              &nbsp;
+              <span style={{color: 'yellow', fontWeight: '600px'}}>{dataNotes.length}</span>
+          </p> */}
+        </footer>
 
     </div>
 
@@ -932,8 +975,8 @@ function ListData({data, selectedItem, onSelectedItem, onSaveData})
     
         <div style={{display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '1px', marginRight: '50px'}}>
 
+          {/* Buttons above the list*/}
           <div style={{display: 'flex', flexDirection: 'column', gap: '10px'}}>
-            {/* <div style={{display: 'flex', flexDirection: 'row', gap: '10px', justifyContent: 'space-between'}}> */}
               <div style={{display: 'flex', flexDirection: 'row', gap: '15px', zIndex: '7', direction: 'rtl', textAlign: 'right'}}>
                 <button type='button' onClick={(e, text) => handleChangeSort(e, 'title')}>כותרת</button>
                 <button type='button' onClick={(e, text) => handleChangeSort(e, 'date_due')}>תאריך ביצוע</button>
@@ -953,45 +996,60 @@ function ListData({data, selectedItem, onSelectedItem, onSaveData})
                 {/* <input  type="date"  value={dateFilter}  style={{width: '150px', paddingTop: '4px', marginTop:'4px'}} onChange={(e) => setDateFilter(e.target.value)}></input> */}
               </div>
               {/* <button type='button' style={{width: '60px', backgroundColor: 'green', color: 'white'}}  onClick={handleInsert}>חדש</button> */}
-            {/* </div> */}
             <input type='text' value={searchText} placeholder='חפש...'  onChange={(e) => setSearchText(e.target.value)}  style={{height: '40px', width: '720px'}}></input>
           </div>
 
 
-          <form className="accordion">
+          <div style={{display: 'flex', flexDirection: 'row', gap: '10px', fontSize: '20px', direction: 'rtl', textAlign: 'right'}}>
             
-            <ul className='list' key="friend-list">
-            {
-              sortedProducts
-                        .filter((item) => 
-                            (String(searchText).trim() !== '')  
-                            ? ((String(item.Title).indexOf(searchText)>-1) || (String(item.Description).indexOf(searchText)>-1))
-                            : getFilterQuery(item)
-                              //:(dateFilter!==null)
-                              //getFilterQuery(item)
-                              // ? String(item.DateDue).substring(0, 10) === String(dateFilter)
-                              //: true
-                        )
-                        .map((item, index) => 
-                        (
-                          <ListDataItem   index={index}
-                                          itemObject={item}
-                                          selectedIndex={selectedIndex}
-                                          selectedItem={selectedItem}
-                                          onSelectedItem={handleChangeSelect}
-                                          onSaveData={onSaveData}
-                                          key={index} >
-                              {item.Description}
-                          </ListDataItem>
-                        ))
-            }
-            </ul>
-            
-          </form>
+            {/* List of items */}
+            <form className="accordion">
+              
+              <ul className='list' key="friend-list">
+              {
+                sortedProducts
+                          .filter((item) => 
+                              (String(searchText).trim() !== '')  
+                              ? ((String(item.Title).indexOf(searchText)>-1) || (String(item.Description).indexOf(searchText)>-1))
+                              : getFilterQuery(item)
+                                //:(dateFilter!==null)
+                                //getFilterQuery(item)
+                                // ? String(item.DateDue).substring(0, 10) === String(dateFilter)
+                                //: true
+                          )
+                          .map((item, index) => 
+                          (
+                            <ListDataItem   index={index}
+                                            itemObject={item}
+                                            selectedIndex={selectedIndex}
+                                            selectedItem={selectedItem}
+                                            onSelectedItem={handleChangeSelect}
+                                            onSaveData={onSaveData}
+                                            key={index} >
+                                {item.Description}
+                            </ListDataItem>
+                          ))
+              }
+              </ul>
+              
+            </form>
+
+
+            {/* Caption of teh Application */}
+            <div>
+              <p style={{position: 'absolute', left: '100px', top: '120px', color: 'white', direction: 'rtl', 
+                textAlign: 'right', textShadow: '9px 9px 15px rgba(68, 68, 71, 0.6)', fontFamily: 'Trebuchet MS', fontSize: '100px'}}>משימות ופתקים</p>
+               {/* <img 
+                src="./note_small.png" 
+                alt="Avatar" 
+                backgroundColor="transparent"
+                style={{/* width: '100%', height: '100%', objectFit: 'fill',  borderRadius: '50%' }} ></img> */}
+            </div>
+          </div>
 
           {/* // Footer */}
-          <div style={{display: 'flex', flexDirection: 'row', gap: '40px'}}>
-            <label style={{marginTop: '10px', fontSize: '20px', color: 'white', direction: 'rtl', textAlign: 'right'}}>
+          <div style={{display: 'flex', flexDirection: 'row', gap: '40px', marginTop: '4px', fontSize: '22px'}}>
+            <label style={{color: 'white', direction: 'rtl', textAlign: 'right'}}>
                 <span>מס׳ פריטים:</span>  
                 &nbsp;
                 <span style={{color: 'yellow', fontWeight: '600px'}}>{sortedProducts
@@ -1007,7 +1065,7 @@ function ListData({data, selectedItem, onSelectedItem, onSaveData})
                 </span>
             </label>
 
-            <label style={{marginTop: '10px', fontSize: '22px', color: 'white', direction: 'rtl', textAlign: 'right'}}>
+            <label style={{color: 'white', direction: 'rtl', textAlign: 'right'}}>
                 <span style={{color: '#434040 ', fontWeight: '700px'}}>{(isWithArchive ? 'עם ארכיון' : 'ללא ארכיון')}</span>  
             </label>
           </div>

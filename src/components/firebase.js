@@ -42,7 +42,7 @@ var funcWhenUpdate = null;
 var app;
 export var database;
 var DefaultUserEmail = '';  /* Globals.readFile('MyEmail.json'); */     //'hemedmeir@gmail.com';
-
+export var appVersion = '2.3.3';
 
 
 //await Init();
@@ -72,10 +72,10 @@ export async function Init()
   // {
 
     const tmpDataBaseIndex = await getDatabaseIndexFromFile("launch.json");
-    if (tmpDataBaseIndex)
-    {
-      dataBaseIndex = tmpDataBaseIndex;
-    }
+    // if (tmpDataBaseIndex)
+    // {
+    //   dataBaseIndex = tmpDataBaseIndex;
+    // }
 
   
 
@@ -87,7 +87,7 @@ export async function Init()
 
 /// Get DB index from outside Jsson text file - The File Must be in 'Public' folder
 /// Fetch the JSON file directly using standard JavaScript fetch
-async function getDatabaseIndexFromFile( fileName ) 
+export async function getDatabaseIndexFromFile( fileName ) 
 {
   var result = null;
 
@@ -105,20 +105,24 @@ async function getDatabaseIndexFromFile( fileName )
     result = Number(obj.DatabaselistIndex); 
   }
 
+  if (obj['version'] !== null)
+  {
+    appVersion = obj['version']; 
+  }
 
   /** Get Default User Email value */
-  fileName = "MyEmail.json";
-  response = await fetch("/" + fileName);
-  if (!response.ok) 
-  {
-    return null;
-    //throw new Error(`Failed to load launch.json: ${response.statusText}`);
-  }
-  obj = await response.json();
-  if (obj['email'] !== null)
-  {
-    DefaultUserEmail = obj['email']; 
-  }
+  // fileName = "MyEmail.json";
+  // response = await fetch("/" + fileName);
+  // if (!response.ok) 
+  // {
+  //   return null;
+  //   //throw new Error(`Failed to load launch.json: ${response.statusText}`);
+  // }
+  // obj = await response.json();
+  // if (obj['email'] !== null)
+  // {
+  //   DefaultUserEmail = obj['email']; 
+  // }
 
 
 
@@ -866,18 +870,6 @@ export function AuthenticationScreen({onConfirm, onExit})
           return -1;
       }
 
-      /** Check validity of the password */
-      if (dataCheck && dataCheck.length>0 && dataCheck[0]['Password'] !== password)
-      {
-          alert('סיסמה לא נכוננה');
-          if (onConfirm!==undefined)
-          {
-            onConfirm(-1);
-          }
-          return -1;
-      }
-
-      /** Search the right config object by email */
       dbIndex = DataBasesConfigList.findIndex((item) => item['email']!==undefined && item['email'] === email)
       if (dbIndex===-1)
       {
@@ -889,11 +881,40 @@ export function AuthenticationScreen({onConfirm, onExit})
         return -1;
       }
 
+
+      /** Connect to db */
+      database = await changeDatabase(dbIndex);
+
+      dataCheck = await GetTableDataSync('TBL_Settings');
+      
+      /** Check validity of the password */
+      if (dataCheck && dataCheck.length>0 && dataCheck[0]['UserPassword'] !== password)
+      {
+          alert('סיסמה לא נכונה');
+          if (onConfirm!==undefined)
+          {
+            onConfirm(-1);
+          }
+          return -1;
+      }
+
+      /** Search the right config object by email */
+      // dbIndex = DataBasesConfigList.findIndex((item) => item['email']!==undefined && item['email'] === email)
+      // if (dbIndex===-1)
+      // {
+      //   alert('המערכת לא מצאה את המידע כדי להתחבר למסד-הנתונים שלך');
+      //   if (onConfirm!==undefined)
+      //   {
+      //     onConfirm(-1);
+      //   }
+      //   return -1;
+      // }
+
       dataBaseIndex = dbIndex;
       
       /** Connect to db */
-      database = await changeDatabase(dbIndex);
-      
+      //database = await changeDatabase(dbIndex);
+   
       if (onConfirm!==undefined)
       {
         onConfirm(dbIndex);

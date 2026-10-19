@@ -1,0 +1,117 @@
+
+{
+  "email": "hemedmeir@gmail.com"
+  
+  
+  and still error:
+  Rendered more hooks than during the previous render.
+
+  i sendding you my code, the App main component that call the firebase function:
+  App.js
+
+  export default function App( {dbData} )
+  {
+    const [selectedItem, setSelectedItem] = useState(null);
+    //const [isWindowOpen, setIsWindowOpen] = useState(false);
+    const [data, setData] = useState(dbData);
+    const [isListenDatabase, setIsListenDatabase] = useState(true);
+    const [isShowPasswordScreen, setIsShowPasswordScreen] = useState(true);
+
+    /** Load data from DB when other device add/update records */
+
+    // dataNotes = data['dataNotes'];
+    // dataChilds = data['dataChilds'];
+    // dataListTypes = data['dataListTypes'];
+    // dataStatuses = data['dataStatuses'];
+    // dataSubject = data['dataSubject'];
+    // dataBaseTable = data['dataBaseTable'];
+    //f_dataBaseIndex = FirebaseHandle.dataBaseIndex;
+
+    // var newData = useListenToDatabase("TBL_Notes");
+
+    //  // 4. Safely extract variables afterwards
+    // const dataChilds = data?.['dataChilds'] || [];
+
+    // // 5. Run your conditional operations inside an effect block
+    // useEffect(() => {
+    //   if (isListenDatabase && newData && newData.length > 0)
+    //   {
+    //     setIsListenDatabase(false);
+    //     const processedData = Globals.setSubTasksToParent(newData, dataChilds);
+    //     handleSaveData(processedData, false);
+    //     FirebaseHandle.setFuncWhenUpdate(eventWhenUpdated);
+    //   }
+    // }, [newData, isListenDatabase, dataChilds]);
+
+
+    /**  Async Firebase's real-time lisener (onValue) */
+    const newData = FirebaseHandle.UseListenToDatabase("TBL_Notes");
+    
+    
+    // 2. Use useEffect to react whenever the live database data updates
+    useEffect(() =>
+    {
+      function ListenToDB()
+      {
+        var newData = FirebaseHandle.UseListenToDatabase("TBL_Notes");
+
+        if (isListenDatabase && newData && newData?.length > 0)
+        {
+          setIsListenDatabase(false);
+          
+          /** Set the Sub-Tasks objects to the Parent Task object, based on the NoteID **/
+          newData = Globals.setSubTasksToParent(newData, dataChilds);
+          
+          handleSaveData(newData, false);
+
+          FirebaseHandle.setFuncWhenUpdate(eventWhenUpdated);
+        }
+      }
+
+      // Execute the Function var
+      return () => ListenToDB();
+
+
+    }, [newData]); // Runs automatically when these change
+
+
+  and the firebase function to get data from db:
+
+  async function getDatabaseIndexFromFile( fileName )
+  {
+    var result = null;
+
+    var response = await fetch("/" + fileName);
+
+    if (!response.ok)
+    {
+      return null;
+      //throw new Error(`Failed to load launch.json: ${response.statusText}`);
+    }
+
+    var obj = await response.json();
+    if (obj['DatabaselistIndex'] !== null)
+    {
+      result = Number(obj.DatabaselistIndex);
+    }
+
+
+    /** Get Default User Email value */
+    fileName = "MyEmail.json";
+    response = await fetch("/" + fileName);
+    if (!response.ok)
+    {
+      return null;
+      //throw new Error(`Failed to load launch.json: ${response.statusText}`);
+    }
+    obj = await response.json();
+    if (obj['email'] !== null)
+    {
+      DefaultUserEmail = obj['email'];
+    }
+
+
+
+    return result;
+  }
+}

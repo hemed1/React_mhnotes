@@ -121,115 +121,98 @@ export function GridWidget( {data, title, tableName, arrayColumns,
                            var updatedItem = null;
                            let id;
 
-                           const item = prevGrid.find((item3) =>
-                                                      (item3['FirebaseID']!== undefined && item3.FirebaseID===recordID) ||
-                                                      (item3['id']!== undefined && item3.id===recordID) ||
-                                                      (item3['ID']!== undefined && item3.ID===recordID));
+                           const item = prevGrid.find((item3) => item3[getIDValue(item3)[0]] === recordID);
                            
-                              if (item)            //(id === recordID)
+                           if (item)
+                           {
+                              /// Find the ID of the record
+                              id = getIDValue(item)[1];
+                              if (id===null && item["Title"] !== null && item["Title"] !== undefined && item["Title"] !== '' )
                               {
-                                 /// Find the ID of the record
-                                 if (item["id"] !== null || item["id"] !== undefined)
+                                 try
                                  {
-                                    id = item["id"];
+                                    item["FirebaseID"] = item.Title;
                                  }
-                                 else if (item["ID"] !== null && item["ID"] !== undefined)
+                                 catch (error) 
                                  {
-                                    id = item["ID"];
-                                 }
-                                 else if (item["FirebaseID"] !== null && item["FirebaseID"] !== undefined && item["FirebaseID"] !== '')
+                                    console.log(error);
+                                 } 
+                              }
+
+                              if (keepID === null)
+                              {
+                                 keepID = id;
+                              }
+
+                              // Update Specific Cell with new value
+                              for (let c = 0; c < arrayColumns.length; c++)
+                              {
+                                 const col = Object.keys(item).findIndex(key => key === arrayColumns[c].fieldName);
+                                 if (col > -1 && c === targetColIndex)            /* && item.id === recordID */
                                  {
-                                    id = item["FirebaseID"];
-                                 }
-                                 else if ((item["FirebaseID"] === null || 
-                                    item["FirebaseID"] === undefined || 
-                                    item["FirebaseID"] === '') &&
-                                    item["Title"] !== null && item["Title"] !== undefined && item["Title"] !== '' )
-                                 {
-                                    try
+                                    var data = null;
+                                    switch (arrayColumns[c].type)
                                     {
-                                       item["FirebaseID"] = item.Title;
+                                       case 'number':
+                                          data = Number(newValue);
+                                          break;
+                                       case 'bool':
+                                          data = Boolean(newValue);
+                                          break;
+                                       case 'date':
+                                          data = new Date(newValue);
+                                          break;
+                                       case 'string':
+                                       default:
+                                          data = newValue;
+                                          break;
                                     }
-                                    catch (error) 
+
+                                    /// When exaption record without id
+                                    if (arrayColumns[c].fieldName === 'FirebaseID')
                                     {
-                                       console.log(error);
-                                    } 
-                                 }
+                                       const tmp = keepID;
+                                       const foundItem2 = itemsToSave.find(item => item.FirebaseID === tmp && item.row === targetRowIndex && item.col === targetColIndex);
+                                       if (foundItem2 && item.Title !== item.FirebaseID)
+                                       {
+                                          foundItem2.FirebaseID = data;
+                                          keepID = foundItem2.FirebaseID;
+                                       }
+                                    }
 
-                                 if (keepID === null)
-                                 {
-                                    keepID = id;
-                                 }
-
-                                 // Update Specific Cell with new value
-                                 for (let c = 0; c < arrayColumns.length; c++)
-                                 {
-                                    const col = Object.keys(item).findIndex(key => key === arrayColumns[c].fieldName);
-                                    if (col > -1 && c === targetColIndex)            /* && item.id === recordID */
+                                    /// Update direcrtly the item with new data
+                                    item[arrayColumns[c].fieldName] = data;
+                                    updatedItem = {...item} ;
+                                    
+                                    /// Add to array of chaged records (itemsToSave   )
+                                    const keep = keepID;;
+                                    const foundItem = itemsToSave.find(item2 => item2.id === keep && item2.row === targetRowIndex && item2.col === targetColIndex);
+                                    if (!foundItem) 
                                     {
-                                       var data = null;
-                                       switch (arrayColumns[c].type)
-                                       {
-                                          case 'number':
-                                             data = Number(newValue);
-                                             break;
-                                          case 'bool':
-                                             data = Boolean(newValue);
-                                             break;
-                                          case 'date':
-                                             data = new Date(newValue);
-                                             break;
-                                          case 'string':
-                                          default:
-                                             data = newValue;
-                                             break;
-                                       }
-
-                                       /// When exaption record without id
-                                       if (arrayColumns[c].fieldName === 'FirebaseID')
-                                       {
-                                          const tmp = keepID;
-                                          const foundItem2 = itemsToSave.find(item => item.FirebaseID === tmp && item.row === targetRowIndex && item.col === targetColIndex);
-                                          if (foundItem2 && item.Title !== item.FirebaseID)
-                                          {
-                                             foundItem2.FirebaseID = data;
-                                             keepID = foundItem2.FirebaseID;
-                                          }
-                                       }
-
-                                       /// Update direcrtly the item with new data
-                                       item[arrayColumns[c].fieldName] = data;
-                                       updatedItem = {...item} ;
-                                      
-                                       /// Add to array of chaged records (itemsToSave   )
-                                       const keep = keepID;;
-                                       const foundItem = itemsToSave.find(item2 => item2.id === keep && item2.row === targetRowIndex && item2.col === targetColIndex);
-                                       if (!foundItem) 
-                                       {
-                                          const newEdit = new GridEdited(keep, targetRowIndex, targetColIndex, data, item, arrayColumns[c].fieldName);
-                                          itemsToSave.push(newEdit);
-                                       }
-                                       else
-                                       {
-                                          foundItem.value = data;
-                                       }
-                                       
-                                       break;
-                                    }  
-                                 }
+                                       const newEdit = new GridEdited(keep, targetRowIndex, targetColIndex, data, item, arrayColumns[c].fieldName);
+                                       itemsToSave.push(newEdit);
+                                    }
+                                    else
+                                    {
+                                       foundItem.value = data;
+                                    }
+                                    
+                                    break;
+                                 }  
                               }
+                           }
 
-                              /// Update
-                              if (updatedItem && updatedItem !== null)
-                              {
-                                 resultItems = [...dataItems].map((item2, index2) => 
-                                    (item2['FirebaseID']!== undefined && item2.FirebaseID===updatedItem.FirebaseID) ||
-                                    (item2['id']!== undefined && item2.id===updatedItem.id) ||
-                                    (item2['ID']!== undefined && item2.ID===updatedItem.ID)
-                                    ? updatedItem 
-                                    : item2 );
-                                 //return updatedItem;
-                              }
+                           /// Update
+                           if (updatedItem && updatedItem !== null)
+                           {
+                              resultItems = [...dataItems].map((item2, index2) => 
+                                 (item2['FirebaseID']!== undefined && item2.FirebaseID===updatedItem.FirebaseID) ||
+                                 (item2['id']!== undefined && item2.id===updatedItem.id) ||
+                                 (item2['ID']!== undefined && item2.ID===updatedItem.ID)
+                                 ? updatedItem 
+                                 : item2 );
+                              //return updatedItem;
+                           }
          
                            return resultItems;
                         }
@@ -329,7 +312,27 @@ export function GridWidget( {data, title, tableName, arrayColumns,
             handleSearch(arrayColumns.findIndex((item) => item.fieldName === 'DateDue'), todayStr);
             break;
       }
-   }
+  }
+
+  function getIDValue(record)
+  {
+      if (record['FirebaseID']!== undefined && record['FirebaseID']!== null)
+      {
+         return ['FirebaseID', record['FirebaseID']];
+      }
+      else if (record['id']!== undefined && record['id']!== null)
+      {
+         return ['id', record['id']];
+      }
+      else if (record['ID']!== undefined && record['ID']!== null)
+      {
+         return ['ID', record['ID']];
+      }
+
+      return null;
+  }
+
+
 
 
 
@@ -444,7 +447,7 @@ export function GridWidget( {data, title, tableName, arrayColumns,
                                           type='text'     //{(col.type==='number') ? "number": "text"}
                                           style={{width: String(Number(col.width.substring(0, col.width.length - 2))-25)+'px'}}
                                           value={String(item[col.fieldName])}
-                                          onChange={(e) => updateCell(rowIndex, colIndex, (item["id"] === null || item["id"] === undefined || item["id"] === '') ? item.Title : item["id"], e.target.value)}
+                                          onChange={(e) => updateCell(rowIndex, colIndex, (getIDValue(item)[1]!=null ? getIDValue(item)[1] : item.Title), e.target.value)}
                                         />
                                  }
                               </td>

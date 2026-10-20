@@ -11,15 +11,19 @@ import { Plus, Trash2/* , X, ChevronRight, Users, Subtitles, CheckLine, Check, C
 const listTypesEn = { Reminder: 1, Note: 2, Task: 3, Event: 5, Work: 4, Recipe: 6, ShopList: 7 };
 
 
-export function dateSetFormat(date)
+export function dateSetFormatHebrew(date)
 {
    var result = new Date(date)
-   //var result = new Date().toLocaleString('en-IL', { timeZone: 'Asia/Jerusalem' }).replace(', ', 'T')
-   // console.log(result.toLocaleString());
-   // console.log(result.toDateString());
-   
-   //var result = date.toLocaleDateString('en-US', { weekday: 'long' }); 
-   //var result = date.toLocaleString().substring(0, 16).replace(', ', ' ')/* .replace(".", "-",) */;
+
+   var res = String(result.getDate()).padStart(2, '0') + '-' + String(result.getMonth() + 1).padStart(2, '0') + '-' + String(result.getFullYear());
+   res += ' ' + String(result.getHours()).padStart(2, '0') + ':' + String(result.getMinutes()).padStart(2, '0');
+
+   return res;
+}
+
+export function dateSetFormatLatin(date)
+{
+   var result = new Date(date)
 
    var res = String(result.getFullYear()) + '-' + String(result.getMonth() + 1).padStart(2, '0') + '-' + String(result.getDate()).padStart(2, '0');
    res += ' ' + String(result.getHours()).padStart(2, '0') + ':' + String(result.getMinutes()).padStart(2, '0');

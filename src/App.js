@@ -124,7 +124,12 @@ export default function App( {dbData} )
                                                                   dataItems.push( formattedData )});
                                               /// Function to execute - will Fired when other device add/update records
                                               const func = FirebaseHandle.getFuncWhenUpdate();
-                                              if (func !== null) 
+                                              const isFromThisDevice = FirebaseHandle.getIsUpdatingInInsertMode();
+                                              if (isFromThisDevice)
+                                              {
+                                                isAddFromThisDevice = isFromThisDevice;
+                                              }
+                                              if (func !== null && isFromThisDevice===false) 
                                               {
                                                 func();
                                               }
@@ -181,13 +186,22 @@ export default function App( {dbData} )
         Globals.PlaySound("dream_bonus_notification.mp3");
       }
       //setIsAddFromThisDevice(false);
-      //isAddFromThisDevice = false;
+      isAddFromThisDevice = false;
     }
 
     /* if (FirebaseHandle.getFuncWhenUpdate() === null)
     {
       FirebaseHandle.setFuncWhenUpdate(eventWhenUpdated);
     } */
+  }
+
+  /** Fired when other device add/update records */
+  function eventWhenUpdated()
+  {
+      setIsListenDatabase(true);
+      FirebaseHandle.setFuncWhenUpdate(null);
+
+      isAddFromThisDevice = false;
   }
 
   async function getData() 
@@ -214,15 +228,6 @@ export default function App( {dbData} )
     // database = getDatabase(app);
 
     return dataNotes;
-  }
-
-  /** Fired when other device add/update records */
-  function eventWhenUpdated()
-  {
-      setIsListenDatabase(true);
-      FirebaseHandle.setFuncWhenUpdate(null);
-
-      isAddFromThisDevice = false;
   }
 
   function handleSelectItem(selectedObject)
@@ -649,11 +654,8 @@ export default function App( {dbData} )
       dbData = {'dataNotes': dataNotes, 'dataBaseTable': dataBaseTable, 'dataChilds': dataChilds, 'dataListTypes': dataListTypes, 'dataStatuses': dataStatuses, 'dataSubject': dataSubject};
       setData(dbData);
       
-      setIsShowPasswordScreen(false);
       isAddFromThisDevice = true;
-      //setIsAddFromThisDevice(false);
-      /** Load data from DB when other device add/update records */
-      // ListenToDB();
+      setIsShowPasswordScreen(false);
     }
   }
   
@@ -864,17 +866,18 @@ function ListData({data, selectedItem, onSelectedItem, onSaveData})
                               default:
                                 return [...data].sort((a, b) => 
                                                   (
-                                                    ((b.LastUpdateDate && b.LastUpdateDate !== "") 
-                                                    ? (new Date(String(b.LastUpdateDate).replace('T', ' ').replace(', ', ' ')))
-                                                    : "")
-                                                  -
-                                                    ((a.LastUpdateDate && a.LastUpdateDate !== "")
-                                                    ? (new Date(String(a.LastUpdateDate.replace('T', ' ').replace(', ', ' '))))
-                                                    : "")
-                                                  ));
-
-                          }
-                        }, [data, sortBy]);
+                                                    ((b.LastUpdateDate && b.LastUpdateDate !== "") && (a.LastUpdateDate && a.LastUpdateDate !== "")
+                                                    ? String(b.LastUpdateDate).localeCompare(String(a.LastUpdateDate))
+                                                    : ""
+                                                    //   ((b.LastUpdateDate && b.LastUpdateDate !== "") 
+                                                    //   ? (new Date(String(b.LastUpdateDate).replace('T', ' ').replace(', ', ' ')))
+                                                    //   : "")
+                                                    // -
+                                                    //   ((a.LastUpdateDate && a.LastUpdateDate !== "")
+                                                    //   ? (new Date(String(a.LastUpdateDate.replace('T', ' ').replace(', ', ' '))))
+                                                    //   : "")
+                                                  )));
+                            }}, [data, sortBy]);
 
 
 
@@ -1225,7 +1228,11 @@ function ListDataItem({index, selectedIndex, itemObject, selectedItem, onSelecte
               }
             </div>
           </div>
-          <p style={{ fontSize: '14px', color: '#000', textAlign: 'right', direction: 'rtl', paddingRight: '36px', paddingBottom: (Globals.dateSetFormat(itemObject.DateDue) ? '0px' : '18px')}}>{Globals.dateSetFormat(itemObject.DateDue)}</p>
+          <p style={{ fontSize: '14px', color: '#000', textAlign: 'right', direction: 'rtl', paddingRight: '36px', paddingBottom: ((itemObject.DateDue!=='') ? '0px' : '18px')}}>
+            {
+            (itemObject.DateDue!=='') ? Globals.dateSetFormatHebrew(itemObject.DateDue) : ''
+            }
+          </p>
           
         </div> 
 
@@ -1264,6 +1271,7 @@ function NoteScreen({ selectedItem, onSelectedItem, onSaveData, onSaveLookup })
 
 
     var keepSubs = [];
+    isAddFromThisDevice = true;
 
 
     const updateSons = (noteID, newSons) => 
@@ -1488,7 +1496,7 @@ function NoteScreen({ selectedItem, onSelectedItem, onSaveData, onSaveLookup })
             selectedObject.LastUpdateDate = values.LastUpdateDate;
             selectedObject.FirebaseID = values.FirebaseID;
             selectedItem.FirebaseID = values.FirebaseID;
-            newArray.push({...selectedObject});
+            //newArray.push({...selectedObject});
             dataNotes = newArray;
             const objUpdated = dataNotes.find((item) => item.NoteID === noteID);
             if (objUpdated)

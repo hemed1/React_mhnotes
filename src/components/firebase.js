@@ -3,12 +3,13 @@
 
 // src/firebase.js
 import { useEffect, useState } from 'react';
-import { dateSetFormat }  from '../globals.js';
+import { dateSetFormatLatin }  from '../globals.js';
 import { initializeApp, getApps, getApp, deleteApp } from "firebase/app";
 import { getDatabase, ref, onValue, update, set, get, push, remove, query, orderByChild, equalTo, enableLogging } from "firebase/database";
 import  * as FirebaseConfig from './dataBasesConfig.js';
 import * as Globals from '../globals.js';
 import './AuthenticationStyle.css';
+import { exp } from 'firebase/firestore/pipelines';
 //import { useSearchParams } from 'react-router-dom';
 //import { getAuth } from "firebase/auth";
 //import { getFirestore } from "firebase/firestore";
@@ -43,7 +44,7 @@ var app;
 export var database;
 var DefaultUserEmail = '';  /* Globals.readFile('MyEmail.json'); */     //'hemedmeir@gmail.com';
 export var appVersion = '2.3.3';
-
+var isUpdatingInInsertMode = false;
 
 //await Init();
 
@@ -204,9 +205,9 @@ export function UseListenToDatabase( tableName )
                                               setData(dataItems);
                                               //setLoading(false);
                                               /// will Fired when other device add/update records
-                                              if (getFuncWhenUpdate() !== null) 
+                                              const func = getFuncWhenUpdate();
+                                              if (func !== null) 
                                               {
-                                                const func = getFuncWhenUpdate();
                                                 func();
                                               }
                                               return (dataItems)
@@ -477,7 +478,7 @@ export async function InsertRecord( tableName, values )
   
   if (values["LastUpdateDate"] !== null)
   {
-    values.LastUpdateDate =  dateSetFormat(new Date());
+    values.LastUpdateDate =  dateSetFormatLatin(new Date());
   }
 
   //const [key, setKey] = useState(null);
@@ -508,19 +509,31 @@ export async function InsertRecord( tableName, values )
     // Update field 'FirebaseID'
     if (values["FirebaseID"] !== null && result !== '')
     {
-      const funcWhenUpdate = getFuncWhenUpdate();
-      setFuncWhenUpdate(null);
+      //const funcWhenUpdate = getFuncWhenUpdate();
+      //setFuncWhenUpdate(null);
+      setIsUpdatingInInsertMode(true);
       var json =  {FirebaseID: result};     // values;
       if (values["id"] !== null)
       {
         json["id"] = result;
       }
       await UpdateField(tableName, result, json)
-      setFuncWhenUpdate(funcWhenUpdate);
+      setIsUpdatingInInsertMode(false);
+      //setFuncWhenUpdate(funcWhenUpdate);
     }
 
 
     return result;
+}
+
+export function getIsUpdatingInInsertMode()
+{
+  return isUpdatingInInsertMode;
+}
+
+export function setIsUpdatingInInsertMode( value )
+{
+  isUpdatingInInsertMode = value;
 }
 
 /// Set ALL fields in record
@@ -535,7 +548,7 @@ export async function UpdateRecord( tableName, recordKey, values )
 
     if (values["LastUpdateDate"] !== null)
     {
-      values.LastUpdateDate =  dateSetFormat(new Date());
+      values.LastUpdateDate =  dateSetFormatLatin(new Date());
     }
 
     const tableRef = ref(database, `${tableName}/${recordKey}`);
@@ -814,8 +827,13 @@ export function AuthenticationScreen({onConfirm, onExit})
       }
     }
 
-    async function handleConfirm()
+    async function handleConfirm(e)
     {
+
+      if (e !== 13)
+      {
+        return;
+      }
 
       /** Search the config object of Main Settings db */
       var dbIndex = DataBasesConfigList.findIndex((item) => item['projectId']===mainSettingDBname);
@@ -937,13 +955,15 @@ export function AuthenticationScreen({onConfirm, onExit})
             
           <Globals.FieldInScreen  captionText="הקלד סיסמה"  fieldID="txtPassword"  textAlign='right' direction='rtl'
               control={
-                <input  id='txtPassword' type='password' value={password} placeholder='הקלד סיסמה'  style={{fontFamily: 'Tahoma', fontSize: '20px', fontWeight: '400', textAlign: 'left', direction: 'ltr'}}   onChange={(e) => setPassword(e.target.value)} />
+                <input  id='txtPassword' type='password' value={password} placeholder='הקלד סיסמה'  style={{fontFamily: 'Tahoma', fontSize: '20px', fontWeight: '400', textAlign: 'left', direction: 'ltr'}}   
+                        onChange={(e) => setPassword(e.target.value)} 
+                        onKeyUp={(e) => handleConfirm((e.keyCode===13 ? 13 : e))}/>
               }
           />
         </div>
 
         <div style={{display: 'flex', flexDirection: 'row', justifyContent: 'space-evenly'}}>
-          <button type='button' className='button_save' onClick={(e) => handleConfirm()}>אישור</button>
+          <button type='button' className='button_save' onClick={(e) => handleConfirm((e.keyCode===13 ? 13 : e))}>אישור</button>
           <button type='button' style={{backgroundColor: 'red', color: 'white'}} onClick={(e) => handleExit()}>יציאה</button>
         </div>
 

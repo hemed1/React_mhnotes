@@ -83,31 +83,7 @@ export default function App( {dbData} )
 
 
   /** Load data from DB when other device add/update records */
-  //UseListenToDatabase("TBL_Notes");
-
-   /// Hook 1: Listen to connection state
-    // useEffect(() => 
-    // {
-    //   if (isShowPasswordScreen) return;
-     
-    //   const connectedRef = ref(FirebaseHandle.database, ".info/connected");
-
-    //   const unsubscribe = onValue(connectedRef, (snap) => 
-    //   {
-    //     var message = '';
-    //     if (snap.val() === true) 
-    //     {
-    //       message = "🟢 Connected to Live Server";
-    //     } 
-    //     else 
-    //     {
-    //       message = "🔴 Disconnected (Using Cache)";
-    //     }
-    //     //console.debug(message);
-    //   });
-
-    //   return () => unsubscribe();
-    // }, [isShowPasswordScreen]);
+  
 
 
   /// Like Using{} in C#, Clean the function
@@ -146,8 +122,6 @@ export default function App( {dbData} )
                                                                   //   formattedData = {...record, ID: childSnapshot.key} 
                                                                   // }
                                                                   dataItems.push( formattedData )});
-                                              //dataDB = dataItems;
-                                              //setDataDB(dataItems);
                                               /// Function to execute - will Fired when other device add/update records
                                               const func = FirebaseHandle.getFuncWhenUpdate();
                                               if (func !== null) 
@@ -159,8 +133,6 @@ export default function App( {dbData} )
                                             }
                                             else 
                                             {
-                                              //dataDB = [];
-                                              //setDataDB([]);
                                             }
                                             return ([]);
                                           },
@@ -180,222 +152,7 @@ export default function App( {dbData} )
 
   }, [isShowPasswordScreen/* , ListenToDB */]);
 
-  
-  // 2. Use useEffect to react whenever the live database data updates
-  // useEffect(() => 
-  //   {
-  //   /**  Async Firebase's real-time lisener (onValue) */
-  //   const newData = FirebaseHandle.UseListenToDatabase("TBL_Notes");
-  //   function ListenToDB() 
-  //   {   
-  //     //var newData = FirebaseHandle.UseListenToDatabase("TBL_Notes");
-
-  //     if (isListenDatabase && newData && newData?.length > 0) 
-  //     {
-  //       setIsListenDatabase(false);
-        
-  //       /** Set the Sub-Tasks objects to the Parent Task object, based on the NoteID **/
-  //       newData = Globals.setSubTasksToParent(newData, dataChilds);
-        
-  //       handleSaveData(newData, false); 
-
-  //       FirebaseHandle.setFuncWhenUpdate(eventWhenUpdated);
-  //     }
-  //   }
-
-    // Execute the Function var
-  //   return () => ListenToDB();
-
-
-  // }, []); // Runs automatically when these change
-
-
-  // function UseListenToDatabase2( tableName ) 
-  // {
-  //   //const [dataDB, setData] = useState([]);
-
-
-  //   useEffect(() => 
-  //   {
-  //     if (isShowPasswordScreen) return;
-
-  //     //const tableName = "TBL_Notes";
-  //     // 1. Create a reference to the specific 'table' (node) in your database
-  //     const dataRef = ref(database, tableName);
-
-  //     //setLoading(true);
-
-  //     // Set up the Function var for real-time listener
-  //     const firebaseData = onValue(dataRef, (snapshot) => 
-  //                                           {
-  //                                             if (snapshot.exists()) 
-  //                                             {
-  //                                               if (snapshot.val()) 
-  //                                               {
-  //                                                 console.debug("🟢 Get data live from Firebase server!");
-  //                                               } 
-  //                                               else 
-  //                                               {
-  //                                                 console.debug("🔴 Error when get data! Listening only to local cache.");
-  //                                               }
-  //                                               const dataItems = [];
-  //                                               let formattedData;
-  //                                               snapshot.forEach( (childSnapshot) => 
-  //                                                                 {
-  //                                                                   const record = childSnapshot.val();
-  //                                                                   formattedData = {...record, FirebaseID: childSnapshot.key};      //Object.keys(record).map(key => ({...record, id: key }));
-  //                                                                   if (record['id']!==undefined)
-  //                                                                   {
-  //                                                                     formattedData = {...record, id: childSnapshot.key} 
-  //                                                                   }
-  //                                                                   // if (record['ID']!==undefined)
-  //                                                                   // {
-  //                                                                   //   formattedData = {...record, ID: childSnapshot.key} 
-  //                                                                   // }
-  //                                                                   dataItems.push( formattedData )});
-  //                                               //dataDB = dataItems;
-  //                                               //setDataDB(dataItems);
-  //                                               //setLoading(false);
-  //                                               /// will Fired when other device add/update records
-                                                
-  //                                               return (dataItems)
-  //                                             }
-  //                                             else 
-  //                                             {
-  //                                               //dataDB = [];
-  //                                               //setDataDB([]);
-  //                                             }
-  //                                             //setLoading(false);
-  //                                             return ([]);
-  //                                           },
-  //                                           (err) => 
-  //                                           {
-  //                                             console.error("Firebase read error: ", err);
-  //                                             //dataDB = [];
-  //                                             //setData([]);
-  //                                             //setError(err);
-  //                                             //setLoading(false);
-  //                                             return ([]);
-  //                                           }); 
-
-      
-  //     // Execute the Function var
-  //     return () => firebaseData();
-
-  //   }, [tableName]);
-
-  // }
-
-    
-  // function UseListenToDatabase( tableName ) 
-  // {
-  //   const [dataDB, setData] = useState([]);
-  //   //const [loading, setLoading] = useState(true);
-  //   //const [error, setError] = useState(null);
-
-  //   //var dataDB = [];
-
-    
-
-
-  //   /// Hook 1: Listen to connection state
-  //   useEffect(() => 
-  //   {
-  //     if (isShowPasswordScreen) return;
-  //     const connectedRef = ref(database, ".info/connected");
-  //     const unsubscribe = onValue(connectedRef, (snap) => 
-  //     {
-  //       var message = '';
-  //       if (snap.val() === true) 
-  //       {
-  //         message = "🟢 Connected to Live Server";
-  //       } 
-  //       else 
-  //       {
-  //         message = "🔴 Disconnected (Using Cache)";
-  //       }
-  //       //console.debug(message);
-  //     });
-
-  //     return () => unsubscribe();
-  //   }, []);
-
-
-  //   /// Like Using{} in C#, Clean the function
-  //   useEffect(() => 
-  //   {
-  //     if (isShowPasswordScreen) return;
-
-  //     // 1. Create a reference to the specific 'table' (node) in your database
-  //     const dataRef = ref(database, tableName);
-
-  //     //setLoading(true);
-
-  //     // Set up the Function var for real-time listener
-  //     const firebaseData = onValue(dataRef, (snapshot) => 
-  //                                           {
-  //                                             if (snapshot.exists()) 
-  //                                             {
-  //                                               if (snapshot.val()) 
-  //                                               {
-  //                                                 console.debug("🟢 Get data live from Firebase server!");
-  //                                               } 
-  //                                               else 
-  //                                               {
-  //                                                 console.debug("🔴 Error when get data! Listening only to local cache.");
-  //                                               }
-  //                                               const dataItems = [];
-  //                                               let formattedData;
-  //                                               snapshot.forEach( (childSnapshot) => 
-  //                                                                 {
-  //                                                                   const record = childSnapshot.val();
-  //                                                                   formattedData = {...record, FirebaseID: childSnapshot.key};      //Object.keys(record).map(key => ({...record, id: key }));
-  //                                                                   if (record['id']!==undefined)
-  //                                                                   {
-  //                                                                     formattedData = {...record, id: childSnapshot.key} 
-  //                                                                   }
-  //                                                                   // if (record['ID']!==undefined)
-  //                                                                   // {
-  //                                                                   //   formattedData = {...record, ID: childSnapshot.key} 
-  //                                                                   // }
-  //                                                                   dataItems.push( formattedData )});
-  //                                               //dataDB = dataItems;
-  //                                               setData(dataItems);
-  //                                               //setLoading(false);
-  //                                               /// will Fired when other device add/update records
-  //                                               // if (getFuncWhenUpdate() !== null) 
-  //                                               // {
-  //                                               //   const func = getFuncWhenUpdate();
-  //                                               //   func();
-  //                                               // }
-  //                                               return (dataItems)
-  //                                             }
-  //                                             else 
-  //                                             {
-  //                                               //dataDB = [];
-  //                                               setData([]);
-  //                                             }
-  //                                             //setLoading(false);
-  //                                             return (dataDB);
-  //                                           },
-  //                                           (err) => 
-  //                                           {
-  //                                             console.error("Firebase read error: ", err);
-  //                                             //dataDB = [];
-  //                                             //setData([]);
-  //                                             //setError(err);
-  //                                             //setLoading(false);
-  //                                             return (dataDB);
-  //                                           }); 
-
-  //     // Execute the Function var
-  //     return () => firebaseData();
-
-  //   }, [tableName, dataDB]);
-
-
-  //   return (tableName, dataDB);
-  // }
+                                    
 
   
   /** Load data from DB when other device add/update records */
@@ -451,6 +208,7 @@ export default function App( {dbData} )
     dataStatuses = await  mapToLookupObject('TBL_Statuses');
     dataSubject = await  mapToLookupObject('TBL_Subjects');
     
+    await FirebaseHandle.getDatabaseIndexFromFile("launch.json");
     // await FirebaseHandle.dispose();
     // app = initializeApp(firebaseConfig);
     // database = getDatabase(app);
@@ -465,9 +223,6 @@ export default function App( {dbData} )
       FirebaseHandle.setFuncWhenUpdate(null);
 
       isAddFromThisDevice = false;
-      //setIsAddFromThisDevice(false);
-      /** Load data from DB when other device add/update records */
-      //ListenToDB();
   }
 
   function handleSelectItem(selectedObject)
@@ -927,7 +682,7 @@ export default function App( {dbData} )
         {!isShowPasswordScreen && 
           <buttom type='button' style={{position: 'absolute', display: 'flex', left: '80px', top: '950px', width: '90px', height: '90px', objectFit: 'cover'}} onClick={handleInsert}>
             <img 
-              src="./assets/images/plus3.png" 
+              src="../assets/images/plus3.png" 
               alt="Avatar" 
               backgroundColor="transparent"
               style={{objectFit: 'fill'}} 
@@ -970,7 +725,7 @@ export default function App( {dbData} )
                         bottom: '0', left: '0', width: '100%', height: '31px', backgroundColor: '#c8c8cd', fontSize: '17px', textAlign: 'left', direction: 'ltr', paddingTop: '7px'}}>
 
           <p style={{margin: '0', paddingLeft: '30px', textAlign: 'left'}}>© 2024 Hemed. All rights reserved.</p>
-          <p style={{textAlign: 'center'}}>Version: <span style={{color: 'white'}}>2.3.3</span></p>
+          <p style={{textAlign: 'center'}}>Version: <span style={{color: 'white'}}>{FirebaseHandle.appVersion}</span></p>
           {/* <p style={{color: 'white', direction: 'rtl', textAlign: 'right', fontSize: '20px', paddingRight: '30px'}}>
               <span>מס׳ פריטים:</span>  
               &nbsp;
@@ -1347,8 +1102,8 @@ function ListData({data, selectedItem, onSelectedItem, onSaveData})
 
             {/* Caption of teh Application */}
             <div>
-              <p style={{position: 'absolute', left: '100px', top: '120px', color: 'white', direction: 'rtl', textAlign: 'right', zIndex: '1',
-                textShadow: '9px 9px 15px rgba(68, 68, 71, 0.6)', fontFamily: 'Tahoma', fontStyle: 'normal', fontSize: '100px', fontWeight: '700px'}}>משימות ופתקים</p>
+              <p style={{position: 'absolute', left: '100px', top: '120px', color: '#e2e4f7', direction: 'rtl', textAlign: 'right', zIndex: '1',
+                textShadow: '9px 9px 15px rgba(68, 68, 71, 0.6)', fontFamily: 'Tahoma', fontStyle: 'normal', fontSize: '100px', fontWeight: '800px'}}>משימות ופתקים</p>
                {/* <img 
                 src="./note_small.png" 
                 alt="Avatar" 
@@ -1470,8 +1225,8 @@ function ListDataItem({index, selectedIndex, itemObject, selectedItem, onSelecte
               }
             </div>
           </div>
+          <p style={{ fontSize: '14px', color: '#000', textAlign: 'right', direction: 'rtl', paddingRight: '36px', paddingBottom: (Globals.dateSetFormat(itemObject.DateDue) ? '0px' : '18px')}}>{Globals.dateSetFormat(itemObject.DateDue)}</p>
           
-          <p style={{ fontSize: '14px', color: '#000', textAlign: 'right', direction: 'ltr', paddingRight: '36px', paddingBottom: (itemObject.DateDue ? '0px' : '18px')}}>{itemObject.DateDue}</p>
         </div> 
 
       {isOpen && children !=='' &&

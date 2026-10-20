@@ -124,7 +124,7 @@ label {
 
 input::placeholder {
   color: #85909e;
-  font-size: 19px;
+  font-size: 16px;
   font-weight: 400;
   font-style: normal;
   opacity: 1; /* Fixes Firefox default opacity override */
@@ -132,7 +132,7 @@ input::placeholder {
 
 textarea::placeholder {
   color: #85909e;
-  font-size: 19px;
+  font-size: 16px;
   font-weight: 400;
   font-style: normal;
   opacity: 1; /* Fixes Firefox default opacity override */

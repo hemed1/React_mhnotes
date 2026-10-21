@@ -963,7 +963,7 @@ export function AuthenticationScreen({onConfirm, onExit})
         </div>
 
         <div style={{display: 'flex', flexDirection: 'row', justifyContent: 'space-evenly'}}>
-          <button type='button' className='button_save' onClick={(e) => handleConfirm((e.keyCode===13 ? 13 : e))}>אישור</button>
+          <button type='button' className='button_save' onClick={(e) => handleConfirm(13)}>אישור</button>
           <button type='button' style={{backgroundColor: 'red', color: 'white'}} onClick={(e) => handleExit()}>יציאה</button>
         </div>
 
@@ -971,29 +971,3 @@ export function AuthenticationScreen({onConfirm, onExit})
     );
 }
 
-// export function MyComponent(tableName) 
-// {
-//   const [data, setData] = useState([]);
-//   //const [loading, setLoading] = useState(true);
-
-
-//   //const { data2, loading } = GetDataAsync(tableName);
-//   //setData(data2);
-//   // useEffect(() => {
-//   //   const fetchUsers = async () => {
-//   //     const { data, loading } = await useGetDataAsync(tableName);
-//   //     setData(data);
-//   //     setLoading(false);
-//   //   };
-    
-//   //   fetchUsers();
-//   // }, []);
-
-//   //if (loading) return <p>טוען...</p>;
-
-//   return (
-//     <ul>
-//       {data.map(user => <li key={user.id}>{user.name}</li>)}
-//     </ul>
-//   );
-// }

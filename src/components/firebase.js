@@ -645,6 +645,8 @@ export async function DeleteRecord( tableName, recordKey, fieldName = "FirebaseI
   //   return false;
   // }
 
+  setIsUpdatingInInsertMode(true);
+
   const tableRef = ref(database, `${tableName}/${recordKey}`);
 
   await remove(tableRef)
@@ -663,6 +665,7 @@ export async function DeleteRecord( tableName, recordKey, fieldName = "FirebaseI
             }
       );
 
+  setIsUpdatingInInsertMode(false);
 
   return result;
 }
@@ -816,6 +819,7 @@ export function AuthenticationScreen({onConfirm, onExit})
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [firstEmail, setfirstEmail] = useState(DefaultUserEmail);
+    const [isShowWaitMessage, setIsShowWaitMessage] = useState(false);
 
 
 
@@ -835,6 +839,8 @@ export function AuthenticationScreen({onConfirm, onExit})
         return;
       }
 
+      setIsShowWaitMessage(true);
+
       /** Search the config object of Main Settings db */
       var dbIndex = DataBasesConfigList.findIndex((item) => item['projectId']===mainSettingDBname);
       if (dbIndex===-1)
@@ -850,7 +856,9 @@ export function AuthenticationScreen({onConfirm, onExit})
       /** Connect to Main Setting db */
       database = await changeDatabase(dbIndex);
       
-      
+      //Globals.showMessage('אנא המתן ...');
+
+
       /** When email & password empty - Update new values in User table */
       if (email==='' && password==='')
       {
@@ -879,9 +887,10 @@ export function AuthenticationScreen({onConfirm, onExit})
       /** Check validity of the email */
       var dataCheck = await GetQuerySync('TBL_Users', 'Email', email);
       if (!dataCheck || dataCheck.length===0)
-      {
+        {
+          setIsShowWaitMessage(false);
           alert('משתמש לא מוכר במערכת');
-          if (onConfirm!=undefined)
+          if (onConfirm!==undefined)
           {
             onConfirm(-1);
           }
@@ -891,6 +900,7 @@ export function AuthenticationScreen({onConfirm, onExit})
       dbIndex = DataBasesConfigList.findIndex((item) => item['email']!==undefined && item['email'] === email)
       if (dbIndex===-1)
       {
+        setIsShowWaitMessage(false);
         alert('המערכת לא מצאה את המידע כדי להתחבר למסד-הנתונים שלך');
         if (onConfirm!==undefined)
         {
@@ -899,6 +909,7 @@ export function AuthenticationScreen({onConfirm, onExit})
         return -1;
       }
 
+      
 
       /** Connect to db */
       database = await changeDatabase(dbIndex);
@@ -908,6 +919,7 @@ export function AuthenticationScreen({onConfirm, onExit})
       /** Check validity of the password */
       if (dataCheck && dataCheck.length>0 && dataCheck[0]['UserPassword'] !== password)
       {
+          setIsShowWaitMessage(false);
           alert('סיסמה לא נכונה');
           if (onConfirm!==undefined)
           {
@@ -916,23 +928,9 @@ export function AuthenticationScreen({onConfirm, onExit})
           return -1;
       }
 
-      /** Search the right config object by email */
-      // dbIndex = DataBasesConfigList.findIndex((item) => item['email']!==undefined && item['email'] === email)
-      // if (dbIndex===-1)
-      // {
-      //   alert('המערכת לא מצאה את המידע כדי להתחבר למסד-הנתונים שלך');
-      //   if (onConfirm!==undefined)
-      //   {
-      //     onConfirm(-1);
-      //   }
-      //   return -1;
-      // }
-
+      
       dataBaseIndex = dbIndex;
       
-      /** Connect to db */
-      //database = await changeDatabase(dbIndex);
-   
       if (onConfirm!==undefined)
       {
         onConfirm(dbIndex);
@@ -944,29 +942,37 @@ export function AuthenticationScreen({onConfirm, onExit})
 
     return (
 
-      <div className='AuthenticationStyle'>
-        
-        <div style={{display: 'flex', flexDirection: 'column', gap: '15px'}}>
-          <Globals.FieldInScreen  captionText="הקלד כתובת מייל"  fieldID="txtEmail" textAlign='right' direction='rtl'
-            control={
-              <input  id='txtEmail' type='text' value={email} placeholder='הקלד כתובת מייל'  style={{fontFamily: 'Tahoma', fontSize: '20px', fontWeight: '400', textAlign: 'left', direction: 'ltr'}}   onChange={(e) => setEmail(e.target.value)} />
-            }
-          />
-            
-          <Globals.FieldInScreen  captionText="הקלד סיסמה"  fieldID="txtPassword"  textAlign='right' direction='rtl'
+      <div style={{position: 'absolute', top: '100px', height: 'auto', display: 'flex', flexDirection: 'column', gap: '50px', alignSelf: 'center'}}>
+
+
+        <div className='AuthenticationStyle' style={{border: '1px solid "#ece6e6"', backgroundColor: '#343a40'}}>
+
+          <div style={{display: 'flex', flexDirection: 'column', gap: '15px'}}>
+            <Globals.FieldInScreen  captionText="הקלד כתובת מייל"  fieldID="txtEmail" textAlign='right' direction='rtl'
               control={
-                <input  id='txtPassword' type='password' value={password} placeholder='הקלד סיסמה'  style={{fontFamily: 'Tahoma', fontSize: '20px', fontWeight: '400', textAlign: 'left', direction: 'ltr'}}   
-                        onChange={(e) => setPassword(e.target.value)} 
-                        onKeyUp={(e) => handleConfirm((e.keyCode===13 ? 13 : e))}/>
+                <input  id='txtEmail' type='text' autoFocus='true' value={email} placeholder='הקלד כתובת מייל'  style={{fontFamily: 'Tahoma', fontSize: '20px', fontWeight: '400', textAlign: 'left', direction: 'ltr'}}   onChange={(e) => setEmail(e.target.value)} />
               }
-          />
+              />
+              
+            <Globals.FieldInScreen  captionText="הקלד סיסמה"  fieldID="txtPassword"  textAlign='right' direction='rtl'
+                control={
+                  <input  id='txtPassword' type='password' value={password} placeholder='הקלד סיסמה'  style={{fontFamily: 'Tahoma', fontSize: '20px', fontWeight: '400', textAlign: 'left', direction: 'ltr'}}   
+                  onChange={(e) => setPassword(e.target.value)} 
+                  onKeyUp={(e) => handleConfirm((e.keyCode===13 ? 13 : e))}/>
+                }
+                />
+          </div>
+
+          <div style={{display: 'flex', flexDirection: 'row', justifyContent: 'space-evenly'}}>
+            <button type='button' className='button_save' onClick={(e) => handleConfirm(13)}>אישור</button>
+            <button type='button' style={{backgroundColor: 'red', color: 'white'}} onClick={(e) => handleExit()}>יציאה</button>
+          </div>
+
         </div>
 
-        <div style={{display: 'flex', flexDirection: 'row', justifyContent: 'space-evenly'}}>
-          <button type='button' className='button_save' onClick={(e) => handleConfirm(13)}>אישור</button>
-          <button type='button' style={{backgroundColor: 'red', color: 'white'}} onClick={(e) => handleExit()}>יציאה</button>
-        </div>
 
+        {isShowWaitMessage && Globals.showMessage('אנא המתן ...')}
+      
       </div>
     );
 }

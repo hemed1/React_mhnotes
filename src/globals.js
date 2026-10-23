@@ -1112,3 +1112,15 @@ export async function writeFile(fileName, text)
   }
 
 }
+
+export function showMessage(title)
+{
+
+    return (
+
+        <div style={{display: 'flex', flexDirection: 'row', gap: '1px', height: '100px', border: 'border: 1px solid rgb(206, 201, 201)', borderRadius: '15px', 
+                     width: '200px', zIndex: '9', alignSelf: 'center', textAlign: 'center', alignItems: 'center', backgroundColor: '#343a40'}}>
+          <p style={{color: '#fff', fontSize: '22px', fontWeight: '600', textAlign: 'center', width: '100%'}}>{title}</p>
+        </div>
+    );
+}

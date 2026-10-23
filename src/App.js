@@ -233,7 +233,7 @@ export default function App( {dbData} )
   function handleSelectItem(selectedObject)
   { 
     f_update_mode = 0;
-
+    isAddFromThisDevice = true;
     if (selectedObject !== null)
     {
       setSelectedItem((prev) => prev?.NoteID === selectedObject.NoteID ? null : selectedObject);
@@ -804,18 +804,19 @@ function ListData({data, selectedItem, onSelectedItem, onSaveData})
   const [currentValue, setCurrentValue] = useState([{label: 'הכל, בלי ארכיון', value: 98}]);
 
 
+
   const styleFilter = 
   [
     {label: 'הכל', value: 99},
     {label: 'הכל, בלי ארכיון', value: 98},
-    {label: 'משימות להיום', value: 97},
-    {label: 'משימות', value: listTypesEn.Task},
-    {label: 'פתקים', value: listTypesEn.Note},
-    {label: 'תזכורות', value: listTypesEn.Reminder},
-    {label: 'אירועים ביומן', value: listTypesEn.Event},
-    {label: 'קשור לעבודה', value: listTypesEn.Work},
-    {label: 'מתכונים', value: listTypesEn.Recipe},
-    {label: 'סלי-קניות', value: listTypesEn.ShopList},
+    {label: 'להיום', value: 97},
+    {label: 'סוג פריט: ' + dataListTypes.find((item) => item.value===listTypesEn.Task).label, value: listTypesEn.Task},
+    {label: 'סוג פריט: ' + dataListTypes.find((item) => item.value===listTypesEn.Note).label, value: listTypesEn.Note},
+    {label: 'סוג פריט: ' + dataListTypes.find((item) => item.value===listTypesEn.Reminder).label, value: listTypesEn.Reminder},
+    {label: 'סוג פריט: ' + dataListTypes.find((item) => item.value===listTypesEn.Work).label, value: listTypesEn.Work},
+    {label: 'סוג פריט: ' + dataListTypes.find((item) => item.value===listTypesEn.Event).label, value: listTypesEn.Event},
+    {label: 'סוג פריט: ' + dataListTypes.find((item) => item.value===listTypesEn.Recipe).label, value: listTypesEn.Recipe},
+    {label: 'סוג פריט: ' + dataListTypes.find((item) => item.value===listTypesEn.ShopList).label, value: listTypesEn.ShopList},
     {label: 'ארכיון', value: 96},
     {label: 'הושלמו', value: 95},
     {label: 'הושלמו חלקית', value: 94}
@@ -882,7 +883,7 @@ function ListData({data, selectedItem, onSelectedItem, onSaveData})
 
 
   const colourStyles = {
-      control: (styles) => ({ ...styles, backgroundColor: '#ff922b', height: '41px' , minWidth: '235px', maxWidth: '330px', color: 'blue', fontSize: '20px', textAlign: 'right', direction: 'rtl' }),
+      control: (styles) => ({ ...styles, backgroundColor: '#ff922b', height: '38px' , minWidth: '258px', /* width: '400px', */ /* maxWidth: '330px', */ color: 'blue', fontSize: '20px', textAlign: 'right', direction: 'rtl', boxShadow: '5px 4px 5px rgba(90, 90, 94, 0.6)' }),
       option: (styles, { data, isDisabled, isFocused, isSelected }) => {
         const color = '#acadde';    // '#263375'
         return {
@@ -964,6 +965,7 @@ function ListData({data, selectedItem, onSelectedItem, onSaveData})
   /// Just for update 'selectedIndex' var
   function handleChangeSelect(itemObject, index)
   {
+    isAddFromThisDevice = true;
     setSelectedIndex(index);
     onSelectedItem(itemObject);
   }
@@ -1044,12 +1046,15 @@ function ListData({data, selectedItem, onSelectedItem, onSaveData})
         <div style={{display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '1px', marginRight: '50px'}}>
 
           {/* Buttons above the list*/}
-          <div style={{display: 'flex', flexDirection: 'column', gap: '10px', width: '33.7vw'}}>
-              <div style={{display: 'flex', flexDirection: 'row', gap: '15px', zIndex: '7', direction: 'rtl', textAlign: 'right'}}>
+          <div style={{display: 'flex', flexDirection: 'column', gap: '10px'}}>
+            
+            <div style={{display: 'flex', flexDirection: 'row', gap: '10px', zIndex: '7', direction: 'rtl', textAlign: 'right'}}>
+              <div style={{display: 'flex', flexDirection: 'row', gap: '10px', /* width: '33.7vw', */ zIndex: '10', direction: 'rtl', textAlign: 'right'}}>
                 <button type='button' onClick={(e, text) => handleChangeSort(e, 'title')}>כותרת</button>
                 <button type='button' onClick={(e, text) => handleChangeSort(e, 'date_due')}>תאריך ביצוע</button>
                 <button type='button' onClick={(e, text) => handleChangeSort(e, 'date_update')}>תאריך עדכון</button>
                 <button type='button' onClick={(e, text) => handleChangeSort(e, 'today')}>להיום</button>
+              </div>
                 <Select 
                       name="subjects"
                       value={currentValue}
@@ -1061,10 +1066,10 @@ function ListData({data, selectedItem, onSelectedItem, onSaveData})
                       isClearable={true}
                       isRtl={true}
                       styles={colourStyles}/>
-                {/* <input  type="date"  value={dateFilter}  style={{width: '150px', paddingTop: '4px', marginTop:'4px'}} onChange={(e) => setDateFilter(e.target.value)}></input> */}
-              </div>
-              {/* <button type='button' style={{width: '60px', backgroundColor: 'green', color: 'white'}}  onClick={handleInsert}>חדש</button> */}
-            <input type='text' value={searchText} placeholder='חפש...'  onChange={(e) => setSearchText(e.target.value)}  style={{height: '40px', width: '33.7vw'}}></input>
+            </div>
+            {/* <input  type="date"  value={dateFilter}  style={{width: '150px', paddingTop: '4px', marginTop:'4px'}} onChange={(e) => setDateFilter(e.target.value)}></input> */}
+              
+            <input type='text' value={searchText} placeholder='חפש...'  onChange={(e) => setSearchText(e.target.value)}  style={{height: '40px', width: '33.7vw', backgroundColor: 'rgba(113, 150, 187, 0.5)'}}></input>
           </div>
 
 
@@ -1156,11 +1161,14 @@ function ListDataItem({index, selectedIndex, itemObject, selectedItem, onSelecte
 
   var style = null;
   var gradientColor = '';
+  var color = '#3f3d3d';
+  // var color = '#c4c3c9';
   if (itemObject['CardBackColor'] !== null && itemObject['CardBackColor'] !== undefined && itemObject.CardBackColor !== '')
   {
     gradientColor = Globals.getGradientColorByListType(itemObject.ListTypeID);
-    style = { backgroundImage: gradientColor };
+    style = { backgroundImage: gradientColor, color: color };
   }
+  //color = (style===null) ? '#c4c3c9' : color
   
 
   async function handleBackColor()
@@ -1179,7 +1187,8 @@ function ListDataItem({index, selectedIndex, itemObject, selectedItem, onSelecte
     
     const values = { CardBackColor: cardBackColor };
     
-    const result = await FirebaseHandle.UpdateField("TBL_Notes", itemObject.FirebaseID, values);
+    /** TODO: */
+    const result = false;   //await FirebaseHandle.UpdateField("TBL_Notes", itemObject.FirebaseID, values);
           
     if (result)
     {
@@ -1206,8 +1215,8 @@ function ListDataItem({index, selectedIndex, itemObject, selectedItem, onSelecte
         href="#list_item"
         className={`list_item ${ isSelected ? "open" : ""}`} 
         style={style} 
-        onClick={() => onSelectedItem(itemObject, index)}  
-        onDoubleClick={handleBackColor} >
+        onClick={() => onSelectedItem(itemObject, index)}>
+        {/* onDoubleClick={handleBackColor} > */}
 
         <div style={{width: '100%', display: 'flex', flexDirection: 'column', gap: '0px', justifyContent: 'space-between'}}>
 
@@ -1228,10 +1237,10 @@ function ListDataItem({index, selectedIndex, itemObject, selectedItem, onSelecte
               }
             </div>
           </div>
-          <p style={{ fontSize: '14px', color: '#000', textAlign: 'right', direction: 'rtl', paddingRight: '36px', paddingBottom: ((itemObject.DateDue!=='') ? '0px' : '18px')}}>
-            {
+          <p style={{ fontSize: '14px', color: color, textAlign: 'right', direction: 'rtl', paddingRight: '36px', paddingBottom: ((itemObject.DateDue!=='') ? '0px' : '18px')}}>
+          {
             (itemObject.DateDue!=='') ? Globals.dateSetFormatHebrew(itemObject.DateDue) : ''
-            }
+          }
           </p>
           
         </div> 
@@ -1274,12 +1283,12 @@ function NoteScreen({ selectedItem, onSelectedItem, onSaveData, onSaveLookup })
     isAddFromThisDevice = true;
 
 
-    const updateSons = (noteID, newSons) => 
+    const updateSons = (id, newSons) => 
                        {
                           if (saveMode === saveModeEn.UPDATE)
                           {
-                            dataNotes = dataNotes.map((note) => (note.NoteID === noteID ? {...note, SubTasks: newSons } : note))
-                            const item = dataNotes.find((c) => c.NoteID === noteID);
+                            dataNotes  = dataNotes.map((note) => (note.FirebaseID === id ? {...note, SubTasks: newSons } : note))
+                            const item = dataNotes.find((c) => c.FirebaseID === id);
                             setSelectedObject(item);
                           }
                           else
@@ -1289,7 +1298,6 @@ function NoteScreen({ selectedItem, onSelectedItem, onSaveData, onSaveLookup })
                           }
                        };
     
-    //const showSubTasksScreen = dataNotes.find((c) => c.NoteID === openNoteID);
 
     
     // Add field 'SubTasks' to Object
@@ -1297,40 +1305,35 @@ function NoteScreen({ selectedItem, onSelectedItem, onSaveData, onSaveLookup })
     {
       setSelectedObject(  {...selectedObject, SubTasks: []} );
     }
-            
-
-    // const ColourOption = [
-    //   { value: '#564586', label: 'Purple' },
-    //   { value: 'rgba(59, 31, 196, 0.47)', label: 'blue' },
-    //   { value: '#888769', label: 'blue' },
-    //   { value: '#987654', label: 'black' }
-    // ]
+    
+    
     const colourStyles = {      /* StylesConfig<ColourOption, true> */
 
-      control: (styles) => ({ ...styles, backgroundColor: 'rgb(254, 254, 255)', height: '30px', minWidth: '220px', color: 'blue', fontSize: '24px', textAlign: 'right', direction: 'rtl' }),
+      control: (styles) => ({ ...styles, backgroundColor: 'rgb(254, 254, 255)', height: '30px', minWidth: '220px', color: 'blue', fontSize: '27px', textAlign: 'right', direction: 'rtl' }),
       option: (styles, { data, isDisabled, isFocused, isSelected }) => {
-        const color = '#a866eb';    // '#263375'
+        const color = '#7a769e';
         return {
           ...styles, /* backgroundColor: 'red', */ fontSize: '21px', height: '30px',
          
           /// BackColor of List
+          //color: 'white',
           backgroundColor: isDisabled
                               ? undefined
                               : isSelected
-                                ? data.color
+                                ? 'data.color'
                                 : isFocused
                                   ? color    // Items in list backColor on Active
                                   : undefined,
-       /*    color: isDisabled                 // Items in list ForeColor 
+          color: isDisabled                 // Items in list ForeColor 
                     ? '#ccc'
-                    : isSelected
-                      ? isFocused        //chroma.contrast(color, 'white') > 2
-                        ? '#ccc'
-                        : 'black'
-                    : data.color,    // Items in  /*list ForColor*/
+                    : isFocused     //isSelected
+                      ? 'white'  //isFocused        //chroma.contrast(color, 'white') > 2
+                      : 'black',
+                        // ? '#ccc'
+                        // : 'white'
+                    //: data.color,    // Items in  /*list ForColor
                     
           cursor: isDisabled ? 'not-allowed' : 'default',
-          
           // Mouse Down colors
           ':active': {
             ...styles[':active'],
@@ -1432,6 +1435,7 @@ function NoteScreen({ selectedItem, onSelectedItem, onSaveData, onSaveLookup })
 
       var message = '';
       var result = null;
+      isAddFromThisDevice = true;
       
       var values = selectedObject;
 
@@ -1652,6 +1656,7 @@ function NoteScreen({ selectedItem, onSelectedItem, onSaveData, onSaveLookup })
       for (let i = 0; i < values.SubTasks.length; i++)
       {
           const item = values.SubTasks[i];
+          item.Title = item.Title.trim();
           result = await FirebaseHandle.InsertRecord("TBL_NotesChilds", item);
       }
 
@@ -1769,8 +1774,7 @@ function NoteScreen({ selectedItem, onSelectedItem, onSaveData, onSaveLookup })
       {
         setCardBackColor('');
       }
-      
-      //document.body.style.backgroundColor = newColor;
+  
     }
 
 
@@ -1783,8 +1787,8 @@ function NoteScreen({ selectedItem, onSelectedItem, onSaveData, onSaveLookup })
           <div className='div_items_fields'>
 
             <div className='div_items_fields1'>
-              <input    id='txtTitle' name='txtTitle' type='text' value={title} placeholder='הקלד כותרת'  style={{/* fontFamily: 'Tahoma, Geneva, Verdana, sans-serif', */ fontSize: '21px', fontWeight: '600'}}  onChange={(e) => setTitle(e.target.value)}/>
-              <textarea id='txtDesc'  name='txtDesc'  value={desc}  placeholder='הקלד הערות'  style={{fontSize: '25px', height: '100%'}} onChange={(e) => setDesc(e.target.value)}> </textarea>
+              <input    id='txtTitle' name='txtTitle' type='text' autoFocus='true' value={title} placeholder='הקלד כותרת'  style={{fontFamily: 'Geneva, Verdana, sans-serif', fontSize: '27px', fontWeight: '501'}}  onChange={(e) => setTitle(e.target.value)}/>
+              <textarea id='txtDesc'  name='txtDesc'  value={desc}  placeholder='הקלד הערות'  style={{fontSize: '21px', fontWeight: '400', height: '100%'}} onChange={(e) => setDesc(e.target.value)}> </textarea>
             </div>
 
             <div className='div_items_fields2'>
@@ -1849,6 +1853,7 @@ function NoteScreen({ selectedItem, onSelectedItem, onSaveData, onSaveLookup })
             <button type='button' className='button_save' onClick={saveObject}>שמירה</button>
           </div>
     
+    
           {showSubTasksScreen /* || (selectedObject && selectedObject.SubTasks && selectedObject.SubTasks.length > 0) */  &&
                     <SonsPanel  noteObject={selectedObject} onClose={() => setShowSubTasksScreen(false)} onUpdateSubTasks={updateSons}/>
                     // <ShowSubLines  itemObject={selectedItem} subTaskList={subObjectsList} /*onDeleteSubTask={onDeleteSubTask}*//>
@@ -1866,25 +1871,28 @@ function NoteScreen({ selectedItem, onSelectedItem, onSaveData, onSaveLookup })
 // ---- Detail panel (the "Sons" form) -----------------------------------
 function SonsPanel({ noteObject, onClose, onUpdateSubTasks }) 
 {
-  const subTasks = noteObject.SubTasks;
+  const subTasks = noteObject['SubTasks']!==undefined ? noteObject['SubTasks'] : [];
+
 
 
   const addRow = () => {
     const id = newRowId();
-    onUpdateSubTasks(noteObject.NoteID, [...subTasks, { id: id,  FirebaseID: id, NoteID: noteObject.NoteID, IsDone: false, Title: "" }]);
+    onUpdateSubTasks(noteObject.FirebaseID, [...subTasks, { id: id,  FirebaseID: id, NoteID: noteObject.NoteID, IsDone: false, Title: "" }]);
     handleScrollToControl();
   };
 
-  const deleteRow = (rowId) => {
-    onUpdateSubTasks(noteObject.NoteID, subTasks.filter((subTask) => subTask.FirebaseID !== rowId));
+  const deleteRow = (id) => {
+    onUpdateSubTasks(noteObject.FirebaseID, subTasks.filter((subTask) => subTask.FirebaseID !==id));
   };
 
-  const toggleChecked = (rowId) => {
-    onUpdateSubTasks(noteObject.NoteID, subTasks.map((subTask) => (subTask.id === rowId ? { ...subTask, IsDone: !subTask.IsDone } : subTask)));
+  const toggleChecked = (id) => 
+  {
+    onUpdateSubTasks(noteObject.FirebaseID, subTasks.map((subTask) => (subTask.FirebaseID === id ? { ...subTask, IsDone: !subTask.IsDone } : subTask)));
   };
 
-  const updateText = (rowId, value) => {
-    onUpdateSubTasks(noteObject.NoteID, subTasks.map((subTask) => (subTask.id === rowId ? { ...subTask, Title: value } : subTask)))
+  const updateText = (id, value) => 
+  {
+    onUpdateSubTasks(noteObject.FirebaseID, subTasks.map((subTask) => (subTask.FirebaseID === id ? { ...subTask, Title: value } : subTask)))
   };
 
   const targetControlRef = useRef(null);
@@ -1935,15 +1943,15 @@ function SonsPanel({ noteObject, onClose, onUpdateSubTasks })
       <div
         style={{
           position: "relative",
-          width: "min(480px, 92vw)",
+          width: "min(530px, 92vw)",
           height: "100%",
           background: "#e5e1d8",
           boxShadow: "-12px 0 32px rgba(20,28,46,0.18)",
           display: "flex",
           flexDirection: "column",
           animation: "slideIn 0.22s ease-out",
-        }}
-      >
+        }}>
+
         <style>{`
           @keyframes slideIn {
             from { transform: translateX(24px); opacity: 0.6; }
@@ -1961,8 +1969,7 @@ function SonsPanel({ noteObject, onClose, onUpdateSubTasks })
             alignItems: "start",
             //justifyContent: "space-between",
             background: "#1B2A4A",
-          }}
-        >
+          }}>
     
           <div style={{display: 'flex', flexDirection: 'row', width: '100%', /* gap: '60px', */ justifyContent: 'space-between'/* , alignItems: 'space-between' */}}>
             <div
@@ -2063,13 +2070,14 @@ function SonsPanel({ noteObject, onClose, onUpdateSubTasks })
                     background: "#fff",
                     border: "1px solid #E4E0D8",
                     borderRadius: 8,
-                    padding: "10px 12px",
-                  }}
-                >
+                    padding: "7px 7px",
+                  }}>
+                    
+                    
                   <input
                     type="checkbox"
                     checked={item.IsDone}
-                    onChange={() => toggleChecked(item.id)}
+                    onChange={() => toggleChecked(item.FirebaseID)}
                     style={{
                       width: 18,
                       height: 18,
@@ -2083,19 +2091,26 @@ function SonsPanel({ noteObject, onClose, onUpdateSubTasks })
                     type="multiline"
                     minRows='1'
                     maxRows='5'
+                    autoFocus='true'
                     value={item.Title}
-                    onChange={(e) => updateText(item.id, e.target.value)}
+                    //flex='1'
+                    onChange={(e) => updateText(item.FirebaseID, e.target.value)}
                     placeholder="הקלד טקסט..."
                     style={{
-                      flex: 1,
+                      //flex: 1,
+                      width: '100%',
+                      height: 'auto',
                       border: "1px solid transparent",
                       background: "#F7F5F1",
                       borderRadius: 6,
-                      padding: "7px 10px",
-                      fontSize: '23px',
+                      padding: "5px 7px",
+                      fontSize: '20px',
                       overflowY: "auto",
-                      minHeight: 40,
+                      minHeight: '40',
+                      boxSizing: 'border-box',
+                      resize: 'none',
                       color: "#1F2937",
+                      fieldSizing: 'content'    /* The magic line: automatically resizes based on lines of text */
                       // flexShrink: 1,
                       // outline: "none",
                     }}

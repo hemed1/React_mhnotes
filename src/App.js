@@ -682,7 +682,7 @@ export default function App( {dbData} )
 
         {/* Add button to insert new note */}
         {!isShowPasswordScreen && 
-          <buttom type='button' style={{position: 'absolute', display: 'flex', left: '80px', top: '950px', width: '90px', height: '90px', objectFit: 'cover'}} onClick={handleInsert}>
+          <buttom type='button' style={{position: 'absolute', display: 'flex', left: '50px', top: '950px', width: '90px', height: '90px', objectFit: 'cover'}} onClick={handleInsert}>
             <img 
               src="./assets/images/plus3.png" 
               alt="Avatar" 
@@ -1043,11 +1043,14 @@ function ListData({data, selectedItem, onSelectedItem, onSaveData})
 
   return (
     
-        <div style={{display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '1px', marginRight: '50px'}}>
+      <div style={{}}>
 
-          {/* Buttons above the list*/}
-          <div style={{display: 'flex', flexDirection: 'column', gap: '10px'}}>
-            
+        {/* Buttons above the list*/}
+        {/* <div style={{display: 'flex', flexDirection: 'column', gap: '15px', marginTop: '1px', marginRight: '50px'}}> */}
+          
+          {/* Buttons line */}
+          <div style={{display: 'flex', flexDirection: 'column', gap: '15px', /* backgroundColor: 'yellow', */ padding: '10px', marginRight: '20px'}}>
+            {/* Buttons */}
             <div style={{display: 'flex', flexDirection: 'row', gap: '10px', zIndex: '7', direction: 'rtl', textAlign: 'right'}}>
               <div style={{display: 'flex', flexDirection: 'row', gap: '10px', /* width: '33.7vw', */ zIndex: '10', direction: 'rtl', textAlign: 'right'}}>
                 <button type='button' onClick={(e, text) => handleChangeSort(e, 'title')}>כותרת</button>
@@ -1055,25 +1058,30 @@ function ListData({data, selectedItem, onSelectedItem, onSaveData})
                 <button type='button' onClick={(e, text) => handleChangeSort(e, 'date_update')}>תאריך עדכון</button>
                 <button type='button' onClick={(e, text) => handleChangeSort(e, 'today')}>להיום</button>
               </div>
-                <Select 
-                      name="subjects"
-                      value={currentValue}
-                      options={styleFilter} 
-                      defaultValue={currentValue}
-                      isMulti                                                                                                        
-                      closeMenuOnSelect={false}
-                      onChange={(items) => handleFilterChange(items)}
-                      isClearable={true}
-                      isRtl={true}
-                      styles={colourStyles}/>
+              <Select 
+                    name="subjects"
+                    value={currentValue}
+                    options={styleFilter} 
+                    defaultValue={currentValue}
+                    isMulti                                                                                                        
+                    closeMenuOnSelect={false}
+                    onChange={(items) => handleFilterChange(items)}
+                    isClearable={true}
+                    isRtl={true}
+                    styles={colourStyles}/>
             </div>
-            {/* <input  type="date"  value={dateFilter}  style={{width: '150px', paddingTop: '4px', marginTop:'4px'}} onChange={(e) => setDateFilter(e.target.value)}></input> */}
-              
-            <input type='text' value={searchText} placeholder='חפש...'  onChange={(e) => setSearchText(e.target.value)}  style={{height: '40px', width: '33.7vw', backgroundColor: 'rgba(113, 150, 187, 0.5)'}}></input>
+            {/* Search */}
+            <input type='text'  value={searchText} 
+                                placeholder='חפש...'  
+                                onChange={(e) => setSearchText(e.target.value)}  
+                                style={{fontSize: '25px', /* height: '40px', */ width: '33.7vw', borderBottom: '2px solid #363434', borderRight: '2px solid #363434', backgroundColor: 'rgba(113, 150, 187, 0.5)'}}>
+            </input>
           </div>
 
+          &nbsp;&nbsp;
 
-          <div style={{display: 'flex', flexDirection: 'row', gap: '10px', fontSize: '20px', direction: 'rtl', textAlign: 'right'}}>
+          {/* List of items */}
+          {/* <div style={{display: 'flex', flexDirection: 'row', gap: '10px', fontSize: '20px', direction: 'rtl', textAlign: 'right', padding: '10px', backgroundColor: 'red'}}> */}
             
             {/* List of items */}
             <form className="accordion">
@@ -1106,22 +1114,25 @@ function ListData({data, selectedItem, onSelectedItem, onSaveData})
               </ul>
               
             </form>
+           
+          {/* </div> */}
+
+        {/* </div> */}
 
 
-            {/* Caption of teh Application */}
-            <div>
-              <p style={{position: 'absolute', left: '100px', top: '120px', color: '#e2e4f7', direction: 'rtl', textAlign: 'right', zIndex: '1',
-                textShadow: '9px 9px 15px rgba(68, 68, 71, 0.6)', fontFamily: 'Tahoma', fontStyle: 'normal', fontSize: '100px', fontWeight: '800px'}}>משימות ופתקים</p>
-               {/* <img 
-                src="./note_small.png" 
-                alt="Avatar" 
-                backgroundColor="transparent"
-                style={{/* width: '100%', height: '100%', objectFit: 'fill',  borderRadius: '50%' }} ></img> */}
-            </div>
+          {/* Caption of teh Application */}
+          <div>
+            <p style={{position: 'absolute', left: '50px', top: '120px', color: '#e2e4f7', direction: 'rtl', textAlign: 'right', zIndex: '1',
+              textShadow: '9px 9px 15px rgba(68, 68, 71, 0.6)', fontFamily: 'Tahoma', fontStyle: 'normal', fontSize: '100px', fontWeight: '800px'}}>משימות ופתקים</p>
+              {/* <img 
+              src="./note_small.png" 
+              alt="Avatar" 
+              backgroundColor="transparent"
+              style={{/* width: '100%', height: '100%', objectFit: 'fill',  borderRadius: '50%' }} ></img> */}
           </div>
 
-          {/* // Footer */}
-          <div style={{display: 'flex', flexDirection: 'row', gap: '40px', marginTop: '4px', fontSize: '22px'}}>
+         {/* // Footer */}
+          <div style={{/* display: 'block', */ position: 'absolute', top: '94%', right: '50px', flexDirection: 'row', gap: '40px', marginTop: '4px', fontSize: '22px'}}>
             <label style={{color: 'white', direction: 'rtl', textAlign: 'right'}}>
                 <span>מס׳ פריטים:</span>  
                 &nbsp;
@@ -1137,13 +1148,13 @@ function ListData({data, selectedItem, onSelectedItem, onSaveData})
                                                   ).length}
                 </span>
             </label>
-
+            &nbsp;&nbsp;
             <label style={{color: 'white', direction: 'rtl', textAlign: 'right'}}>
                 <span style={{color: '#434040 ', fontWeight: '700px'}}>{(isWithArchive ? 'עם ארכיון' : 'ללא ארכיון')}</span>  
             </label>
           </div>
 
-        </div>
+      </div>
       
   );
 
@@ -1612,6 +1623,7 @@ function NoteScreen({ selectedItem, onSelectedItem, onSaveData, onSaveLookup })
       var result = true;
       var values = selectedObject;
 
+      isAddFromThisDevice = true;
 
       /// Add back the field 'SubTaasks' to object
       if (values['SubTasks'] === undefined)
@@ -1789,7 +1801,7 @@ function NoteScreen({ selectedItem, onSelectedItem, onSaveData, onSaveLookup })
               <input    id='txtTitle' name='txtTitle' type='text' autoFocus='true' 
                         value={title} 
                         placeholder='הקלד כותרת'  
-                        style={{/* fontFamily: 'Verdana, sans-serif', */ fontSize: '25px', fontWeight: '501'}}  
+                        style={{/* fontFamily: 'Verdana, sans-serif', */ fontSize: '24px', fontWeight: '501'}}  
                         onChange={(e) => setTitle(e.target.value)}/>
 
               <textarea id='txtDesc'  name='txtDesc'  
@@ -1860,7 +1872,10 @@ function NoteScreen({ selectedItem, onSelectedItem, onSaveData, onSaveLookup })
               <button type='button' style={{backgroundColor: 'red', color: 'white'}} onClick={(e) => handleDelete(e)}>מחיקה</button>
               <label style={{color: '#B4B7BC', fontSize: '16px', paddingTop: '0px', paddingRight: '20px'}}>נערך לאחרונה: {lastUpdate}</label>
             </div>
-            <button type='button' className='button_save' onClick={saveObject}>שמירה</button>
+            <div style={{display: 'flex', gap: '20px'}}>
+              <button type='button' className='button_exit' onClick={(e) => onSelectedItem(null)}>יציאה</button>
+              <button type='button' className='button_save' onClick={saveObject}>שמירה</button>
+            </div>
           </div>
     
     

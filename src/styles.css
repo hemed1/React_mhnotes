@@ -126,23 +126,27 @@ label {
 
 input::placeholder {
   color: #85909e;
-  font-size: 16px;
-  font-weight: 400;
+  font-size: 22px;
+  font-weight: 500;
   font-style: normal;
   opacity: 1; /* Fixes Firefox default opacity override */
 }
 
 textarea::placeholder {
   color: #85909e;
-  font-size: 16px;
+  font-size: 20px;
   font-weight: 400;
   font-style: normal;
   opacity: 1; /* Fixes Firefox default opacity override */
 }
 
+/* input, textarea::highlight{
+    border: 1px solid red;
+} */
+
 input, select, textarea {
   /* padding: 0.8rem; */
-  border: 0px solid rgb(43, 41, 41);
+  /* border: 0px solid rgb(43, 41, 41); */
   border-radius: 5px;
   height: 35px;
   padding-left: 5px;

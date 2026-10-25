@@ -684,7 +684,7 @@ export default function App( {dbData} )
         {!isShowPasswordScreen && 
           <buttom type='button' style={{position: 'absolute', display: 'flex', left: '80px', top: '950px', width: '90px', height: '90px', objectFit: 'cover'}} onClick={handleInsert}>
             <img 
-              src="../assets/images/plus3.png" 
+              src="./assets/images/plus3.png" 
               alt="Avatar" 
               backgroundColor="transparent"
               style={{objectFit: 'fill'}} 
@@ -1168,8 +1168,7 @@ function ListDataItem({index, selectedIndex, itemObject, selectedItem, onSelecte
     gradientColor = Globals.getGradientColorByListType(itemObject.ListTypeID);
     style = { backgroundImage: gradientColor, color: color };
   }
-  //color = (style===null) ? '#c4c3c9' : color
-  
+ 
 
   async function handleBackColor()
   {
@@ -1222,9 +1221,8 @@ function ListDataItem({index, selectedIndex, itemObject, selectedItem, onSelecte
 
           <div style={{display: 'flex', flexDirection: 'row', gap: '10px'}}>
             <p className='number'>{(index < 9) ? `0${index+1}` : index+1}</p>
-            
             <div style={{width: '100%', display: 'flex', flexDirection: 'row', gap: '0px', justifyContent: 'space-between'}}>
-              <p className='title'>{itemObject.Title}</p>        
+              <p className='title' style={{textDecoration: (itemObject.StatusID===statusesEn.Done_partially || itemObject.StatusID===statusesEn.Done) ? 'line-through' : 'none'}}>{itemObject.Title}</p>        
               { children !== '' &&
                     <button type="button" style={{width: '25px', height: '15px', backgroundColor: '#ffffffc8'}} className='icon' 
                                                       onClick={(e) => 
@@ -1252,6 +1250,7 @@ function ListDataItem({index, selectedIndex, itemObject, selectedItem, onSelecte
   );
 
 }
+
 
 function NoteScreen({ selectedItem, onSelectedItem, onSaveData, onSaveLookup }) 
 {
@@ -1787,9 +1786,20 @@ function NoteScreen({ selectedItem, onSelectedItem, onSaveData, onSaveLookup })
           <div className='div_items_fields'>
 
             <div className='div_items_fields1'>
-              <input    id='txtTitle' name='txtTitle' type='text' autoFocus='true' value={title} placeholder='הקלד כותרת'  style={{fontFamily: 'Geneva, Verdana, sans-serif', fontSize: '27px', fontWeight: '501'}}  onChange={(e) => setTitle(e.target.value)}/>
-              <textarea id='txtDesc'  name='txtDesc'  value={desc}  placeholder='הקלד הערות'  style={{fontSize: '21px', fontWeight: '400', height: '100%'}} onChange={(e) => setDesc(e.target.value)}> </textarea>
+              <input    id='txtTitle' name='txtTitle' type='text' autoFocus='true' 
+                        value={title} 
+                        placeholder='הקלד כותרת'  
+                        style={{/* fontFamily: 'Verdana, sans-serif', */ fontSize: '25px', fontWeight: '501'}}  
+                        onChange={(e) => setTitle(e.target.value)}/>
+
+              <textarea id='txtDesc'  name='txtDesc'  
+                        value={desc}  
+                        placeholder='הקלד הערות'  
+                        style={{fontSize: '21px', fontWeight: '400', height: '100%', lineHeight: "1.28"}} 
+                        onChange={(e) => setDesc(e.target.value)}>
+              </textarea>
             </div>
+
 
             <div className='div_items_fields2'>
 
@@ -1936,20 +1946,20 @@ function SonsPanel({ noteObject, onClose, onUpdateSubTasks })
           position: "absolute",
           inset: 0,
           background: "rgba(20, 28, 46, 0.45)",
-        }}
-      />
+        }}/>
 
-      {/* drawer */}
+      {/* Main Frame */}
       <div
         style={{
           position: "relative",
-          width: "min(530px, 92vw)",
-          height: "100%",
+          width: "min(550px, 92vw)",
+          height: "99%",
           background: "#e5e1d8",
           boxShadow: "-12px 0 32px rgba(20,28,46,0.18)",
           display: "flex",
           flexDirection: "column",
           animation: "slideIn 0.22s ease-out",
+          direction: 'rtl',
         }}>
 
         <style>{`
@@ -1959,73 +1969,70 @@ function SonsPanel({ noteObject, onClose, onUpdateSubTasks })
           }
         `}</style>
 
+
         {/* header */}
         <div
           style={{
-            padding: "22px 24px",
+            padding: "20px 20px",
             borderBottom: "1px solid #E4E0D8",
             display: "flex",
             flexDirection: 'column',
+            gap: '10px',
             alignItems: "start",
+            direction: 'rtl',
+            width: '100%',
             //justifyContent: "space-between",
             background: "#1B2A4A",
           }}>
     
-          <div style={{display: 'flex', flexDirection: 'row', width: '100%', /* gap: '60px', */ justifyContent: 'space-between'/* , alignItems: 'space-between' */}}>
-            <div
-              style={{
-                fontSize: 20,
-                letterSpacing: "0.08em",
-                textTransform: "uppercase",
-                color: "#C9A15A",
-                fontWeight: 700,
-                marginBottom: 4,
-                //display: 'flex',
-                //flexDirection: 'row',
-                //alignItems: 'center',
-                //justifyContent: 'flex-end'
-              }}
-            >
-              פעילות
-            </div>
+          
+          <div
+            style={{
+              display: 'flex', 
+              flexDirection: 'row', 
+              width: '100%', 
+              justifyContent: 'center',
+              fontSize: '25px',
+              letterSpacing: "0.08em",
+              textTransform: "uppercase",
+              color: "#f8c670",
+              fontWeight: 800,
+              marginBottom: 4}}>
+            פעילות
+          </div>
 
-            {/* <div style={{ fontSize: 19, fontWeight: 700, color: "#FBFAF8" }}>
-              {noteObject.Title}
-            </div> */}
+          
+          {/* <br/> */}
 
-            <button
+
+          <button
               onClick={onClose}
               type='button'
+              aria-label="סגור"
               style={{
-                background: "rgba(255,255,255,0.1)",
+                background: "rgba(34, 130, 42, 0.94)",
                 border: "none",
                 borderRadius: 8,
                 width: 29,
                 height: 29,
                 display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
+                flexDirection: 'row',
+                alignSelf: 'end',
                 cursor: "pointer",
                 color: "#FBFAF8",
-              }}
-              aria-label="סגור"
-            >
+                paddingBottom: '12px'
+              }}>
               X
-              {/* <X size={18} /> */}
-            </button>
-          </div>
-
-          <br/>
+          </button>
 
           <div
             style={{
               display: "flex",
-              justifyContent: "start",
-              alignItems: "center",
-              marginBottom: 14,
-            }}
-            >
-              <span style={{fontSize: 15, color: "#FBFAF8", fontWeight: 600, letterSpacing: "0.03em"}}>
+              // justifyContent: "start",
+              // alignItems: "center",
+              marginBottom: 3,
+            }}>
+              <span style={{fontSize: '20px', color: "#FBFAF8", fontWeight: 600, letterSpacing: "0.03em"}}>
                 {subTasks.length} {"פריטים"}
               </span>
           </div>
@@ -2115,7 +2122,7 @@ function SonsPanel({ noteObject, onClose, onUpdateSubTasks })
                       // outline: "none",
                     }}
                     ref={(index===subTasks.length-1) ? targetControlRef : null}
-                    onFocus={(e) => (e.target.style.borderColor = "#1B2A4A")}
+                    onFocus={(e) => (e.target.style.borderColor = "#de4327")}
                     onBlur={(e) => (e.target.style.borderColor = "transparent")}
                   />
 
@@ -2162,12 +2169,12 @@ function SonsPanel({ noteObject, onClose, onUpdateSubTasks })
               border: "none",
               borderRadius: 9,
               padding: "11px 0",
-              fontSize: 14,
+              fontSize: '20px',
               fontWeight: 600,
               cursor: "pointer",
             }}
           >
-            <Plus size={17} />
+            <Plus size={18} />
             הוסף שורה
           </button>
         </div>

@@ -121,9 +121,9 @@ button {
 }
 
 .button_exit{
-  background-color: rgb(30, 25, 176);
-  color: white;
-  width: '100px';
+  background-color: rgba(242, 242, 244, 0.9);
+  color: rgb(62, 60, 60);
+  width: '110px';
   height: 38px;
 }
 
@@ -239,17 +239,17 @@ input, select, textarea {
   flex-direction: column;
   padding: 15px;
   margin-top: 7px;
-  margin-bottom: 5px;
-  font-size: 23px;
+  margin-bottom: 10px;
+  font-size: 22px;
   font-weight: 100;
   text-align: right;
   direction: rtl;
   height: 300px;
-  width: 630px;
+  width: 655px;
   text-wrap: 'pretty';
   overflow-wrap: 'break-word';
   white-space: 'pre-wrap';
-  line-height: 1.4;
+  line-height: 1.3;
 }
 
 /* .content-box ul {
@@ -270,7 +270,7 @@ input, select, textarea {
   box-shadow: 9px 9px 10px rgba(90, 90, 94, 0.6);
   background-color: var(--color-panel_5);
   border: 1px solid rgb(233, 235, 238);
-  margin-top: 125px;
+  margin-top: 109px;
   margin-right: 0px;
   /* width: 33.7vw; */
   height: 76.0vh;
@@ -397,7 +397,7 @@ input, select, textarea {
   overflow: hidden;
   list-style-type: none;
   /* display: flex ; */
-  height: 40px;
+  height: 38px;
   width: 100%;
   text-align: right;
   direction: rtl;

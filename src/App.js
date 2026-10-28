@@ -181,10 +181,6 @@ export default function App( {dbData} )
 
       FirebaseHandle.setFuncWhenUpdate(eventWhenUpdated);
 
-      if (!isAddFromThisDevice)
-      {
-        Globals.PlaySound("dream_bonus_notification.mp3");
-      }
       //setIsAddFromThisDevice(false);
       isAddFromThisDevice = false;
     }
@@ -202,6 +198,7 @@ export default function App( {dbData} )
       FirebaseHandle.setFuncWhenUpdate(null);
 
       isAddFromThisDevice = false;
+      Globals.PlaySound("dream_bonus_notification.mp3");
   }
 
   async function getData() 
@@ -1074,11 +1071,11 @@ function ListData({data, selectedItem, onSelectedItem, onSaveData})
             <input type='text'  value={searchText} 
                                 placeholder='חפש...'  
                                 onChange={(e) => setSearchText(e.target.value)}  
-                                style={{fontSize: '25px', /* height: '40px', */ width: '33.7vw', borderBottom: '2px solid #363434', borderRight: '2px solid #363434', backgroundColor: 'rgba(113, 150, 187, 0.5)'}}>
+                                style={{fontSize: '21px', /* height: '40px', */ width: '33.7vw', borderBottom: '2px solid #363434', borderRight: '2px solid #363434', backgroundColor: 'rgba(113, 150, 187, 0.5)'}}>
             </input>
           </div>
 
-          &nbsp;&nbsp;
+          {/* &nbsp;&nbsp; */}
 
           {/* List of items */}
           {/* <div style={{display: 'flex', flexDirection: 'row', gap: '10px', fontSize: '20px', direction: 'rtl', textAlign: 'right', padding: '10px', backgroundColor: 'red'}}> */}
@@ -1122,7 +1119,7 @@ function ListData({data, selectedItem, onSelectedItem, onSaveData})
 
           {/* Caption of teh Application */}
           <div>
-            <p style={{position: 'absolute', left: '50px', top: '120px', color: '#e2e4f7', direction: 'rtl', textAlign: 'right', zIndex: '1',
+            <p style={{position: 'absolute', left: '50px', top: '60px', color: '#e2e4f7', direction: 'rtl', textAlign: 'right', zIndex: '1',
               textShadow: '9px 9px 15px rgba(68, 68, 71, 0.6)', fontFamily: 'Tahoma', fontStyle: 'normal', fontSize: '100px', fontWeight: '800px'}}>משימות ופתקים</p>
               {/* <img 
               src="./note_small.png" 
@@ -1801,7 +1798,7 @@ function NoteScreen({ selectedItem, onSelectedItem, onSaveData, onSaveLookup })
               <input    id='txtTitle' name='txtTitle' type='text' autoFocus='true' 
                         value={title} 
                         placeholder='הקלד כותרת'  
-                        style={{/* fontFamily: 'Verdana, sans-serif', */ fontSize: '24px', fontWeight: '501'}}  
+                        style={{/* fontFamily: 'Verdana, sans-serif', */ fontSize: '23px', fontWeight: '500.99'}}  
                         onChange={(e) => setTitle(e.target.value)}/>
 
               <textarea id='txtDesc'  name='txtDesc'  

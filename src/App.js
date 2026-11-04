@@ -181,8 +181,12 @@ export default function App( {dbData} )
 
       FirebaseHandle.setFuncWhenUpdate(eventWhenUpdated);
 
+      if (!isAddFromThisDevice)
+      {
+        Globals.PlaySound("dream_bonus_notification.mp3");
+      }
       //setIsAddFromThisDevice(false);
-      isAddFromThisDevice = false;
+      //isAddFromThisDevice = false;
     }
 
     /* if (FirebaseHandle.getFuncWhenUpdate() === null)
@@ -198,7 +202,7 @@ export default function App( {dbData} )
       FirebaseHandle.setFuncWhenUpdate(null);
 
       isAddFromThisDevice = false;
-      Globals.PlaySound("dream_bonus_notification.mp3");
+      //Globals.PlaySound("dream_bonus_notification.mp3");
   }
 
   async function getData() 
@@ -703,8 +707,7 @@ export default function App( {dbData} )
                 data={dataNotes} 
                 selectedItem ={selectedItem} 
                 onSelectedItem={handleSelectItem} 
-                onSaveData={handleSaveData} 
-            />
+                onSaveData={handleSaveData} />
 
             {selectedItem && 
                 <NoteScreen 
@@ -1091,7 +1094,6 @@ function ListData({data, selectedItem, onSelectedItem, onSaveData})
                               ? ((String(item.Title).indexOf(searchText)>-1) || (String(item.Description).indexOf(searchText)>-1))
                               : getFilterQuery(item)
                                 //:(dateFilter!==null)
-                                //getFilterQuery(item)
                                 // ? String(item.DateDue).substring(0, 10) === String(dateFilter)
                                 //: true
                           )
@@ -1117,7 +1119,7 @@ function ListData({data, selectedItem, onSelectedItem, onSaveData})
         {/* </div> */}
 
 
-          {/* Caption of teh Application */}
+          {/* Caption of the Application */}
           <div>
             <p style={{position: 'absolute', left: '50px', top: '60px', color: '#e2e4f7', direction: 'rtl', textAlign: 'right', zIndex: '1',
               textShadow: '9px 9px 15px rgba(68, 68, 71, 0.6)', fontFamily: 'Tahoma', fontStyle: 'normal', fontSize: '100px', fontWeight: '800px'}}>משימות ופתקים</p>
@@ -1139,7 +1141,6 @@ function ListData({data, selectedItem, onSelectedItem, onSaveData})
                                                   ? ((String(item.Title).indexOf(searchText)>-1) || (String(item.Description).indexOf(searchText)>-1))
                                                    : getFilterQuery(item)
                                                     //:(dateFilter!==null)
-                                                    //getFilterQuery(item)
                                                     // ? String(item.DateDue).substring(0, 10) === String(dateFilter)
                                                     //: true
                                                   ).length}

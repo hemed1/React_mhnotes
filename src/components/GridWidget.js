@@ -3,7 +3,7 @@
 import { useState, useMemo } from 'react';
 import './gridWidget.css'; // קובץ העיצוב שלנו
 import { GridEdited }  from '../globals.js';
-import { SaveIcon, Edit3, Edit, Trash2 /*, Calendar1Icon */} from "lucide-react";
+//import { SaveIcon, Edit3, Edit, Trash2 /*, Calendar1Icon */} from "lucide-react";
 
 
 
@@ -15,7 +15,7 @@ export var f_grid_mode = 0;
 
 export function GridWidget( {data, title, tableName, arrayColumns, 
                             top, left, width, height,
-                            onSaveFuncName, backgroundColor = '#454545b3'} )     /*  'transparent'*/
+                            onSaveFuncName, isWithSearch = true, isCanDelete = true, backgroundColor = '#454545b3'} )     /*  'transparent'*/
 {
    const [dataItems, setDataItems] = useState(data);
    const [selectedRowIndex, setSelectedRowIndex] = useState(0);
@@ -26,20 +26,29 @@ export function GridWidget( {data, title, tableName, arrayColumns,
    
 
 
+   for (var i=0; i<arrayColumns.length; i++)
+   {
+      const column = arrayColumns[i]; 
+      if (column['isSum'] !== undefined)
+      {
+         column['isSum'] = 0;
+      }
+   }
+
    /// First time after change item
    if (f_grid_mode === 0)
    {
       //sortFieldName = arrayColumns[0].fieldName;
       setSortFieldName(arrayColumns[0].fieldName);
       itemsToSave = [];
-      //setItemsToSave([]);
       f_grid_mode = 1;
       var list = [];
       for (var i=0; i<arrayColumns.length; i++)
       {
-         list.push({id: i, value: ''});
+        list.push({id: i, value: ''});
       }
       setSearchArray(list);
+      setDataItems(data);
    }
 
 
@@ -224,13 +233,14 @@ export function GridWidget( {data, title, tableName, arrayColumns,
 
   async function handleSaveChanges()
   {
+   if (onSaveFuncName !== null)
+   {
+      const newData = await onSaveFuncName(tableName, itemsToSave);
+      setDataItems(newData);
+   }
     
-    const newData = await onSaveFuncName(tableName, itemsToSave);
-
-    setDataItems(newData);
-    
-    itemsToSave = []; // נקה את הרשימה לאחר השמירה
-    setIsEditMode(false);
+   itemsToSave = []; // נקה את הרשימה לאחר השמירה
+   setIsEditMode(false);
   }
 
   function handleEndEdit()
@@ -332,28 +342,59 @@ export function GridWidget( {data, title, tableName, arrayColumns,
       return null;
   }
 
+  function getFilterQuery(item)
+  {
+      var found = true;
+      for (var i=0; i<searchArray.length; i++)
+      {
+         const obj = searchArray[i]; 
+         const value = String(obj.value).trim();
+         found = (( value !== '')  
+                  ? (String(item[arrayColumns[i].fieldName]).indexOf(value)>-1)
+                  : true)
+         if (!found)
+         {
+            break;
+         }
+      }
+
+
+      for (var i=0; i<arrayColumns.length; i++)
+      {
+         const column = arrayColumns[i]; 
+         if (column['isSum'] !== undefined)
+         {
+            column['isSum'] += item[column.fieldName];
+         }
+      }
+
+
+      return found;
+   }
+
 
 
 
 
   return (
 
-    <form className="page-container" style={{marginRight:'25px', marginLeft:'25px', top: top, /* left: left, */ maxWidth: width, height: height, backgroundColor: backgroundColor}}>
+    <form className="page-container" style={{marginRight:'25px', marginLeft:'25px', top: top, /* left: left, */ maxWidth: width, backgroundColor: backgroundColor}}>
       
       <h2 style={{textAlign: 'center', color: 'white'}}>{title}</h2>
 
-      <div style={{display: 'flex', flexDirection: 'row', justifyContent: 'flex-start', gap: '15px', paddingLeft: '10px', paddingRight: '10px', paddingTop: '10px'}}>
+      <div style={{display: 'flex', flexDirection: 'row', justifyContent: 'flex-start', gap: '15px', paddingLeft: '10px', paddingRight: '5px', paddingTop: '10px'}}>
          <button type="button" onClick={handleSaveChanges} style={{width: '70px', display: 'flex', padding: '5px 10px', backgroundColor: 'red' ,  color: 'white', border: 'none', borderRadius: '4px'}} title="שמירת שינויים" >
-            <SaveIcon size={25} />
+            {/* <SaveIcon size={25} /> */}
          </button>
          <button type="button" onClick={handleEndEdit} style={{width: '70px', display: 'flex', padding: '5px 10px', backgroundColor: 'green', color: 'white', border: 'none', borderRadius: '4px'}} title="עריכה" >
-               {isEditMode  && <Edit3 size={25} />}
-               {!isEditMode && <Edit size={25} />}
+               {/* {isEditMode  && <Edit3 size={25} />}
+               {!isEditMode && <Edit size={25} />} */}
          </button>
-         <button type="button" onClick={(e) => handleDeleteRecord()} style={{width: '70px', display: 'flex', padding: '5px 10px', backgroundColor: 'blue', color: 'white', border: 'none', borderRadius: '4px'}} title="מחיקה" >
-               {isEditMode  && <Trash2 size={25} />}
-               {!isEditMode && <Trash2 size={25} />}
+         {isCanDelete && <button type="button" onClick={(e) => handleDeleteRecord()} style={{width: '70px', display: 'flex', padding: '5px 10px', backgroundColor: 'blue', color: 'white', border: 'none', borderRadius: '4px'}} title="מחיקה" >
+               {/* {isEditMode  && <Trash2 size={25} />}
+               {!isEditMode && <Trash2 size={25} />} */}
          </button>
+         }
          {/* <button type="button" onClick={(e) => handleFilter(1)} style={{width: '70px', display: 'flex', padding: '5px 10px', backgroundColor: '#ffa94d',  color: 'white', border: 'none', borderRadius: '4px'}} title="להיום" >
             <Calendar1Icon size={25} />
          </button> */}
@@ -361,27 +402,28 @@ export function GridWidget( {data, title, tableName, arrayColumns,
       </div>
      
 
-      <div className="grid-container" >
+      <div className="grid-container" style={{maxHeight: height}}>
 
          {/* // Search */}
-         <div style={{display: 'flex', flexDirection: 'row', gap: '1px', paddingRight: '6px'}}>
-            {searchArray.map((col, colIndex) =>
-               <input type="text"
-                     style={{
-                              backgroundColor: 'rgba(164, 201, 237, 0.5)', 
-                              color: '#fff',
-                              minWidth: arrayColumns[colIndex].width,      //String(Number(arrayColumns[colIndex].width.substring(0, arrayColumns[colIndex].width.length - 2))-10)+'px',  
-                              paddingLeft: '7px', 
-                              paddingRight: '7px', 
-                              marginBottom: '7px',
-                              marginLeft: '0px',
-                              marginRight: '0px',
-                              boxSizing: 'border-box' }}    /* , minWidth: '3000px'   */
-                     value={String(col['value'])}
-                     onChange={(e) => handleSearch(colIndex, e.target.value)}/>
-            )}
-         </div>
-
+         {isWithSearch &&
+            <div style={{display: 'flex', flexDirection: 'row', gap: '1px', paddingRight: '6px'}}>
+               {searchArray.map((col, colIndex) =>
+                  <input type="text"
+                        style={{
+                                 backgroundColor: 'rgba(164, 201, 237, 0.5)', 
+                                 color: '#fff',
+                                 minWidth: arrayColumns[colIndex].width,      //String(Number(arrayColumns[colIndex].width.substring(0, arrayColumns[colIndex].width.length - 2))-10)+'px',  
+                                 paddingLeft: '7px', 
+                                 paddingRight: '7px', 
+                                 marginBottom: '7px',
+                                 marginLeft: '0px',
+                                 marginRight: '0px',
+                                 boxSizing: 'border-box' }}    /* , minWidth: '3000px'   */
+                        value={String(col['value'])}
+                        onChange={(e) => handleSearch(colIndex, e.target.value)}/>
+               )}
+            </div>
+         }
 
          <table  style={{tableLayout: 'fixed', borderCollapse: 'collapse'}}>   
             
@@ -400,29 +442,7 @@ export function GridWidget( {data, title, tableName, arrayColumns,
 
             {
                sortedProducts
-                     .filter((item) => 
-                           {
-                              var found = true;
-                              for (var i=0; i<searchArray.length; i++)
-                              {
-                                 const obj = searchArray[i]; 
-                                 const value = String(obj.value).trim();
-                                 found = (( value !== '')  
-                                          ? (String(item[arrayColumns[i].fieldName]).indexOf(value)>-1)
-                                          : true)
-                                 if (!found)
-                                 {
-                                    break;
-                                 }
-                                 // searchArray.map((e, colIndex) => (
-                                 //          (String(e.value).trim() !== '')  
-                                 //          ? (String(item[arrayColumns[colIndex].fieldName]).indexOf(String(e.value).trim())>-1)
-                                 //          : true
-                                 //   )
-                                 //)
-                              }
-                              return found;
-                           })
+                     .filter((item) => getFilterQuery(item))
 
                      .map((item, rowIndex) => 
                      (
@@ -441,14 +461,15 @@ export function GridWidget( {data, title, tableName, arrayColumns,
                                  {
                                     !isEditMode
                                        ?  (col.lookupTable === undefined || col.lookupTable === null || col.lookupTable.length === 0) 
-                                          ? String(item[col.fieldName]) 
+                                          ? String(item[col.fieldName])  
                                           : (col.lookupTable.find((lookupItem) => lookupItem.value === item[col.fieldName]))?.label || String(item[col.fieldName])
-                                       : <input 
-                                          type='text'     //{(col.type==='number') ? "number": "text"}
-                                          style={{width: String(Number(col.width.substring(0, col.width.length - 2))-25)+'px'}}
-                                          value={String(item[col.fieldName])}
-                                          onChange={(e) => updateCell(rowIndex, colIndex, (getIDValue(item)[1]!=null ? getIDValue(item)[1] : item.Title), e.target.value)}
-                                        />
+                                       : (col['isCanEdit']===undefined || col['isCanEdit']===true) 
+                                          ? (<input 
+                                                type='text'     //{(col.type==='number') ? "number": "text"}
+                                                style={{width: String(Number(col.width.substring(0, col.width.length - 2))-25)+'px'}}
+                                                value={String(item[col.fieldName])}
+                                                onChange={(e) => updateCell(rowIndex, colIndex, (getIDValue(item)[1]!=null ? getIDValue(item)[1] : item.Title), e.target.value)}/>)
+                                          : ''
                                  }
                               </td>
                            ))
@@ -458,6 +479,30 @@ export function GridWidget( {data, title, tableName, arrayColumns,
             }
 
             </tbody>
+
+
+            <footer>
+               <tr className='row-item'>
+               {
+                  arrayColumns.map((col, colIndex) =>
+                  (
+                     <td key={colIndex} className='gridCol'  
+                                  style={{
+                                    width: col.width, 
+                                    color: '#fff', 
+                                    fontSize: '20px',
+                                    fontWeight: 'bold',
+                                    backgroundColor: (col['isSum']) ? '#6dbd57d8' : 'transparent',
+                                    direction: (col.fieldName!=='FirebaseID' || col.type==='date') ? 'rtl' : 'ltr', 
+                                    textAlign: (col.fieldName!=='FirebaseID' || col.type==='date') ? 'right' : 'left'}}> 
+                     {
+                        (col['isSum']) ? String(col['isSum']) : ''
+                     }
+                     </td>
+                  ))
+               }
+               </tr>
+            </footer>
 
          </table> 
 

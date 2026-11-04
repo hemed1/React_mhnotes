@@ -65,6 +65,18 @@ export const dataBasesConfigList =
       email: "miri.karur@gmail.com"
    },
 
+   {
+      apiKey: "AIzaSyCpBgt_qPGQAzfvtYambLvBw12jPVWPGwc",
+      authDomain: "elkalay-office-notes.firebaseapp.com",
+      databaseURL: "https://elkalay-office-notes-default-rtdb.firebaseio.com",
+      projectId: "elkalay-office-notes",
+      storageBucket: "elkalay-office-notes.firebasestorage.app",
+      messagingSenderId: "820697656077",
+      appId: "1:820697656077:web:a86597010a76b667bc1e44",
+      measurementId: "G-DRHEPS6293",
+      email: "elkalay.office@gmail.com"
+   }
+
 ];
 
 

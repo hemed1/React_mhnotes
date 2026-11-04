@@ -917,7 +917,7 @@ export function AuthenticationScreen({onConfirm, onExit})
       dataCheck = await GetTableDataSync('TBL_Settings');
       
       /** Check validity of the password */
-      if (dataCheck && dataCheck.length>0 && dataCheck[0]['UserPassword'] !== password)
+      if (dataCheck && dataCheck.length>0 && String(dataCheck[0]['UserPassword']) !== password)
       {
           setIsShowWaitMessage(false);
           alert('סיסמה לא נכונה');

@@ -9,7 +9,7 @@ import { getDatabase, ref, onValue, update, set, get, push, remove, query, order
 import  * as FirebaseConfig from './dataBasesConfig.js';
 import * as Globals from '../globals.js';
 import './AuthenticationStyle.css';
-import { exp } from 'firebase/firestore/pipelines';
+//import { exp } from 'firebase/firestore/pipelines';
 //import { useSearchParams } from 'react-router-dom';
 //import { getAuth } from "firebase/auth";
 //import { getFirestore } from "firebase/firestore";
@@ -75,12 +75,12 @@ export async function Init()
     const tmpDataBaseIndex = await getDatabaseIndexFromFile("launch.json");
     // if (tmpDataBaseIndex)
     // {
-    //   dataBaseIndex = tmpDataBaseIndex;
+    dataBaseIndex = tmpDataBaseIndex;
     // }
 
   
 
-  //database = await changeDatabase(dataBaseIndex);
+  database = await changeDatabase(dataBaseIndex);
 
 
   return ( dataBaseIndex );
@@ -110,21 +110,6 @@ export async function getDatabaseIndexFromFile( fileName )
   {
     appVersion = obj['version']; 
   }
-
-  /** Get Default User Email value */
-  // fileName = "MyEmail.json";
-  // response = await fetch("/" + fileName);
-  // if (!response.ok) 
-  // {
-  //   return null;
-  //   //throw new Error(`Failed to load launch.json: ${response.statusText}`);
-  // }
-  // obj = await response.json();
-  // if (obj['email'] !== null)
-  // {
-  //   DefaultUserEmail = obj['email']; 
-  // }
-
 
 
   return result;
@@ -816,9 +801,9 @@ export async function changeIDs(mainTableName)
  */
 export function AuthenticationScreen({onConfirm, onExit})
 {
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [firstEmail, setfirstEmail] = useState(DefaultUserEmail);
+    const [email, setEmail] = useState('hemedmeir@gmail.com');
+    const [password, setPassword] = useState('tom');
+    const [firstEmail, setfirstEmail] = useState('hemedmeir@gmail.com');
     const [isShowWaitMessage, setIsShowWaitMessage] = useState(false);
 
 
@@ -910,9 +895,13 @@ export function AuthenticationScreen({onConfirm, onExit})
       }
 
       
-
+      dbIndex = 5;
+      
       /** Connect to db */
       database = await changeDatabase(dbIndex);
+      
+      // const json = {DefaultDatabaseID: 5, FirebaseID: '', MainDataName: 'mhnotes-mainsetting', MainDatabaseUrl: 'mhnotes-mainsettingdb-default-rtdb.firebaseio.com', UserEmail: 'hemedmeir@gmail.com', UserPassword: 'tom'};
+      // const res = await InsertRecord('TBL_Settings', json);
 
       dataCheck = await GetTableDataSync('TBL_Settings');
       

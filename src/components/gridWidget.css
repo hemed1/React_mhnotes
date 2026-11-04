@@ -21,10 +21,10 @@ body {
 
 /* מיכל העמוד הכללי */
 .page-container {
-  position:fixed;
+  /* position:fixed; */
   display: flex;   /* block */
   flex-direction: column;
-  border-radius: 10px;
+  border-radius: 7px;
   gap: 12px;
   /* background-color: #e6e4e4; */
   padding: 20px;

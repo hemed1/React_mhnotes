@@ -26,6 +26,7 @@ export function GridWidget( {data, title, tableName, arrayColumns,
    
 
 
+   // Reset Sum columns
    for (var i=0; i<arrayColumns.length; i++)
    {
       const column = arrayColumns[i]; 
@@ -43,12 +44,13 @@ export function GridWidget( {data, title, tableName, arrayColumns,
       itemsToSave = [];
       f_grid_mode = 1;
       var list = [];
-      for (var i=0; i<arrayColumns.length; i++)
+      for (var j=0; j<arrayColumns.length; j++)
       {
-        list.push({id: i, value: ''});
+        list = [...list, {id: j, value: ''}];
       }
       setSearchArray(list);
       setDataItems(data);
+      data.filter((item) => getFilterQuery(item))
    }
 
 
@@ -72,7 +74,6 @@ export function GridWidget( {data, title, tableName, arrayColumns,
                                  {
                                     return [...dataItems].sort((a, b) => Number(b[sortFieldName]) - Number(a[sortFieldName]));
                                  }
-                                 //break;
 
                               case 'bool':
                                  if (sortDirection === 'asc')
@@ -83,7 +84,6 @@ export function GridWidget( {data, title, tableName, arrayColumns,
                                  {
                                     return [...dataItems].sort((a, b) => Number(b[sortFieldName]) - Number(a[sortFieldName]));
                                  }
-                                 //break;
 
                               case 'date':
                                  // if (sortDirection === 'asc')
@@ -114,7 +114,6 @@ export function GridWidget( {data, title, tableName, arrayColumns,
                                  {
                                     return [...dataItems].sort((a, b) => String(b[sortFieldName]).localeCompare(String(a[sortFieldName])));
                                  }
-                                 //break;
                            }
                         
    }, [dataItems, sortFieldName, sortDirection, _type]);
@@ -236,6 +235,7 @@ export function GridWidget( {data, title, tableName, arrayColumns,
    if (onSaveFuncName !== null)
    {
       const newData = await onSaveFuncName(tableName, itemsToSave);
+      f_grid_mode = 0
       setDataItems(newData);
    }
     
@@ -300,13 +300,10 @@ export function GridWidget( {data, title, tableName, arrayColumns,
   function handleSearch(colIndex, value)
   {
       var original = [...searchArray];
-
-      // for (var i=0; i< searchArray.length; i++)
-      // {
-         const updatedItem = {...original[colIndex], value: value };
-         const resultItems = original.map((item, index) => (index===colIndex) ? updatedItem : item );
-         original = resultItems;
-      // }
+     
+      const updatedItem = {...original[colIndex], value: value };
+      const resultItems = original.map((item, index) => (index===colIndex) ? updatedItem : item );
+      original = resultItems;
 
       setSearchArray(original);
   }
@@ -342,15 +339,19 @@ export function GridWidget( {data, title, tableName, arrayColumns,
       return null;
   }
 
-  function getFilterQuery(item)
+  function getFilterQuery(record)
   {
+      var i=0;
       var found = true;
-      for (var i=0; i<searchArray.length; i++)
+
+
+      //** Filter data by Search line */
+      for (i=0; i<searchArray.length; i++)
       {
          const obj = searchArray[i]; 
          const value = String(obj.value).trim();
          found = (( value !== '')  
-                  ? (String(item[arrayColumns[i].fieldName]).indexOf(value)>-1)
+                  ? (String(record[arrayColumns[i].fieldName]).indexOf(value)>-1)
                   : true)
          if (!found)
          {
@@ -359,18 +360,19 @@ export function GridWidget( {data, title, tableName, arrayColumns,
       }
 
 
-      for (var i=0; i<arrayColumns.length; i++)
+      //** Sum Columns */
+      for (i=0; i<arrayColumns.length; i++)
       {
          const column = arrayColumns[i]; 
          if (column['isSum'] !== undefined)
          {
-            column['isSum'] += item[column.fieldName];
+            column['isSum'] += record[column.fieldName];
          }
       }
 
 
       return found;
-   }
+  }
 
 
 
@@ -380,17 +382,20 @@ export function GridWidget( {data, title, tableName, arrayColumns,
 
     <form className="page-container" style={{marginRight:'25px', marginLeft:'25px', top: top, /* left: left, */ maxWidth: width, backgroundColor: backgroundColor}}>
       
-      <h2 style={{textAlign: 'center', color: 'white'}}>{title}</h2>
+      <h3 style={{textAlign: 'center', color: 'white'}}>{title}</h3>
 
       <div style={{display: 'flex', flexDirection: 'row', justifyContent: 'flex-start', gap: '15px', paddingLeft: '10px', paddingRight: '5px', paddingTop: '10px'}}>
          <button type="button" onClick={handleSaveChanges} style={{width: '70px', display: 'flex', padding: '5px 10px', backgroundColor: 'red' ,  color: 'white', border: 'none', borderRadius: '4px'}} title="שמירת שינויים" >
+            שמירה
             {/* <SaveIcon size={25} /> */}
          </button>
          <button type="button" onClick={handleEndEdit} style={{width: '70px', display: 'flex', padding: '5px 10px', backgroundColor: 'green', color: 'white', border: 'none', borderRadius: '4px'}} title="עריכה" >
+               עריכה
                {/* {isEditMode  && <Edit3 size={25} />}
                {!isEditMode && <Edit size={25} />} */}
          </button>
          {isCanDelete && <button type="button" onClick={(e) => handleDeleteRecord()} style={{width: '70px', display: 'flex', padding: '5px 10px', backgroundColor: 'blue', color: 'white', border: 'none', borderRadius: '4px'}} title="מחיקה" >
+               מחיקה
                {/* {isEditMode  && <Trash2 size={25} />}
                {!isEditMode && <Trash2 size={25} />} */}
          </button>
@@ -406,23 +411,23 @@ export function GridWidget( {data, title, tableName, arrayColumns,
 
          {/* // Search */}
          {isWithSearch &&
-            <div style={{display: 'flex', flexDirection: 'row', gap: '1px', paddingRight: '6px'}}>
-               {searchArray.map((col, colIndex) =>
-                  <input type="text"
-                        style={{
-                                 backgroundColor: 'rgba(164, 201, 237, 0.5)', 
-                                 color: '#fff',
-                                 minWidth: arrayColumns[colIndex].width,      //String(Number(arrayColumns[colIndex].width.substring(0, arrayColumns[colIndex].width.length - 2))-10)+'px',  
-                                 paddingLeft: '7px', 
-                                 paddingRight: '7px', 
-                                 marginBottom: '7px',
-                                 marginLeft: '0px',
-                                 marginRight: '0px',
-                                 boxSizing: 'border-box' }}    /* , minWidth: '3000px'   */
-                        value={String(col['value'])}
-                        onChange={(e) => handleSearch(colIndex, e.target.value)}/>
-               )}
-            </div>
+                  <div style={{display: 'flex', flexDirection: 'row', gap: '1px', paddingRight: '6px'}}>
+                     {searchArray.map((col, colIndex) =>
+                        <input type="text"
+                              style={{
+                                       backgroundColor: 'rgba(164, 201, 237, 0.5)', 
+                                       color: '#fff',
+                                       minWidth: arrayColumns[colIndex].width,      //String(Number(arrayColumns[colIndex].width.substring(0, arrayColumns[colIndex].width.length - 2))-10)+'px',  
+                                       paddingLeft: '7px', 
+                                       paddingRight: '7px', 
+                                       marginBottom: '7px',
+                                       marginLeft: '0px',
+                                       marginRight: '0px',
+                                       boxSizing: 'border-box' }}    /* , minWidth: '3000px'   */
+                              value={String(col['value'])}
+                              onChange={(e) => handleSearch(colIndex, e.target.value)}/>
+                     )}
+                  </div>
          }
 
          <table  style={{tableLayout: 'fixed', borderCollapse: 'collapse'}}>   

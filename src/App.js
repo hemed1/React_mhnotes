@@ -133,7 +133,7 @@ export default function App( {dbData} )
                                               {
                                                 func();
                                               }
-                                              ListenToDB2(dataItems);
+                                              ListenToDB(dataItems);
                                               return (dataItems)
                                             }
                                             else 
@@ -151,55 +151,13 @@ export default function App( {dbData} )
                                             return ([]);
                                           }); 
 
-
-    /** Load data from DB when other device add/update records */
-    function ListenToDB2(newData) 
-    {   
-      // if (isShowPasswordScreen)
-      // {
-      //     return;
-      // }
-
-      //var newData = UseListenToDatabase("TBL_Notes");
-      
-      if (/* isListenDatabase && */ newData && newData?.length > 0) 
-      {
-        setIsListenDatabase(false);
-        
-        /** Set the Sub-Tasks objects to the Parent Task object, based on the NoteID **/
-        newData = Globals.setSubTasksToParent(newData, dataChilds);
-        
-        handleSaveData2(newData, false); 
-
-        FirebaseHandle.setFuncWhenUpdate(eventWhenUpdated);
-
-        if (!isAddFromThisDevice)
-        {
-          Globals.PlaySound("dream_bonus_notification.mp3");
-        }
-      }
-
-      /* if (FirebaseHandle.getFuncWhenUpdate() === null)
-      {
-        FirebaseHandle.setFuncWhenUpdate(eventWhenUpdated);
-      } */
-    }
-
-      /** When save SubTasks **/
-    function handleSaveData2( notesData )
-    {
-        const newList = {...data, dataNotes: notesData }
-        //dbData = newList;
-
-        setData(newList);
-    }
     
     // Execute the Function var
     return () => firebaseData();
 
     
 
-  }, [isShowPasswordScreen  /*, ListenToDB2, handleSaveData2 */, data /* , dataChilds, setData, isAddFromThisDevice */]);
+  }, [isShowPasswordScreen  /*, ListenToDB2, handleSaveData2 , data*/ /* , dataChilds, setData, isAddFromThisDevice */]);
 
                                     
 
@@ -207,10 +165,6 @@ export default function App( {dbData} )
   /** Load data from DB when other device add/update records */
   function ListenToDB(newData) 
   {   
-    // if (isShowPasswordScreen)
-    // {
-    //     return;
-    // }
 
     //var newData = UseListenToDatabase("TBL_Notes");
     

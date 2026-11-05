@@ -895,7 +895,6 @@ export function AuthenticationScreen({onConfirm, onExit})
       }
 
       
-      dbIndex = 5;
       
       /** Connect to db */
       database = await changeDatabase(dbIndex);

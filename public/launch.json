@@ -1,0 +1,13 @@
+{
+   "version": "2.3.4",
+   "DatabaselistIndex": 0,
+   "configurations": [
+      {
+         "type": "chrome",
+         "request": "launch",
+         "name": "Launch Chrome against localhost",
+         "url": "http://localhost:8080",
+         "webRoot": "${workspaceFolder}"
+      }
+   ]
+}

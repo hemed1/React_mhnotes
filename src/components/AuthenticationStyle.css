@@ -1,0 +1,17 @@
+
+
+.AuthenticationStyle {
+  background-color: #343a40;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 50px;
+  border: 1px solid rgb(206, 201, 201);
+  border-radius: 15px;
+  padding: 20px 20px;
+  /* position: absolute; */
+  /* top: 100px; */
+  /* height: 300px; */
+  width: 400px;
+  align-self: center;
+}

@@ -2,11 +2,12 @@
 // npm install firebase
 
 // src/firebase.js
-import { useEffect, useState } from 'react';
-import { dateSetFormatLatin }  from '../globals.js';
 import { initializeApp, getApps, getApp, deleteApp } from "firebase/app";
 import { getDatabase, ref, onValue, update, set, get, push, remove, query, orderByChild, equalTo, enableLogging } from "firebase/database";
+import { getMessaging, getToken, onMessage } from "firebase/messaging";
 import  * as FirebaseConfig from './dataBasesConfig.js';
+import { useEffect, useState } from 'react';
+import { dateSetFormatLatin }  from '../globals.js';
 import * as Globals from '../globals.js';
 import './AuthenticationStyle.css';
 //import { exp } from 'firebase/firestore/pipelines';
@@ -45,6 +46,10 @@ export var database;
 var DefaultUserEmail = '';  /* Globals.readFile('MyEmail.json'); */     //'hemedmeir@gmail.com';
 export var appVersion = '2.3.3';
 var isUpdatingInInsertMode = false;
+export var  messaging;
+const vapikey = "BDAO4VM9a7tGllfvMz3px5MQrzkjqD58bqdGSRaiYQ7iLdYvRWy1AJJqUpLtDN6jSEZmLcZUJN5pgpQE_Qa-jB0";
+
+
 
 //await Init();
 
@@ -61,6 +66,11 @@ export function setFuncWhenUpdate(value)
 
 export async function Init() 
 {
+
+
+
+
+
   // Get URL parameters like ?=dbIndex = 1
   // const queryParameters = new URLSearchParams(window.location.search)
   // const dbIndex = queryParameters.get("dbIndex")
@@ -72,15 +82,15 @@ export async function Init()
   // else
   // {
 
-    const tmpDataBaseIndex = await getDatabaseIndexFromFile("launch.json");
+    //const tmpDataBaseIndex = await getDatabaseIndexFromFile("launch.json");
     // if (tmpDataBaseIndex)
     // {
-    dataBaseIndex = tmpDataBaseIndex;
+    //dataBaseIndex = tmpDataBaseIndex;
     // }
 
   
 
-  database = await changeDatabase(dataBaseIndex);
+  //database = await changeDatabase(dataBaseIndex);
 
 
   return ( dataBaseIndex );
@@ -494,9 +504,10 @@ export async function InsertRecord( tableName, values )
     // Update field 'FirebaseID'
     if (values["FirebaseID"] !== null && result !== '')
     {
-      //const funcWhenUpdate = getFuncWhenUpdate();
-      //setFuncWhenUpdate(null);
+      const funcWhenUpdate = getFuncWhenUpdate();
+      setFuncWhenUpdate(null);
       setIsUpdatingInInsertMode(true);
+
       var json =  {FirebaseID: result};     // values;
       if (values["id"] !== null)
       {
@@ -504,7 +515,7 @@ export async function InsertRecord( tableName, values )
       }
       await UpdateField(tableName, result, json)
       setIsUpdatingInInsertMode(false);
-      //setFuncWhenUpdate(funcWhenUpdate);
+      setFuncWhenUpdate(funcWhenUpdate);
     }
 
 
@@ -733,13 +744,109 @@ export async function changeDatabase(dbIndex)
 
       // Initialize Firebase
     //app = initializeApp(firebaseConfig);
-    // Initialize Realtime Database and get a reference to the service
-    //database = getDatabase(app);
+    
+    // Initialize Firebase Cloud Messaging
+    messaging = getMessaging(app);
 
 
     return database;
 }
 
+// Request user permission and get FCM token
+export const requestForToken = async () => 
+{
+  try 
+  {
+    // 1. Force the permission check to be a reliable Promise
+    const permission = await new Promise((resolve) => {
+      const result = Notification.requestPermission(resolve);
+      if (result && typeof result.then === 'function') {
+        result.then(resolve);
+      }
+    });
+
+    // 2. Now it will strictly wait here until the user clicks Allow/Block
+    if (permission === "granted") {
+      const currentToken = await getToken(messaging, {vapidKey: vapikey});
+      
+      if (currentToken) {
+        console.log("FCM Token secured:", currentToken);
+        return currentToken;
+      } else {
+        console.log("No registration token available.");
+      }
+    } else {
+      console.log("Notification permission denied by user.");
+    }
+  } catch (err) {
+    console.error("An error occurred while retrieving token: ", err);
+  }
+};
+
+
+
+  // FileInputStream serviceAccount =
+  // new FileInputStream("path/to/serviceAccountKey.json");
+
+  // FirebaseOptions options = new FirebaseOptions.Builder()
+  // .setCredentials(GoogleCredentials.fromStream(serviceAccount))
+  // .setDatabaseUrl("https://meirhemed-mhnotes-default-rtdb.firebaseio.com")
+  // .build();
+
+  // FirebaseApp.initializeApp(options);
+
+
+
+
+// Listen for foreground messages
+export const onMessageListener = () =>
+  new Promise((resolve) => 
+  {
+    onMessage(messaging, (payload) => 
+    {
+      resolve(payload);
+    });
+  });
+
+
+//** Save/Send scheduled Reminder notification*/
+// export const saveScheduleReminder = async (e, targetDate) => 
+// {
+//     e.preventDefault();
+
+//     if (!token || !reminderText || !scheduleDateTime) 
+//     {
+//       alert("Please grant notification permission and fill in all fields.");
+//       return;
+//     }
+
+//     // Convert selected date/time to a UNIX timestamp (milliseconds)
+//     const targetTimestamp = targetDate;
+//     //const targetTimestamp = new Date(scheduleDateTime).getTime();
+
+//     try 
+//     {
+//       const remindersRef = ref(database, "reminders");
+//       const newReminderRef = push(remindersRef);
+      
+//       await set(newReminderRef, 
+//       {
+//         token: token,
+//         text: reminderText,
+//         scheduledTime: targetTimestamp
+//       });
+
+//       notifierRef.current.success("Reminder scheduled successfully!");
+//       setReminderText("");
+//       setScheduleDateTime("");
+//     } 
+//     catch (error) 
+//     {
+//       console.error("Error saving to database:", error);
+//     }
+// };
+  
+//** Make ID numbers with minimum 'holes'*/
 export async function changeIDs(mainTableName)
 {
   
@@ -840,9 +947,6 @@ export function AuthenticationScreen({onConfirm, onExit})
 
       /** Connect to Main Setting db */
       database = await changeDatabase(dbIndex);
-      
-      //Globals.showMessage('אנא המתן ...');
-
 
       /** When email & password empty - Update new values in User table */
       if (email==='' && password==='')
@@ -894,7 +998,6 @@ export function AuthenticationScreen({onConfirm, onExit})
         return -1;
       }
 
-      
       
       /** Connect to db */
       database = await changeDatabase(dbIndex);

@@ -3,27 +3,31 @@
 import './App.css';
 import './styles.css';
 import { useState, useMemo, useRef, useEffect} from 'react';
-// import * as FirebaseHandle from '@common/firebase.js';
 import * as FirebaseHandle  from './components/firebase.js';
-// import { UseListenToDatabase } from './components/firebase.js'; 
 import * as GridHandle      from './components/GridWidget.js';
-// import * as GridHandle from '@common/GridWidget.js'
-
-
-//import { GetTableData, UpdateField, InsertRecord, UpdateRecord, DeleteRecord, changeDatabase, DataBasesConfigList } from './components/firebase.js';
+import AWN from 'awesome-notifications';
+import 'awesome-notifications/dist/style.css'; 
 import * as Globals from './globals.js';
 import Select/* , { StylesConfig }  */from 'react-select';
-// import FloatingWindow from './components/FloatingWindow.js';
-// import MenusComponent from './components/MenusComponent.js';
 import './components/menusComponent.css';
 import { Plus, Trash2/* , X, ChevronRight, Users, Subtitles, CheckLine, Check, CheckIcon, CheckLineIcon, EllipsisVertical */ } from "lucide-react";
+
+import { ref, push, set, onValue } from "firebase/database";
+
+
+// import * as FirebaseHandle from '@common/firebase.js';
+// import { UseListenToDatabase } from './components/firebase.js'; 
+// import FloatingWindow from './components/FloatingWindow.js';
+// import MenusComponent from './components/MenusComponent.js';?
 //import { FunctionExpression } from 'firebase/firestore/pipelines';
+//import { GetTableData, UpdateField, InsertRecord, UpdateRecord, DeleteRecord, changeDatabase, DataBasesConfigList } from './components/firebase.js';
 // import { ifNull } from 'firebase/firestore/pipelines';
 //import { floor } from 'firebase/firestore/pipelines';
+// import { onMessage } from 'firebase/messaging';
+// import { requestForToken, onMessageListener, messaging } from './firebaseConfig';   //Your initialized Firebase SDK
 
 
-//import { initializeApp } from 'firebase/app';
-import { ref, onValue } from 'firebase/database';
+
 
 
 const saveModeEn = { INSERT: 1, UPDATE: 2, DELETE: 3 };
@@ -49,6 +53,8 @@ const newRowId = () => `row-${Date.now()}-${rowCounter++}`;
 // let database; // = getDatabase(app);
 
 var isAddFromThisDevice = false;
+var notifierRef;
+
 
 
 export default function App( {dbData} )
@@ -65,6 +71,9 @@ export default function App( {dbData} )
   const [isShowPasswordScreen, setIsShowPasswordScreen] = useState(true);
   //const [isAddFromThisDevice, setIsAddFromThisDevice] = useState(false);
 
+  const [token, setToken] = useState("");
+  const [reminderText, setReminderText] = useState("");
+  const [scheduleDateTime, setScheduleDateTime] = useState("");
   
   dataNotes = data['dataNotes'];
   dataChilds = data['dataChilds'];
@@ -76,17 +85,44 @@ export default function App( {dbData} )
   f_dataBaseIndex = FirebaseHandle.dataBaseIndex;
 
   
-  //const [dataDB, setDataDB] = useState([]);
-  //const [loading, setLoading] = useState(true);
-  //const [error, setError] = useState(null);
-  //var dataDB = [];
+
+  //** Container of Notication Messages */
+  notifierRef = 
+        useRef(new AWN({
+                  position: 'top-left',
+                  durations: { global: 4000 }, // How long the notification stays visible
+                  labels: {
+                    async: 'טוען את המידע...', // Custom message during the spinner
+                    success: 'הפעולה הצליחה' // Replace 'Succ' with whatever you want
+                  },
+                  // 1. You MUST define async success behavior in the global configuration options
+                  async: {
+                    success: 'Task completed!' // This serves as the fallback title/toast flag
+                  }
+                }));
 
 
-  /** Load data from DB when other device add/update records */
-  
+  //** Fetch token on mount */
+  useEffect(() => 
+  {
+    if (isShowPasswordScreen) return;
+
+    // ** Fetch token on mount */
+      FirebaseHandle.requestForToken()
+                            .then((rToken) => setToken(rToken));
+    
+
+    // Listen for foreground push events
+    FirebaseHandle.onMessageListener()     // onMessage()
+      .then((payload) => 
+      {
+        alert(`Foreground Notification: ${payload.notification.title} - ${payload.notification.body}`);
+      })
+      .catch((err) => console.log("failed: ", err));
+  }, [isShowPasswordScreen]);
 
 
-  /// Like Using{} in C#, Clean the function
+  //** Listen to new records aarrived from Other users*/
   useEffect(() => 
   {
     if (isShowPasswordScreen) return;
@@ -129,15 +165,12 @@ export default function App( {dbData} )
                                               {
                                                 isAddFromThisDevice = isFromThisDevice;
                                               }
-                                              if (func !== null && isFromThisDevice===false) 
+                                              if (func !== null && !isFromThisDevice) 
                                               {
                                                 func();
                                               }
                                               ListenToDB(dataItems);
                                               return (dataItems)
-                                            }
-                                            else 
-                                            {
                                             }
                                             return ([]);
                                           },
@@ -151,31 +184,74 @@ export default function App( {dbData} )
                                             return ([]);
                                           }); 
 
-    
     // Execute the Function var
     return () => firebaseData();
 
-    
-
-  }, [isShowPasswordScreen  /*, ListenToDB2, handleSaveData2 , data*/ /* , dataChilds, setData, isAddFromThisDevice */]);
+  }, [isShowPasswordScreen]);
 
                                     
 
+
+  //** Save/Send scheduled Reminder notification*/
+  const saveScheduleReminder = async (recordObject) => 
+  {
+      //e.preventDefault();
+
+      if (!token /* || !reminderText || !scheduleDateTime */) 
+      {
+        alert("Please grant notification permission and fill in all fields.");
+        return;
+      }
+
+      if (new Date(recordObject.DateDue).getTime() < new Date().getTime())
+      {
+          return;
+      }
+
+      // Convert selected date/time to a UNIX timestamp (milliseconds)
+      const targetTimestamp = new Date(recordObject.DateDue).getTime();
+      const textReminder = recordObject.DateDue + " - " + recordObject.Title;
+      //const targetTimestamp = new Date(scheduleDateTime).getTime();
+      // setReminderText(recordObject.Title);
+      // setScheduleDateTime(recordObject.DateDue);
+
+      try 
+      {
+        const remindersRef = ref(FirebaseHandle.database, "TBL_Reminders");
+        const json = {token: token, text: textReminder, scheduledTime: targetTimestamp};
+        const newReminderRef = await push(remindersRef, json);
+        
+        // await set(newReminderRef, 
+        // {
+        //   token: token,
+        //   text: reminderText,
+        //   scheduledTime: targetTimestamp
+        // });
+
+        //notifierRef.current.success("Reminder scheduled successfully!");
+        setReminderText("");
+        setScheduleDateTime("");
+      } 
+      catch (error) 
+      {
+        console.error("Error saving to database:", error);
+      }
+  };
   
   /** Load data from DB when other device add/update records */
   function ListenToDB(newData) 
   {   
-
+    // NOT need - Come from parameter 'newData'
     //var newData = UseListenToDatabase("TBL_Notes");
     
-    if (/* isListenDatabase && */ newData && newData?.length > 0) 
+    if (isListenDatabase && newData && newData?.length > 0) 
     {
       setIsListenDatabase(false);
       
       /** Set the Sub-Tasks objects to the Parent Task object, based on the NoteID **/
       newData = Globals.setSubTasksToParent(newData, dataChilds);
       
-      handleSaveData(newData, false); 
+      handleSaveData(newData, null, false); 
 
       FirebaseHandle.setFuncWhenUpdate(eventWhenUpdated);
 
@@ -219,7 +295,7 @@ export default function App( {dbData} )
     dataStatuses = await  mapToLookupObject('TBL_Statuses');
     dataSubject = await  mapToLookupObject('TBL_Subjects');
     
-    await FirebaseHandle.getDatabaseIndexFromFile("launch.json");
+    //await FirebaseHandle.getDatabaseIndexFromFile("launch.json");
     // await FirebaseHandle.dispose();
     // app = initializeApp(firebaseConfig);
     // database = getDatabase(app);
@@ -242,12 +318,18 @@ export default function App( {dbData} )
   }
 
   /** When save SubTasks **/
-  function handleSaveData( notesData )
+  async function handleSaveData( notesData, recordObject, isHandleScheduleReminder )
   {
       const newList = {...data, dataNotes: notesData }
-      //dbData = newList;
-
       setData(newList);
+      //dbData = newList;
+      
+      //setSelectedItem(recordObject);
+
+      if (recordObject && isHandleScheduleReminder)
+      {
+        await saveScheduleReminder(recordObject);
+      }
   }
 
   function handleSaveLookup(tableName, newData)
@@ -316,11 +398,11 @@ export default function App( {dbData} )
     {
       if (result)
       {
-          alert("השמירה הצליחה");
+          notifierRef.current.success("השמירה הצליחה");
       }
       else
       {
-          alert("השמירה נכשלה");
+          notifierRef.current.alert("השמירה נכשלה");
       }
     }
 
@@ -1176,9 +1258,7 @@ function ListDataItem({index, selectedIndex, itemObject, selectedItem, onSelecte
  
 
   async function handleBackColor()
-  {
-    //alert(`שמירה של פריט מספר ${itemObject?.NoteID} - ${itemObject?.Title}`);
-    
+  { 
     var cardBackColor = itemObject.CardBackColor;
     if (cardBackColor==='')
     {
@@ -1200,11 +1280,8 @@ function ListDataItem({index, selectedIndex, itemObject, selectedItem, onSelecte
       const newArray = [...dataNotes];
       newArray[index] = {...itemObject, ...values}; 
       dataNotes = newArray;
-      //const objUpdated = dataNotes.find((item) => item.NoteID === selectedItem.NoteID);
-      //alert(`עיqדכון הפריט עבר בהצלחה! (${cardBackColor})`);
-
       /// Refresh Note data table
-      onSaveData(dataNotes, false);
+      await onSaveData(itemObject, false);
       //onSelectedItem(selectedItem);
     }
     
@@ -1424,12 +1501,13 @@ function NoteScreen({ selectedItem, onSelectedItem, onSaveData, onSaveLookup })
       { */
       setSaveMode(saveModeEn.DELETE);
 
-      await saveObject(saveModeEn.DELETE);
-      //}
+      await saveObject(e, saveModeEn.DELETE);
     }
 
-    async function saveObject( modeSave )
+    async function saveObject(event, modeSave )
     {
+      event.preventDefault();
+
       var save = saveMode || saveModeEn.UPDATE;
 
       if (isNaN(modeSave) === false && modeSave !== null)
@@ -1483,17 +1561,10 @@ function NoteScreen({ selectedItem, onSelectedItem, onSaveData, onSaveLookup })
             return false;
           }
 
-           // Update field 'FirebaseID'
-          /* if (values["FirebaseID"] !== null && result !== '')
-          {
-            FirebaseHandle.setFuncWhenUpdate(null);
-            var json =  {FirebaseID: result};     // values;
-            await FirebaseHandle.UpdateField("TBL_Notes", result, json)
-          } */
-          result = await FirebaseHandle.UpdateField('TBL_Databases', dataBaseTable[0].FirebaseID, {NumeratorNotesID: noteID});
-
           /// Save the Sub-Task
           result = await saveSubTasks();
+
+          result = await FirebaseHandle.UpdateField('TBL_Databases', dataBaseTable[0].FirebaseID, {NumeratorNotesID: noteID});
 
           FirebaseHandle.setFuncWhenUpdate(funcWhenUpdate);
 
@@ -1517,14 +1588,15 @@ function NoteScreen({ selectedItem, onSelectedItem, onSaveData, onSaveLookup })
             message = "שגיאה בהוספת הפריט!";
           } 
 
-          setSaveMode(saveModeEn.UPDATE);
+          //setSaveMode(saveModeEn.UPDATE);
           break;
 
         case saveModeEn.UPDATE:
+          values = await valuesToObject(values);
+
           const funcWhenUpdate2 = FirebaseHandle.getFuncWhenUpdate();
           FirebaseHandle.setFuncWhenUpdate(null);
 
-          values = await valuesToObject(values);
           result = await FirebaseHandle.UpdateRecord("TBL_Notes", selectedObject.FirebaseID, values);
           
           /// Save the Sub-Task
@@ -1571,11 +1643,11 @@ function NoteScreen({ selectedItem, onSelectedItem, onSaveData, onSaveLookup })
               return ([...dataNotes].filter(item => item.NoteID !== idToRemove));
             };
             dataNotes = handleRemove(selectedObject.NoteID);
-            alert("הפריט נמחק בהצלחה!");
+            notifierRef.current.success("הפריט נמחק בהצלחה!");
           }
           else
           {
-            alert("שגיאה בפעולת המחיקה!");
+            notifierRef.current.alert("שגיאה בפעולת המחיקה!");
           } 
 
           setSaveMode(2);
@@ -1593,7 +1665,7 @@ function NoteScreen({ selectedItem, onSelectedItem, onSaveData, onSaveLookup })
       }
 
       /// Refresh Note data table
-      onSaveData(dataNotes, false);
+      await onSaveData(dataNotes, selectedObject, true);
 
       /// After Refresh records, Point to the Updated note
       if (saveMode === saveModeEn.INSERT || saveMode === saveModeEn.UPDATE)
@@ -1606,7 +1678,7 @@ function NoteScreen({ selectedItem, onSelectedItem, onSaveData, onSaveLookup })
 
       if (message.trim() !== '')
       {
-          alert(message);
+          notifierRef.current.success(message);
       }
 
 
@@ -1654,7 +1726,7 @@ function NoteScreen({ selectedItem, onSelectedItem, onSaveData, onSaveLookup })
 
       if (!result)
       {
-        alert("שיאה בעידכון בפעילות");
+        notifierRef.current.alert("שיאה בעידכון פעיליות");
       }
 
       /// Save the New records
@@ -1675,7 +1747,7 @@ function NoteScreen({ selectedItem, onSelectedItem, onSaveData, onSaveLookup })
 
       if (!result)
       {
-        alert("שגיאה בעידכון פעילות!");
+        notifierRef.current.alert("שגיאה בעידכון פעיליות!");
       }
 
 
@@ -1699,7 +1771,7 @@ function NoteScreen({ selectedItem, onSelectedItem, onSaveData, onSaveLookup })
 
       if (!result)
       {
-        alert("שגיאה במחיקת פעילות!");
+        notifierRef.current.alert("שגיאה במחיקת פעיליות!");
       }
 
 
@@ -1868,7 +1940,7 @@ function NoteScreen({ selectedItem, onSelectedItem, onSaveData, onSaveLookup })
             </div>
             <div style={{display: 'flex', gap: '20px'}}>
               <button type='button' className='button_exit' onClick={(e) => onSelectedItem(null)}>יציאה</button>
-              <button type='button' className='button_save' onClick={saveObject}>שמירה</button>
+              <button type='button' className='button_save' onClick={(e) => saveObject(e, saveMode)}>שמירה</button>
             </div>
           </div>
     
@@ -2192,6 +2264,10 @@ function SonsPanel({ noteObject, onClose, onUpdateSubTasks })
   );
 }
 
+
+
+
+
 function Note()
 {
   
@@ -2236,6 +2312,8 @@ function NoteChild()
 
   return noteChild;
 }
+
+
 
 
 

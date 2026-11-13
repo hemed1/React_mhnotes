@@ -3,7 +3,6 @@ const { getMessaging } = require("firebase-admin/messaging");
 
 module.exports = async function handler(req, res) {
   try {
-    // 1. Verify secret password header
     if (
       process.env.CRON_SECRET &&
       req.headers.authorization !== `Bearer ${process.env.CRON_SECRET}`
@@ -19,12 +18,10 @@ module.exports = async function handler(req, res) {
 
     const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
 
-    // 2. Initialize Firebase Admin once
     const app = !getApps().length
       ? initializeApp({ credential: cert(serviceAccount) })
       : getApp();
 
-    // 3. Get a single OAuth2 access token for fast REST API calls
     const tokenObj = await app.options.credential.getAccessToken();
     const accessToken = tokenObj.access_token;
 
@@ -35,7 +32,7 @@ module.exports = async function handler(req, res) {
 
     const databaseUrls = rawUrls
       .split(",")
-      .map((url) => url.trim().replace(/\/$/, ""))
+      .map((url) => url.trim())
       .filter(Boolean);
 
     if (databaseUrls.length === 0) {
@@ -44,20 +41,25 @@ module.exports = async function handler(req, res) {
 
     const now = Date.now();
 
-    // 4. Query all 5 databases in parallel (no hanging WebSockets)
     const results = await Promise.all(
-      databaseUrls.map(async (url) => {
-        try {
-          const queryUrl = `${url}/TBL_Reminders.json?orderBy="scheduledTime"&endAt=${now}&access_token=${accessToken}`;
+      databaseUrls.map(async (rawUrl) => {
+        // Separate the domain from "?auth=SECRET" cleanly
+        const [domainPart, queryPart] = rawUrl.split("?");
+        const baseUrl = domainPart.replace(/\/$/, "");
+        const authParam = queryPart ? queryPart : `access_token=${accessToken}`;
+
+        try 
+        {
+          const queryUrl = `${baseUrl}/TBL_Reminders.json?orderBy="scheduledTime"&endAt=${now}&${authParam}`;
           const response = await fetch(queryUrl);
           const data = await response.json();
 
           if (!response.ok || (data && data.error)) {
-            return { url, error: data?.error || `HTTP ${response.status}` };
+            return { url: baseUrl, error: data?.error || `HTTP ${response.status}` };
           }
 
           if (!data || Object.keys(data).length === 0) {
-            return { url, sent: 0 };
+            return { url: baseUrl, sent: 0 };
           }
 
           let sentCount = 0;
@@ -79,17 +81,16 @@ module.exports = async function handler(req, res) {
               token: reminder.token,
             });
 
-            // Delete the processed reminder via REST DELETE
-            await fetch(`${url}/TBL_Reminders/${id}.json?access_token=${accessToken}`, {
+            await fetch(`${baseUrl}/TBL_Reminders/${id}.json?${authParam}`, {
               method: "DELETE",
             });
 
             sentCount++;
           }
 
-          return { url, sent: sentCount };
+          return { url: baseUrl, sent: sentCount };
         } catch (err) {
-          return { url, error: err.message };
+          return { url: baseUrl, error: err.message };
         }
       })
     );

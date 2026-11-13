@@ -1,4 +1,4 @@
-const { initializeApp, cert, getApps } = require("firebase-admin/app");
+const { initializeApp, cert, getApps, getApp } = require("firebase-admin/app");
 const { getDatabase } = require("firebase-admin/database");
 const { getMessaging } = require("firebase-admin/messaging");
 
@@ -23,13 +23,11 @@ module.exports = async function handler(req, res)
     }
 
     // 3. Initialize Firebase once inside try/catch so JSON errors are reported clearly
-    if (!getApps().length) 
-    {
-      const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
-      initializeApp({
-        credential: cert(serviceAccount),
-      });
-    }
+    const app = !getApps().length
+      ? initializeApp({
+          credential: cert(JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT)),
+        })
+      : getApp();
 
     // 4. Read comma-separated database URLs from Vercel
     const rawUrls =

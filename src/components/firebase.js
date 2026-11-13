@@ -504,9 +504,10 @@ export async function InsertRecord( tableName, values )
     // Update field 'FirebaseID'
     if (values["FirebaseID"] !== null && result !== '')
     {
-      //const funcWhenUpdate = getFuncWhenUpdate();
-      //setFuncWhenUpdate(null);
+      const funcWhenUpdate = getFuncWhenUpdate();
+      setFuncWhenUpdate(null);
       setIsUpdatingInInsertMode(true);
+
       var json =  {FirebaseID: result};     // values;
       if (values["id"] !== null)
       {
@@ -514,7 +515,7 @@ export async function InsertRecord( tableName, values )
       }
       await UpdateField(tableName, result, json)
       setIsUpdatingInInsertMode(false);
-      //setFuncWhenUpdate(funcWhenUpdate);
+      setFuncWhenUpdate(funcWhenUpdate);
     }
 
 

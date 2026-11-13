@@ -2,34 +2,28 @@ const { initializeApp, cert, getApps, getApp } = require("firebase-admin/app");
 const { getDatabase } = require("firebase-admin/database");
 const { getMessaging } = require("firebase-admin/messaging");
 
-
-
-
-module.exports = async function handler(req, res) 
-{
-
-  try 
-  {
-    // 1. Optional security check
-    if (process.env.CRON_SECRET && req.headers.authorization !== `Bearer ${process.env.CRON_SECRET}`) 
-    {
+module.exports = async function handler(req, res) {
+  try {
+    if (
+      process.env.CRON_SECRET &&
+      req.headers.authorization !== `Bearer ${process.env.CRON_SECRET}`
+    ) {
       return res.status(401).json({ error: "Unauthorized" });
     }
 
-    // 2. Check that FIREBASE_SERVICE_ACCOUNT exists
-    if (!process.env.FIREBASE_SERVICE_ACCOUNT) 
-   {
-      return res.status(500).json({ error: "Missing FIREBASE_SERVICE_ACCOUNT environment variable." });
+    if (!process.env.FIREBASE_SERVICE_ACCOUNT) {
+      return res
+        .status(500)
+        .json({ error: "Missing FIREBASE_SERVICE_ACCOUNT environment variable." });
     }
 
-    // 3. Initialize Firebase once inside try/catch so JSON errors are reported clearly
+    // Define "app" here so getDatabase(app, url) and getMessaging(app) can use it
     const app = !getApps().length
       ? initializeApp({
           credential: cert(JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT)),
         })
       : getApp();
 
-    // 4. Read comma-separated database URLs from Vercel
     const rawUrls =
       process.env.FIREBASE_DATABASE_URLS ||
       process.env.FIREBASE_DATABASE_URL ||
@@ -44,23 +38,20 @@ module.exports = async function handler(req, res)
       return res.status(500).json({ error: "No database URLs configured." });
     }
 
-
-
     const now = Date.now();
     const results = [];
 
-    for (const url of databaseUrls) 
-    {
-      try
-      {
+    for (const url of databaseUrls) {
+      try {
         const db = getDatabase(app, url);
         const remindersRef = db.ref("TBL_Reminders");
 
-        //** Seraxhing Reminder Recoreds */
-        const snapshot = await remindersRef.orderByChild("scheduledTime").endAt(now).once("value");
+        const snapshot = await remindersRef
+          .orderByChild("scheduledTime")
+          .endAt(now)
+          .once("value");
 
-        if (!snapshot.exists()) 
-        {
+        if (!snapshot.exists()) {
           results.push({ url, sent: 0 });
           continue;
         }
@@ -68,11 +59,11 @@ module.exports = async function handler(req, res)
         const data = snapshot.val();
         let sentCount = 0;
 
-        for (const id in data) 
-        {
+        for (const id in data) {
           const reminder = data[id];
 
-          const message = {
+          const message =      
+          {
             notification: {
               title: "⏰ תזכורת!",
               body: reminder.text,
@@ -85,27 +76,22 @@ module.exports = async function handler(req, res)
             token: reminder.token,
           };
 
-          await getMessaging().send(message);
+          await getMessaging(app).send(message);
+         
+   
           await remindersRef.child(id).remove();
           sentCount++;
         }
 
         results.push({ url, sent: sentCount });
-      } 
-      
-      catch (dbError) 
-      {
+      } catch (dbError) {
         console.error(`Cron error for ${url}:`, dbError);
         results.push({ url, error: dbError.message });
       }
     }
 
-    // 5. Always return 200 OK once all databases have been checked
     return res.status(200).json({ checkedAt: now, results });
-  } 
-  
-  catch (error) 
-  {
+  } catch (error) {
     console.error("Fatal handler error:", error);
     return res.status(500).json({ error: error.message });
   }

@@ -86,6 +86,22 @@ export default function App( {dbData} )
 
   
 
+  //** Container of Notication Messages */
+  notifierRef = 
+        useRef(new AWN({
+                  position: 'top-left',
+                  durations: { global: 4000 }, // How long the notification stays visible
+                  labels: {
+                    async: 'טוען את המידע...', // Custom message during the spinner
+                    success: 'הפעולה הצליחה' // Replace 'Succ' with whatever you want
+                  },
+                  // 1. You MUST define async success behavior in the global configuration options
+                  async: {
+                    success: 'Task completed!' // This serves as the fallback title/toast flag
+                  }
+                }));
+
+
   //** Fetch token on mount */
   useEffect(() => 
   {
@@ -97,29 +113,13 @@ export default function App( {dbData} )
     
 
     // Listen for foreground push events
-    FirebaseHandle.onMessageListener()
+    FirebaseHandle.onMessageListener()     // onMessage()
       .then((payload) => 
       {
         alert(`Foreground Notification: ${payload.notification.title} - ${payload.notification.body}`);
       })
       .catch((err) => console.log("failed: ", err));
   }, [isShowPasswordScreen]);
-
-
-  //** For Nice Notication Messages */
-  notifierRef = 
-        useRef(new AWN({
-                  position: 'top-left',
-                  durations: { global: 4000 }, // How long the notification stays visible
-                  labels: {
-                    async: 'Loading your data...', // Custom message during the spinner
-                    success: 'הצלחנו' // Replace 'Succ' with whatever you want
-                  },
-                  // 1. You MUST define async success behavior in the global configuration options
-                  async: {
-                    success: 'Task completed!' // This serves as the fallback title/toast flag
-                  }
-                }));
 
 
   //** Listen to new records aarrived from Other users*/
@@ -165,15 +165,12 @@ export default function App( {dbData} )
                                               {
                                                 isAddFromThisDevice = isFromThisDevice;
                                               }
-                                              if (func !== null && isFromThisDevice===false) 
+                                              if (func !== null && !isFromThisDevice) 
                                               {
                                                 func();
                                               }
                                               ListenToDB(dataItems);
                                               return (dataItems)
-                                            }
-                                            else 
-                                            {
                                             }
                                             return ([]);
                                           },
@@ -190,7 +187,7 @@ export default function App( {dbData} )
     // Execute the Function var
     return () => firebaseData();
 
-  }, [isShowPasswordScreen  /*, ListenToDB2, handleSaveData2 , data*/ /* , dataChilds, setData, isAddFromThisDevice */]);
+  }, [isShowPasswordScreen]);
 
                                     
 
@@ -244,24 +241,24 @@ export default function App( {dbData} )
   /** Load data from DB when other device add/update records */
   function ListenToDB(newData) 
   {   
-
+    // NOT need - Come from parameter 'newData'
     //var newData = UseListenToDatabase("TBL_Notes");
     
-    if (/* isListenDatabase && */ newData && newData?.length > 0) 
+    if (isListenDatabase && newData && newData?.length > 0) 
     {
       setIsListenDatabase(false);
       
       /** Set the Sub-Tasks objects to the Parent Task object, based on the NoteID **/
       newData = Globals.setSubTasksToParent(newData, dataChilds);
       
-      //handleSaveData(newData, false); 
+      handleSaveData(newData, null, false); 
 
       FirebaseHandle.setFuncWhenUpdate(eventWhenUpdated);
 
-      // if (!isAddFromThisDevice)
-      // {
-      //   Globals.PlaySound("dream_bonus_notification.mp3");
-      // }
+      if (!isAddFromThisDevice)
+      {
+        Globals.PlaySound("dream_bonus_notification.mp3");
+      }
     }
 
     /* if (FirebaseHandle.getFuncWhenUpdate() === null)
@@ -277,7 +274,7 @@ export default function App( {dbData} )
       FirebaseHandle.setFuncWhenUpdate(null);
 
       isAddFromThisDevice = false;
-      Globals.PlaySound("dream_bonus_notification.mp3");
+      //Globals.PlaySound("dream_bonus_notification.mp3");
   }
 
   async function getData() 
@@ -298,7 +295,7 @@ export default function App( {dbData} )
     dataStatuses = await  mapToLookupObject('TBL_Statuses');
     dataSubject = await  mapToLookupObject('TBL_Subjects');
     
-    await FirebaseHandle.getDatabaseIndexFromFile("launch.json");
+    //await FirebaseHandle.getDatabaseIndexFromFile("launch.json");
     // await FirebaseHandle.dispose();
     // app = initializeApp(firebaseConfig);
     // database = getDatabase(app);
@@ -321,14 +318,15 @@ export default function App( {dbData} )
   }
 
   /** When save SubTasks **/
-  async function handleSaveData( recordObject, isHandleScheduleReminder )
+  async function handleSaveData( notesData, recordObject, isHandleScheduleReminder )
   {
-      //const newList = {...data, dataNotes: notesData }
+      const newList = {...data, dataNotes: notesData }
+      setData(newList);
       //dbData = newList;
-      //setData(newList);
       
-      setSelectedItem(recordObject);
-      if (isHandleScheduleReminder)
+      //setSelectedItem(recordObject);
+
+      if (recordObject && isHandleScheduleReminder)
       {
         await saveScheduleReminder(recordObject);
       }
@@ -1563,17 +1561,10 @@ function NoteScreen({ selectedItem, onSelectedItem, onSaveData, onSaveLookup })
             return false;
           }
 
-           // Update field 'FirebaseID'
-          /* if (values["FirebaseID"] !== null && result !== '')
-          {
-            FirebaseHandle.setFuncWhenUpdate(null);
-            var json =  {FirebaseID: result};     // values;
-            await FirebaseHandle.UpdateField("TBL_Notes", result, json)
-          } */
-          result = await FirebaseHandle.UpdateField('TBL_Databases', dataBaseTable[0].FirebaseID, {NumeratorNotesID: noteID});
-
           /// Save the Sub-Task
           result = await saveSubTasks();
+
+          result = await FirebaseHandle.UpdateField('TBL_Databases', dataBaseTable[0].FirebaseID, {NumeratorNotesID: noteID});
 
           FirebaseHandle.setFuncWhenUpdate(funcWhenUpdate);
 
@@ -1586,10 +1577,7 @@ function NoteScreen({ selectedItem, onSelectedItem, onSaveData, onSaveLookup })
             selectedItem.FirebaseID = values.FirebaseID;
             //newArray.push({...selectedObject});
             dataNotes = newArray;
-            const objUpdated = selectedObject;     //dataNotes.find((item) => item.NoteID === noteID);
-
-            
-
+            const objUpdated = dataNotes.find((item) => item.NoteID === noteID);
             if (objUpdated)
             {
               message = `הפריט נוסף בהצלחה! (${objUpdated?.NoteID.toLocaleString()})`;
@@ -1600,14 +1588,15 @@ function NoteScreen({ selectedItem, onSelectedItem, onSaveData, onSaveLookup })
             message = "שגיאה בהוספת הפריט!";
           } 
 
-          setSaveMode(saveModeEn.UPDATE);
+          //setSaveMode(saveModeEn.UPDATE);
           break;
 
         case saveModeEn.UPDATE:
+          values = await valuesToObject(values);
+
           const funcWhenUpdate2 = FirebaseHandle.getFuncWhenUpdate();
           FirebaseHandle.setFuncWhenUpdate(null);
 
-          values = await valuesToObject(values);
           result = await FirebaseHandle.UpdateRecord("TBL_Notes", selectedObject.FirebaseID, values);
           
           /// Save the Sub-Task
@@ -1676,7 +1665,7 @@ function NoteScreen({ selectedItem, onSelectedItem, onSaveData, onSaveLookup })
       }
 
       /// Refresh Note data table
-      await onSaveData(selectedObject, true);
+      await onSaveData(dataNotes, selectedObject, true);
 
       /// After Refresh records, Point to the Updated note
       if (saveMode === saveModeEn.INSERT || saveMode === saveModeEn.UPDATE)

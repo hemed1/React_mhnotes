@@ -9,15 +9,19 @@ self.addEventListener('push', function(event)
       console.log('Background message received: ', payload);
 
       // Extract the notification details from the FCM payload
-      const title = payload.notification?.title || '⏰ Reminder!';
+      const title = payload.notification?.title || payload.data?.title || '⏰ תזכורת!';
       const options = {
-        body: payload.notification?.body || 'You have a pending notification.',
-        icon: '/logo192.png', // Make sure this file exists in your public folder
-        badge: '/logo192.png',
+        body: payload.notification?.body || payload.data?.body || 'יש לך תזכורת למשימה',    // 'You have a pending notification.',
+        icon: '/note_small.png',    // Square app icon
+        badge: '/note_small.png',   // Small status-bar icon
+        image: "/note_big.jpg",     // Optional wide picture inside the notification
+        requireInteraction: true,   // Keeps the banner visible until the user clicks or closes it
+        actions: [
+          { action: "open", title: "פתח משימה" },
+          { action: "dismiss", title: "סגור" }
+        ],
         //vibrate:,
-        data: {
-          url: self.location.origin // Opens your website when clicked
-        }
+        data: {url: self.location.origin}  // Opens your website when clicked
       };
 
       event.waitUntil(self.registration.showNotification(title, options));
@@ -33,12 +37,13 @@ self.addEventListener('push', function(event)
 self.addEventListener('notificationclick', function(event) 
 {
   event.notification.close();
-  event.waitUntil(
-    clients.openWindow(event.notification.data?.url || '/')
-  );
+
+  if (event.action === "dismiss") 
+  {
+    return;
+  }
+  event.waitUntil(clients.openWindow(event.notification.data?.url || '/'));
 });
-
-
 
 
 

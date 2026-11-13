@@ -55,7 +55,7 @@ module.exports = async function handler(req, res)
     {
       try
       {
-        const db = getDatabase(url);
+        const db = getDatabase(app, url);
         const remindersRef = db.ref("TBL_Reminders");
 
         //** Seraxhing Reminder Recoreds */

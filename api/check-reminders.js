@@ -25,9 +25,14 @@ module.exports = async function handler(req, res)
 
     // 2. Read comma-separated serviceAccountsKeys from Vercel
     const rawServiceAccounts = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT).split(",");
-    console.log("rawServiceAccounts: ", rawServiceAccounts);
-    const serviceAccounts = rawServiceAccounts.map((item) => item.split("?")[0]);
-    const firebaseConfigs = rawServiceAccounts.map((item) => item.split("?")[1]);
+    console.log("rawServiceAccounts: ");
+    const serviceAccounts = rawServiceAccounts.map((item) => item.split("&")[0]);
+    const firebaseConfigs = rawServiceAccounts.map((item) => item.split("&")[1]);
+
+    if (serviceAccounts.length === 0)
+    {
+      return res.status(400).json({ error: "No serviceAccounts" });
+    }
 
     // 3. Read comma-separated database URLs from Vercel
     const rawUrls = process.env.FIREBASE_DATABASE_URLS || process.env.FIREBASE_DATABASE_URL || "";

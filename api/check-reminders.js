@@ -8,24 +8,27 @@ const { getMessaging } = require("firebase-admin/messaging");
 module.exports = async function handler(req, res) 
 {
   
+  return res.status(401).json({ error: "Unauthorized" });
+  
   try 
   {
     // 1. Verify secret password header
     if (process.env.CRON_SECRET && req.headers.authorization !== `Bearer ${process.env.CRON_SECRET}`) 
     {
-      return res.status(401).json({ error: "Unauthorized" });
+      return res.status(400).json({ error: "Unauthorized" });
     }
+    console.log("process.env.CRON_SECRET: " + process.env.CRON_SECRET);
 
     // Verify environment variable exists
     if (!process.env.FIREBASE_SERVICE_ACCOUNT) 
     {
       return res.status(500).json({ error: "Missing FIREBASE_SERVICE_ACCOUNT environment variable." });
     }
-
+    console.log("process.env.FIREBASE_SERVICE_ACCOUNT: " + process.env.FIREBASE_SERVICE_ACCOUNT);
 
     // 2. Read comma-separated serviceAccountsKeys from Vercel
     const rawServiceAccounts = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT).split(",");
-    console.log("rawServiceAccounts: ");
+    console.log("rawServiceAccounts: " + rawServiceAccounts);
     const serviceAccounts = rawServiceAccounts.map((item) => item.split("&")[0]);
     const firebaseConfigs = rawServiceAccounts.map((item) => item.split("&")[1]);
 

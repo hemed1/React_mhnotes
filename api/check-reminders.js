@@ -1,7 +1,7 @@
 
-const { initializeApp, cert, getApps, getApp, deleteApp } = require("firebase-admin/app");
-const { getDatabase } = require("firebase-admin/database");
-const { getMessaging } = require("firebase-admin/messaging");
+// const { initializeApp, cert, getApps, getApp, deleteApp } = require("firebase-admin/app");
+// const { getDatabase } = require("firebase-admin/database");
+// const { getMessaging } = require("firebase-admin/messaging");
 
 
 
@@ -177,7 +177,7 @@ const { getMessaging } = require("firebase-admin/messaging");
 
 
 
-
+const { getDatabase } = require("firebase-admin/database");
 const { initializeApp, cert, getApps, getApp } = require("firebase-admin/app");
 const { getMessaging } = require("firebase-admin/messaging");
 

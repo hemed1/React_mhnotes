@@ -212,10 +212,12 @@ module.exports = async function handler(req, res)
     const rawUrls = process.env.FIREBASE_DATABASE_URLS || process.env.FIREBASE_DATABASE_URL || "";
 
     const databaseUrls = rawUrls.split(",").map((url) => url.trim()).filter(Boolean);
-    
+    console.log("databaseUrls: " + databaseUrls[0]);
     const databaseUrlsClean = databaseUrls.map((item) => item.split("?")[0].replace(/\/$/, ""));
     const serviceAccounts   = databaseUrls.map((item) => item.split("?")[1]);
     const firebaseConfigs   = databaseUrls.map((item) => JSON.parse(item.split("?")[2]));
+
+    console.log("databaseUrlsClean: " + databaseUrlsClean[0] + "   serviceAccounts: " + serviceAccounts[0] + "  firebaseConfigs: " + firebaseConfigs[0]);
 
 
     if (databaseUrls.length === 0) 

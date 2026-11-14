@@ -212,10 +212,10 @@ module.exports = async function handler(req, res)
     const rawUrls = process.env.FIREBASE_DATABASE_URLS || process.env.FIREBASE_DATABASE_URL || "";
 
     const databaseUrls = rawUrls.split(",").map((url) => url.trim()).filter(Boolean);
-
+    
     const databaseUrlsClean = databaseUrls.map((item) => item.split("?")[0].replace(/\/$/, ""));
-    const serviceAccounts   = databaseUrls.map((item) => JSON.parse(item.split("?")[1]));
-    const firebaseConfigs   = databaseUrls.map((item) => JSON.parse(item.split("&")[1]));
+    const serviceAccounts   = databaseUrls.map((item) => item.split("?")[1]);
+    const firebaseConfigs   = databaseUrls.map((item) => JSON.parse(item.split("?")[2]));
 
 
     if (databaseUrls.length === 0) 
@@ -318,7 +318,10 @@ module.exports = async function handler(req, res)
     );
 
     return res.status(200).json({ checkedAt: now, results });
-  } catch (error) {
+
+  } 
+  catch (error) 
+  {
     console.error("Fatal handler error:", error);
     return res.status(500).json({ error: error.message });
   }

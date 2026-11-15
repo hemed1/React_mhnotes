@@ -178,7 +178,7 @@
 
 
 const { getDatabase } = require("firebase-admin/database");
-const { initializeApp, cert, getApps, getApp } = require("firebase-admin/app");
+const { initializeApp, cert, getApps, getApp, deleteApp } = require("firebase-admin/app");
 const { getMessaging } = require("firebase-admin/messaging");
 
 
@@ -215,9 +215,10 @@ module.exports = async function handler(req, res)
     console.log("databaseUrlsClean: " + databaseUrlsClean[0] + '\n' + databaseUrlsClean[1]+ '\n');
     const serviceAccounts   = databaseUrls.map((item) => item.split("?")[1]);
     console.log("serviceAccounts: " + serviceAccounts[0] + '\n' + serviceAccounts[1]+ '\n');
-    const firebaseConfigs   = databaseUrls.map((item) => item.split("?")[2]);
+    var firebaseConfigs   = databaseUrls.map((item) => item.split("?")[2]);
     console.log("firebaseConfigs: " + firebaseConfigs[0] + '\n' + firebaseConfigs[1]+ '\n');
-    console.log("firebaseConfigs+Json: " + JSON.parse(firebaseConfigs[0]) + '\n' + JSON.parse(firebaseConfigs[1])+ '\n');
+    firebaseConfigs = firebaseConfigs.map((item) => JSON.parse(item));
+    console.log("firebaseConfigs+Json: " + firebaseConfigs[0] + '\n' + firebaseConfigs[1]+ '\n');
 
     console.log("databaseUrlsClean: " + databaseUrlsClean[0] + "   serviceAccounts: " + serviceAccounts[0] + "  firebaseConfigs: " + firebaseConfigs[0]);
 
@@ -241,15 +242,25 @@ module.exports = async function handler(req, res)
         // }
         /// Initialize Firebase
         //const app = initializeApp(serviceAccount);
-        const firebaseConfig = JSON.parse(firebaseConfigs[i]);
+        const firebaseConfig = firebaseConfigs[i];
         const app = initializeApp(firebaseConfig);
         //app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
-        console.log('Open DB'+ i.toString() + ": OK");
+        console.log('Open DB'+ (i+1).toString() + ": OK");
         apps.push(app);
+        await deleteApp(app)
+          .then(() => 
+          {
+              //console.debug("Firebase app deleted successfully");
+          })
+          .catch((error) => 
+          {
+            console.log("Error deleting app:", error);
+          });
+
       }
       catch (dbError) 
       {
-        console.log('Error Open App' + i.toExponential.toString() + dbError.message);
+        console.log('Error Open App' + (i+1).toString() + dbError.message);
         return res.status(300).json({ error: "No database URLs configured." });
       }
     }

@@ -72,15 +72,15 @@ module.exports = async function handler(req, res)
         console.log('Open DB'+ (i+1).toString() + "   DB Name: " + firebaseConfig.authDomain + " - OK");
         
         apps.push(app);
-        // await deleteApp(app)
-        //   .then(() => 
-        //   {
-        //       //console.debug("Firebase app deleted successfully");
-        //   })
-        //   .catch((error) => 
-        //   {
-        //     console.log("Error deleting app:", error);
-        //   });
+        await deleteApp(app)
+          .then(() => 
+          {
+              //console.debug("Firebase app deleted successfully");
+          })
+          .catch((error) => 
+          {
+            console.log("Error deleting app:", error);
+          });
       }
       catch (dbError) 
       {
@@ -104,20 +104,21 @@ module.exports = async function handler(req, res)
       
       try 
       {
-        // if (getApps().length > 0)
-        // {
-        //   const appTmp = getApp();
-        //   await deleteApp(appTmp)
-        //   .then(() => 
-        //   {
-        //       //console.debug("Firebase app deleted successfully");
-        //   })
-        //   .catch((error) => 
-        //   {
-        //     console.log("Error deleting app:", error);
-        //   });
-        // }
-        const app = apps[i];      //getApps().length === 0 ? initializeApp(firebaseConfigs[i]) : getApp(firebaseConfig.authDomain);
+        if (getApps().length > 0)
+        {
+          const appTmp = getApp();
+          await deleteApp(appTmp)
+          .then(() => 
+          {
+              //console.debug("Firebase app deleted successfully");
+          })
+          .catch((error) => 
+          {
+            console.log("Error deleting app:", error);
+          });
+        }
+        
+        const app = getApps().length === 0 ? initializeApp(firebaseConfigs[i]) : getApp(firebaseConfig.authDomain);
         //const app = initializeApp(firebaseConfigs[i]); 
         console.log("Open in loop App"+ (i+1).toString());
         const db = getDatabase(app);

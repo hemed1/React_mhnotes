@@ -212,10 +212,13 @@ module.exports = async function handler(req, res)
     const rawUrls = process.env.FIREBASE_DATABASE_URLS || process.env.FIREBASE_DATABASE_URL || "";
 
     const databaseUrls = rawUrls.split(",").map((url) => url.trim()).filter(Boolean);
-    console.log("databaseUrls: " + databaseUrls[0]);
+    console.log("databaseUrls: " + databaseUrls[0] + '\n' + databaseUrls[1]+ '\n');
     const databaseUrlsClean = databaseUrls.map((item) => item.split("?")[0].replace(/\/$/, ""));
-    const serviceAccounts   = databaseUrls.map((item) => item.split("?")[1]);
+    console.log("databaseUrlsClean: " + databaseUrlsClean[0] + '\n' + databaseUrlsClean[1]+ '\n');
+    const serviceAccounts   = databaseUrls.map((item) => item.split("?")[1]+ '\n');
+    console.log("serviceAccounts: " + serviceAccounts[0] + '\n' + serviceAccounts[1]+ '\n');
     const firebaseConfigs   = databaseUrls.map((item) => JSON.parse(item.split("?")[2]));
+    console.log("firebaseConfigs: " + firebaseConfigs[0] + '\n' + firebaseConfigs[1]+ '\n');
 
     console.log("databaseUrlsClean: " + databaseUrlsClean[0] + "   serviceAccounts: " + serviceAccounts[0] + "  firebaseConfigs: " + firebaseConfigs[0]);
 
@@ -242,10 +245,12 @@ module.exports = async function handler(req, res)
         const firebaseConfig = firebaseConfigs[i];
         const app = initializeApp(firebaseConfig);
         //app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
+        console.lod('Open DB'+ i.toString() + ": OK");
         apps.push(app);
       }
       catch (dbError) 
       {
+        console.lod('Error Open all Apps...' + dbError.message);
         return res.status(300).json({ error: "No database URLs configured." });
       }
     }

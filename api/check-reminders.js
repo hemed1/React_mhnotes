@@ -39,9 +39,9 @@ module.exports = async function handler(req, res)
     const serviceAccounts   = databaseUrls.map((item) => item.split("?")[1]);
     console.log("serviceAccounts: " + serviceAccounts[0] + '\n' + serviceAccounts[1] + '\n');
     var firebaseConfigs   = databaseUrls.map((item) => item.split("?")[2]);
-    console.log("firebaseConfigs: " + '\n' + firebaseConfigs[0] + '\n' + firebaseConfigs[1]+ '\n');
+    console.log("firebaseConfigs: " + firebaseConfigs[0] + '\n' + firebaseConfigs[1]+ '\n');
     firebaseConfigs = firebaseConfigs.map((item) => JSON.parse(item));
-    console.log("firebaseConfigs+Json: " + '\n' + firebaseConfigs[0] + '\n' + firebaseConfigs[1]+ '\n');
+    console.log("firebaseConfigs+Json: " + firebaseConfigs[0] + '\n' + firebaseConfigs[1]+ '\n');
 
     //console.log("databaseUrlsClean: " + databaseUrlsClean[0] + "\n" + "serviceAccounts: " + serviceAccounts[0] + "\n" + "firebaseConfigs: " + firebaseConfigs[0]);
 

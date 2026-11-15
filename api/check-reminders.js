@@ -195,9 +195,7 @@ module.exports = async function handler(req, res)
 
     if (!process.env.FIREBASE_SERVICE_ACCOUNT) 
     {
-      return res
-        .status(500)
-        .json({ error: "Missing FIREBASE_SERVICE_ACCOUNT environment variable." });
+      return res.status(500).json({ error: "Missing FIREBASE_SERVICE_ACCOUNT environment variable." });
     }
 
     //const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
@@ -211,7 +209,7 @@ module.exports = async function handler(req, res)
 
     const rawUrls = process.env.FIREBASE_DATABASE_URLS || process.env.FIREBASE_DATABASE_URL || "";
 
-    const databaseUrls = rawUrls.split(",").map((url) => url.trim()).filter(Boolean);
+    const databaseUrls = rawUrls.split("@").map((url) => url.trim()).filter(Boolean);
     console.log("databaseUrls: " + databaseUrls[0] + '\n' + databaseUrls[1]+ '\n');
     const databaseUrlsClean = databaseUrls.map((item) => item.split("?")[0].replace(/\/$/, ""));
     console.log("databaseUrlsClean: " + databaseUrlsClean[0] + '\n' + databaseUrlsClean[1]+ '\n');

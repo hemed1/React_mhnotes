@@ -47,7 +47,7 @@ var DefaultUserEmail = '';  /* Globals.readFile('MyEmail.json'); */     //'hemed
 export var appVersion = '2.3.3';
 var isUpdatingInInsertMode = false;
 export var  messaging;
-const vapikey = "BDAO4VM9a7tGllfvMz3px5MQrzkjqD58bqdGSRaiYQ7iLdYvRWy1AJJqUpLtDN6jSEZmLcZUJN5pgpQE_Qa-jB0";
+const vapikey = "BLj1Zzq_JqcrsMHAy7DU2z10aPyNjR9Bm2jrrId3YvZ8hnTGySppB5iWOBqMCmVi_YWFaOBV43EemuUlszMmRiw";
 
 
 
@@ -766,13 +766,17 @@ export const requestForToken = async () =>
     });
 
     // 2. Now it will strictly wait here until the user clicks Allow/Block
-    if (permission === "granted") {
+    if (permission === "granted") 
+    {
       const currentToken = await getToken(messaging, {vapidKey: vapikey});
       
-      if (currentToken) {
+      if (currentToken) 
+      {
         console.log("FCM Token secured:", currentToken);
         return currentToken;
-      } else {
+      } 
+      else 
+      {
         console.log("No registration token available.");
       }
     } else {

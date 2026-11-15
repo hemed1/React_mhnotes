@@ -68,8 +68,8 @@ module.exports = async function handler(req, res)
         //const app = initializeApp(serviceAccount);
         const firebaseConfig = firebaseConfigs[i];
         //const app = initializeApp(firebaseConfig);
-        const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp(firebaseConfig.projectId);
-        console.log('Open DB'+ (i+1).toString() + ": OK");
+        const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp(firebaseConfig.authDomain);
+        console.log('Open DB'+ (i+1).toString() + "   DB Name: " + firebaseConfig.authDomain + " - OK");
         
         apps.push(app);
         // await deleteApp(app)
@@ -81,7 +81,6 @@ module.exports = async function handler(req, res)
         //   {
         //     console.log("Error deleting app:", error);
         //   });
-
       }
       catch (dbError) 
       {
@@ -105,17 +104,24 @@ module.exports = async function handler(req, res)
       
       try 
       {
-        // const app = !getApps().length
-        //               ? initializeApp(
-        //                 // { 
-        //                 //   credential: cert(serviceAccount),
-        //                 //   databaseURL: databaseUrlsClean[i]
-        //                 // }
-        //                 // firebaseConfigs[i]
-        //               )
-        //               : getApp();
-    
-        const db = getDatabase(apps[i]);
+        // if (getApps().length > 0)
+        // {
+        //   const appTmp = getApp();
+        //   await deleteApp(appTmp)
+        //   .then(() => 
+        //   {
+        //       //console.debug("Firebase app deleted successfully");
+        //   })
+        //   .catch((error) => 
+        //   {
+        //     console.log("Error deleting app:", error);
+        //   });
+        // }
+        const app = apps[i];      //getApps().length === 0 ? initializeApp(firebaseConfigs[i]) : getApp(firebaseConfig.authDomain);
+        //const app = initializeApp(firebaseConfigs[i]); 
+        console.log("Open in loop App"+ (i+1).toString());
+        const db = getDatabase(app);
+        console.log("Open in loop DB"+ (i+1).toString());
         const remindersRef = db.ref("TBL_Reminders");
 
         const snapshot = await remindersRef.orderByChild("scheduledTime").endAt(now).once("value");

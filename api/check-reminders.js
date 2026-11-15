@@ -50,7 +50,7 @@
 
 
 //     //** Open all Apps */
-//     console.lod('Open all Apps...');
+//     console.log('Open all Apps...');
 //     const results = [];
 //     var apps = [];
 //     for (let i = 0; i < databaseUrls.length; i++) 
@@ -75,7 +75,7 @@
 //         results.push({ url, error: dbError.message });
 //       }
 //     }
-//     console.lod('All Apps are opened');
+//     console.log('All Apps are opened');
 
 
 //     const now = Date.now();
@@ -139,7 +139,7 @@
 
 
 //     //** Dispose and Close Apps */
-//     console.lod('Disposing and Close Apps...');
+//     console.log('Disposing and Close Apps...');
 //     for (let i = 0; i < databaseUrls.length; i++) 
 //     {
 //       await deleteApp(apps[i])
@@ -149,7 +149,7 @@
 //         });
 //       apps[i] = null;
 //     }
-//     console.lod('Apps Disposing and Closed OK');
+//     console.log('Apps Disposing and Closed OK');
 
 //     return res.status(200).json({ checkedAt: now, results });
 //   } 
@@ -227,7 +227,7 @@ module.exports = async function handler(req, res)
     }
 
     //** Open all Apps */
-    console.lod('Open all Apps...');
+    console.log('Open all Apps...');
     var apps = [];
     for (let i = 0; i < databaseUrls.length; i++) 
     {
@@ -243,16 +243,16 @@ module.exports = async function handler(req, res)
         const firebaseConfig = firebaseConfigs[i];
         const app = initializeApp(firebaseConfig);
         //app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
-        console.lod('Open DB'+ i.toString() + ": OK");
+        console.log('Open DB'+ i.toString() + ": OK");
         apps.push(app);
       }
       catch (dbError) 
       {
-        console.lod('Error Open all Apps...' + dbError.message);
+        console.log('Error Open all Apps...' + dbError.message);
         return res.status(300).json({ error: "No database URLs configured." });
       }
     }
-    console.lod('All Apps are opened');
+    console.log('All Apps are opened');
 
 
 

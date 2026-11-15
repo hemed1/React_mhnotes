@@ -47,7 +47,7 @@ var DefaultUserEmail = '';  /* Globals.readFile('MyEmail.json'); */     //'hemed
 export var appVersion = '2.3.3';
 var isUpdatingInInsertMode = false;
 export var  messaging;
-const vapikey = "BLj1Zzq_JqcrsMHAy7DU2z10aPyNjR9Bm2jrrId3YvZ8hnTGySppB5iWOBqMCmVi_YWFaOBV43EemuUlszMmRiw";
+const vapikey = "BDAO4VM9a7tGllfvMz3px5MQrzkjqD58bqdGSRaiYQ7iLdYvRWy1AJJqUpLtDN6jSEZmLcZUJN5pgpQE_Qa-jB0";
 
 
 

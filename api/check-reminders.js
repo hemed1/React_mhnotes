@@ -33,17 +33,17 @@ module.exports = async function handler(req, res)
     const rawUrls = process.env.FIREBASE_DATABASE_URLS || process.env.FIREBASE_DATABASE_URL || "";
 
     const databaseUrls = rawUrls.split("@").map((url) => url.trim()).filter(Boolean);
-    console.log("databaseUrls: " + databaseUrls[0] + '\n' + databaseUrls[1]+ '\n');
+    //console.log("databaseUrls: " + databaseUrls[0] + '\n' + databaseUrls[1]+ '\n');
     const databaseUrlsClean = databaseUrls.map((item) => item.split("?")[0].replace(/\/$/, ""));
-    console.log("databaseUrlsClean: " + databaseUrlsClean[0] + '\n' + databaseUrlsClean[1]+ '\n');
+    console.log("databaseUrlsClean: " + '\n' + databaseUrlsClean[0] + '\n' + databaseUrlsClean[1]+ '\n');
     const serviceAccounts   = databaseUrls.map((item) => item.split("?")[1]);
-    console.log("serviceAccounts: " + serviceAccounts[0] + '\n' + serviceAccounts[1]+ '\n');
+    console.log("serviceAccounts: " + serviceAccounts[0] + '\n' + serviceAccounts[1] + '\n');
     var firebaseConfigs   = databaseUrls.map((item) => item.split("?")[2]);
-    console.log("firebaseConfigs: " + firebaseConfigs[0] + '\n' + firebaseConfigs[1]+ '\n');
+    console.log("firebaseConfigs: " + '\n' + firebaseConfigs[0] + '\n' + firebaseConfigs[1]+ '\n');
     firebaseConfigs = firebaseConfigs.map((item) => JSON.parse(item));
-    console.log("firebaseConfigs+Json: " + firebaseConfigs[0] + '\n' + firebaseConfigs[1]+ '\n');
+    console.log("firebaseConfigs+Json: " + '\n' + firebaseConfigs[0] + '\n' + firebaseConfigs[1]+ '\n');
 
-    console.log("databaseUrlsClean: " + databaseUrlsClean[0] + '\n' + "serviceAccounts: " + serviceAccounts[0] + '\n' + "firebaseConfigs: " + firebaseConfigs[0]);
+    //console.log("databaseUrlsClean: " + databaseUrlsClean[0] + "\n" + "serviceAccounts: " + serviceAccounts[0] + "\n" + "firebaseConfigs: " + firebaseConfigs[0]);
 
 
     if (databaseUrls.length === 0) 

@@ -47,8 +47,8 @@ var DefaultUserEmail = '';  /* Globals.readFile('MyEmail.json'); */     //'hemed
 export var appVersion = '2.3.3';
 var isUpdatingInInsertMode = false;
 export var  messaging;
-var vapikey = "BA7YnTRFWUnWLKYsTqX4QoZDWUnCmpxhD_XuBM-MXT-4j_7FndalS0eFmr5L8AglG8bVScPlmuubkRkO-t9rgc4";
-
+var vapikey = "BJzGRFAsiWNq8x6pGcgfoRbsfi0NZGVbY846c2WRHdUNeIYQw0ivtt1KdCxmD8_4L_rUz5Rm1E_LKBYU60miDgQ";
+const defaultVapiKey = vapikey;
 
 
 //await Init();
@@ -733,7 +733,7 @@ export async function changeDatabase(dbIndex)
     await dispose();
 
     firebaseConfig = DataBasesConfigList[dbIndex];
-    vapikey = firebaseConfig.vapiKey || "BA7YnTRFWUnWLKYsTqX4QoZDWUnCmpxhD_XuBM-MXT-4j_7FndalS0eFmr5L8AglG8bVScPlmuubkRkO-t9rgc4";
+    vapikey = firebaseConfig.vapiKey || defaultVapiKey;
     // var { email, ...objectWithoutEmail } = firebaseConfig;
     // firebaseConfig = objectWithoutEmail;
 

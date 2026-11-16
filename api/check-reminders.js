@@ -64,7 +64,7 @@ module.exports = async function handler(req, res)
     {
       try
       {
-        const item = { name: ("db"+i.toString()), config: firebaseConfigs[i], serviceAccount: serviceAccounts[i], databaseURL: databaseUrlsClean[i] };
+        const item = { name: ("db"+(i+1).toString()), config: firebaseConfigs[i], serviceAccount: serviceAccounts[i], databaseURL: databaseUrlsClean[i] };
         configs.push (item);
 
         // const serviceAccount = 
@@ -73,24 +73,12 @@ module.exports = async function handler(req, res)
         //   databaseURL: databaseUrlsClean[i],
         // }
         /// Initialize Firebase
-        //const app = initializeApp(serviceAccount);
+        //const app = initializeApp(serviceAccount, ("db"+i.toString()));
 
  //      const firebaseConfig = firebaseConfigs[i];
  //      const app = initializeApp(firebaseConfig, "db"+i.toString());
- //      //const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp(firebaseConfig.authDomain);
  //      console.log('Open DB'+ (i+1).toString() + "   DB Name: " + firebaseConfig.authDomain + " - OK");
- ///      apps.push(app);
-
-        // Close db
-        // await deleteApp(app)
-        //   .then(() => 
-        //   {
-        //       //console.debug("Firebase app deleted successfully");
-        //   })
-        //   .catch((error) => 
-        //   {
-        //     console.log("Error deleting app:", error);
-        //   });
+ ///     apps.push(app);
       }
       catch (dbError) 
       {
@@ -155,15 +143,13 @@ module.exports = async function handler(req, res)
         
         //const app = getApps().length === 0 ? initializeApp(firebaseConfigs[i]) : getApp(firebaseConfigs[i].authDomain);
         
-        const app = getApp("db"+i.toString()); // Must pass the exact name string used in initializeApp
+        const app = getApp(configs[i]); // Must pass the exact name string used in initializeApp
         console.log("Open in loop - App"+ (i+1).toString());
 
         const db = getDatabase(app);    // Works cleanly without needing a [DEFAULT] app
 
         //const app = apps[i];
         //const app = initializeApp(firebaseConfigs[i]); 
-        
-        
 
         const remindersRef = db.ref("TBL_Reminders");
 
@@ -176,7 +162,7 @@ module.exports = async function handler(req, res)
         }
 
         const data = snapshot.val();
-        console.log("After search records, find "+ data.length.toString());
+        //console.log("After search records, find "+ data.length.toString() + "records");
         let sentCount = 0;
 
         for (const id in data) 
@@ -208,21 +194,6 @@ module.exports = async function handler(req, res)
         }
 
         console.log("Finish to send messages, for db: " + firebaseConfigs[i].projectId);
-
-        //**Close Appp */
-        // if (getApps().length > 0)
-        // {
-        //   const appTmp = getApps()[0];
-        //   await deleteApp(appTmp)
-        //   .then(() => 
-        //   {
-        //       //console.debug("Firebase app deleted successfully");
-        //   })
-        //   .catch((error) => 
-        //   {
-        //     console.log("Error deleting app:", error);
-        //   });
-        //}
         
         results.push({ url, sent: sentCount });
       } 
@@ -239,7 +210,8 @@ module.exports = async function handler(req, res)
     console.log('Disposing and Close Apps...');
     for (let i = 0; i < databaseUrlsClean.length; i++) 
     {
-      await deleteApp(apps[i])
+      const app = getApp(configs[i]); // Must pass the exact name string used in initializeApp
+      await deleteApp(app)
         .catch((error) => 
         {
           console.log("Error deleting app:", error);

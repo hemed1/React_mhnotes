@@ -77,12 +77,14 @@ module.exports = async function handler(req, res)
         // }
         /// Initialize Firebase
         //const app = initializeApp(serviceAccount);
-//        const firebaseConfig = firebaseConfigs[i];
-//        const app = initializeApp(firebaseConfig, "secondaryApp"+i.toString());
-//        //const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp(firebaseConfig.authDomain);
-//        console.log('Open DB'+ (i+1).toString() + "   DB Name: " + firebaseConfig.authDomain + " - OK");
-        
-        // apps.push(app);
+
+       const firebaseConfig = firebaseConfigs[i];
+       const app = initializeApp(firebaseConfig, "db"+i.toString());
+       //const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp(firebaseConfig.authDomain);
+       console.log('Open DB'+ (i+1).toString() + "   DB Name: " + firebaseConfig.authDomain + " - OK");
+       apps.push(app);
+
+        // Close db
         // await deleteApp(app)
         //   .then(() => 
         //   {
@@ -113,16 +115,16 @@ module.exports = async function handler(req, res)
     //     apps.push(app);
     //   }
     // });
-    const appsLoop = configs.reduce((acc, item) => 
-    {
-      const existingApp = getApps().find((a) => a.name === item.name);
-      const app = existingApp || initializeApp(item.config, item.name);
-      apps.push(app);
-      return app;
-      // Explicitly pass the 'app' instance here
-      // acc[item.name] = getDatabase(app);
-      // return acc;
-    }, {});
+    // const appsLoop = configs.reduce((acc, item) => 
+    // {
+    //   const existingApp = getApps().find((a) => a.name === item.name);
+    //   const app = existingApp || initializeApp(item.config, item.name);
+    //   apps.push(app);
+    //   return app;
+    //   // Explicitly pass the 'app' instance here
+    //   // acc[item.name] = getDatabase(app);
+    //   // return acc;
+    // }, {});
 
     console.log('All Apps are opened; ' + apps.length.toString());
 

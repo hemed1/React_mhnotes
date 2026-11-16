@@ -33,7 +33,6 @@ module.exports = async function handler(req, res)
     const rawUrls = process.env.FIREBASE_DATABASE_URLS || process.env.FIREBASE_DATABASE_URL || "";
 
     const databaseUrls = rawUrls.split(";").map((url) => url.trim()).filter(Boolean);
-    //console.log("databaseUrls: " + databaseUrls[0] + '\n' + databaseUrls[1]+ '\n');
     const databaseUrlsClean = databaseUrls.map((item) => item.split("?")[0].replace(/\/$/, ""));
     console.log("databaseUrlsClean: " + databaseUrlsClean[0] + '\n' + databaseUrlsClean[1]+ '\n');
     const serviceAccounts   = databaseUrls.map((item) => JSON.parse(item.split("?")[1]));
@@ -67,7 +66,7 @@ module.exports = async function handler(req, res)
     {
       try
       {
-        const item = { name: ("db"+i.toString()), config: firebaseConfigs[i] };
+        const item = { name: ("db"+i.toString()), config: firebaseConfigs[i], serviceAccount: serviceAccounts[i], databaseURL: databaseUrlsClean[i] };
         configs.push (item);
 
         // const serviceAccount = 
@@ -78,11 +77,11 @@ module.exports = async function handler(req, res)
         /// Initialize Firebase
         //const app = initializeApp(serviceAccount);
 
-       const firebaseConfig = firebaseConfigs[i];
-       const app = initializeApp(firebaseConfig, "db"+i.toString());
-       //const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp(firebaseConfig.authDomain);
-       console.log('Open DB'+ (i+1).toString() + "   DB Name: " + firebaseConfig.authDomain + " - OK");
-       apps.push(app);
+ //      const firebaseConfig = firebaseConfigs[i];
+ //      const app = initializeApp(firebaseConfig, "db"+i.toString());
+ //      //const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp(firebaseConfig.authDomain);
+ //      console.log('Open DB'+ (i+1).toString() + "   DB Name: " + firebaseConfig.authDomain + " - OK");
+ ///      apps.push(app);
 
         // Close db
         // await deleteApp(app)
@@ -103,7 +102,19 @@ module.exports = async function handler(req, res)
     }
 
     
-
+    configs.forEach(({ name, databaseURL, serviceAccount }) => 
+    {
+      if (!getApps().some((app) => app.name === name)) 
+      {
+        initializeApp(
+          {
+            credential: cert(serviceAccount),
+            databaseURL: databaseURL,
+          },
+          name
+        );
+      }
+    });
 
     // Safely initialize all named apps in a loop and store their database instances
     // appConfigs.forEach(({ name, config }) => 
@@ -143,10 +154,11 @@ module.exports = async function handler(req, res)
       try 
       {
         
-        console.log("Open in loop - App"+ (i+1).toString());
         //const app = getApps().length === 0 ? initializeApp(firebaseConfigs[i]) : getApp(firebaseConfigs[i].authDomain);
-
+        
         const app = getApp("db"+i.toString()); // Must pass the exact name string used in initializeApp
+        console.log("Open in loop - App"+ (i+1).toString());
+        
         const db = getDatabase(app);    // Works cleanly without needing a [DEFAULT] app
 
         //const app = apps[i];

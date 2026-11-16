@@ -161,6 +161,16 @@ module.exports = async function handler(req, res)
         for (const id in data) 
         {
           const reminder = data[id];
+
+          console.log("--- SENDING DEBUG ---");
+          console.log("Loop Index:", i);
+          console.log("App Name:", app.name);
+          console.log("App Options ProjectId:", app.options.credential.projectId);
+          console.log("Database URL:", configs[i].databaseURL);
+          console.log("Reminder ID:", id);
+          console.log("Token (first 25 chars):", reminder.token?.substring(0, 25));
+
+
           console.log("Sending message...");
 
            // Skip if token is missing

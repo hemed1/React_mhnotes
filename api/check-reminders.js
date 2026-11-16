@@ -124,7 +124,7 @@ module.exports = async function handler(req, res)
       // return acc;
     }, {});
 
-    console.log('All Apps are opened; ' + app.length.toString());
+    console.log('All Apps are opened; ' + apps.length.toString());
 
 
 

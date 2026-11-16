@@ -55,10 +55,6 @@ module.exports = async function handler(req, res)
     console.log('Open all Apps...');
     var apps = [];
     var configs = [];
-    // [
-    //   { name: "db1", config: { databaseURL: "https://meirhemed-mhnotes-default-rtdb.firebaseio.com", apiKey: "..." } },
-    //   { name: "db2", config: { databaseURL: "https://other-project-default-rtdb.firebaseio.com", apiKey: "..." } }
-    // ];
 
     for (let i = 0; i < databaseUrls.length; i++) 
     {
@@ -87,7 +83,7 @@ module.exports = async function handler(req, res)
       }
     }
 
-    
+    //** Safely initialize all named apps in a loop and store their database instances */
     configs.forEach(({ name, databaseURL, serviceAccount }) => 
     {
       if (!getApps().some((app) => app.name === name)) 
@@ -129,7 +125,6 @@ module.exports = async function handler(req, res)
 
 
 
-
     var results = [];
     const now = Date.now();
     
@@ -140,15 +135,14 @@ module.exports = async function handler(req, res)
       
       try 
       {
-        //const app = getApps().length === 0 ? initializeApp(firebaseConfigs[i]) : getApp(firebaseConfigs[i].authDomain);
+        console.log("Open in loop - App"+ ((i+1).toString()));
         
         const app = getApp(configs[i].name); // Must pass the exact name string used in initializeApp
-        console.log("Open in loop - App"+ ((i+1).toString()));
-
         const db = getDatabase(app);    // Works cleanly without needing a [DEFAULT] app
-
+        
         //const app = apps[i];
         //const app = initializeApp(firebaseConfigs[i]); 
+        //const app = getApps().length === 0 ? initializeApp(firebaseConfigs[i]) : getApp(firebaseConfigs[i].authDomain);
 
         const remindersRef = db.ref("TBL_Reminders");
 
@@ -167,8 +161,14 @@ module.exports = async function handler(req, res)
         for (const id in data) 
         {
           const reminder = data[id];
+          console.log("Sending message...");
 
-          console.log("Sending message");
+           // Skip if token is missing
+          if (!reminder.token) 
+          {
+            //await remindersRef.child(id).remove();
+            continue;
+          }
 
           const message = 
           {
@@ -186,10 +186,18 @@ module.exports = async function handler(req, res)
             token: reminder.token,
           };
           
-          await getMessaging(app).send(message);
+          try
+          {
+            await getMessaging(app).send(message);
 
-          await remindersRef.child(id).remove();
-          sentCount++;
+            await remindersRef.child(id).remove();
+            sentCount++;
+          }
+          catch (dbError) 
+          {
+            console.error(`Error sendiing of: ${url}:`, dbError);
+            results.push({ url, error: dbError.message });
+          }
         }
 
         console.log("Finish to send messages, for db: " + firebaseConfigs[i].projectId);

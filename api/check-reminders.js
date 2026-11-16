@@ -215,7 +215,7 @@ module.exports = async function handler(req, res)
 
     //** Dispose and Close Apps */
     console.log('Disposing and Close Apps...');
-    for (let i = 0; i < databaseUrlsClean.length; i++) 
+    for (let i = 0; i < apps.length; i++) 
     {
       const app = getApp(configs[i].name); // Must pass the exact name string used in initializeApp
       await deleteApp(app)

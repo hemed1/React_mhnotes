@@ -54,6 +54,7 @@ module.exports = async function handler(req, res)
 
      //** Open all Apps */
     console.log('Open all Apps...');
+    var apps = [];
     var configs = [];
     // [
     //   { name: "db1", config: { databaseURL: "https://meirhemed-mhnotes-default-rtdb.firebaseio.com", apiKey: "..." } },
@@ -61,7 +62,7 @@ module.exports = async function handler(req, res)
     // ];
 
       
-    //var apps = [];
+    
     for (let i = 0; i < databaseUrls.length; i++) 
     {
       try
@@ -112,11 +113,12 @@ module.exports = async function handler(req, res)
     //     apps.push(app);
     //   }
     // });
-    const databases = configs.reduce((acc, item) => 
+    const appsLoop = configs.reduce((acc, item) => 
     {
       const existingApp = getApps().find((a) => a.name === item.name);
       const app = existingApp || initializeApp(item.config, item.name);
-      
+      apps.push(app);
+      return app;
       // Explicitly pass the 'app' instance here
       // acc[item.name] = getDatabase(app);
       // return acc;

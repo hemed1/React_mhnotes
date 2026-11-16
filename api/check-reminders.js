@@ -64,7 +64,7 @@ module.exports = async function handler(req, res)
     {
       try
       {
-        const item = { name: ("db"+(i+1).toString()), config: firebaseConfigs[i], serviceAccount: serviceAccounts[i], databaseURL: databaseUrlsClean[i] };
+        const item = { name: ("db" + ((i+1).toString())), config: firebaseConfigs[i], serviceAccount: serviceAccounts[i], databaseURL: databaseUrlsClean[i] };
         configs.push (item);
 
         // const serviceAccount = 
@@ -140,11 +140,10 @@ module.exports = async function handler(req, res)
       
       try 
       {
-        
         //const app = getApps().length === 0 ? initializeApp(firebaseConfigs[i]) : getApp(firebaseConfigs[i].authDomain);
         
-        const app = getApp(configs[i]); // Must pass the exact name string used in initializeApp
-        console.log("Open in loop - App"+ (i+1).toString());
+        const app = getApp(configs[i].name); // Must pass the exact name string used in initializeApp
+        console.log("Open in loop - App"+ ((i+1).toString()));
 
         const db = getDatabase(app);    // Works cleanly without needing a [DEFAULT] app
 
@@ -210,7 +209,7 @@ module.exports = async function handler(req, res)
     console.log('Disposing and Close Apps...');
     for (let i = 0; i < databaseUrlsClean.length; i++) 
     {
-      const app = getApp(configs[i]); // Must pass the exact name string used in initializeApp
+      const app = getApp(configs[i].name); // Must pass the exact name string used in initializeApp
       await deleteApp(app)
         .catch((error) => 
         {

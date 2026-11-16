@@ -60,8 +60,6 @@ module.exports = async function handler(req, res)
     //   { name: "db2", config: { databaseURL: "https://other-project-default-rtdb.firebaseio.com", apiKey: "..." } }
     // ];
 
-      
-    
     for (let i = 0; i < databaseUrls.length; i++) 
     {
       try
@@ -106,13 +104,14 @@ module.exports = async function handler(req, res)
     {
       if (!getApps().some((app) => app.name === name)) 
       {
-        initializeApp(
+        const app = initializeApp(
           {
             credential: cert(serviceAccount),
             databaseURL: databaseURL,
           },
           name
         );
+        apps.push(app);
       }
     });
 
@@ -158,7 +157,7 @@ module.exports = async function handler(req, res)
         
         const app = getApp("db"+i.toString()); // Must pass the exact name string used in initializeApp
         console.log("Open in loop - App"+ (i+1).toString());
-        
+
         const db = getDatabase(app);    // Works cleanly without needing a [DEFAULT] app
 
         //const app = apps[i];

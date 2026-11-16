@@ -14,7 +14,8 @@ export const dataBasesConfigList =
       messagingSenderId: "257753299659",
       appId: "1:257753299659:web:9d94f62b2ea3cedee0f94e",
       measurementId: "G-829HMJG495",
-      email: "hemedmeir@gmail.com"
+      email: "hemedmeir@gmail.com",
+      vapiKey: "BA7YnTRFWUnWLKYsTqX4QoZDWUnCmpxhD_XuBM-MXT-4j_7FndalS0eFmr5L8AglG8bVScPlmuubkRkO-t9rgc4"
    },
 
    {
@@ -74,9 +75,10 @@ export const dataBasesConfigList =
       messagingSenderId: "820697656077",
       appId: "1:820697656077:web:a86597010a76b667bc1e44",
       measurementId: "G-DRHEPS6293",
-      email: "elkalay.office@gmail.com"
+      email: "elkalay.office@gmail.com",
+      vapiKey: "BHy7plpxhwKX-1vk6c-j-ig1H9mJ7wHz-lF-qqoA50080M3oQYvbs60JnbbP78vlyqQYCidyxevi8R9TPh7d86I"
    }
-
+   
 ];
 
 

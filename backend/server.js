@@ -22,10 +22,13 @@ const targetDbUrl = process.argv[2] || "https://meirhemed-mhnotes-default-rtdb.f
 //     : ["https://aaa-mhnotes-default-rtdb.firebaseio.com"];
 
 const databaseConfigFile = require("./dataBasesConfig.js");
-const databaseConfigs = databaseConfigFile.dataBasesConfigList;
+console.log("Read file dataBasesConfig.js: ", databaseConfigFile);
+const list = databaseConfigFile;      // databaseConfigFile.dataBasesConfigList;
+databaseConfigs = Object.keys(list).map((key) => key);
+console.log("Content of file dataBasesConfig.js: ", databaseConfigs);
 const dbIndex = databaseConfigs.findIndex((item) => item.databaseURL === targetDbUrl);
 
-const serviceAccount = require("./serviceAccountKey-"+dbIndex.toString()+".json");
+const serviceAccount = require("./serviceAccountKey-"+(dbIndex.toString())+".json");
 console.log("Will check on DB - " + targetDbUrl + " Find config index: " + dbIndex.toString());
 
 

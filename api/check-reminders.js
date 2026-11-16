@@ -54,11 +54,21 @@ module.exports = async function handler(req, res)
 
      //** Open all Apps */
     console.log('Open all Apps...');
-    var apps = [];
+    var configs = [];
+    // [
+    //   { name: "db1", config: { databaseURL: "https://meirhemed-mhnotes-default-rtdb.firebaseio.com", apiKey: "..." } },
+    //   { name: "db2", config: { databaseURL: "https://other-project-default-rtdb.firebaseio.com", apiKey: "..." } }
+    // ];
+
+      
+    //var apps = [];
     for (let i = 0; i < databaseUrls.length; i++) 
     {
       try
       {
+        const item = { name: ("db"+i.toString()), config: firebaseConfigs[i] };
+        configs.push (item);
+
         // const serviceAccount = 
         // {
         //   credential: cert(serviceAccounts[i]),
@@ -66,10 +76,10 @@ module.exports = async function handler(req, res)
         // }
         /// Initialize Firebase
         //const app = initializeApp(serviceAccount);
-        const firebaseConfig = firebaseConfigs[i];
-        const app = initializeApp(firebaseConfig, "secondaryApp"+i.toString());
-        //const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp(firebaseConfig.authDomain);
-        console.log('Open DB'+ (i+1).toString() + "   DB Name: " + firebaseConfig.authDomain + " - OK");
+//        const firebaseConfig = firebaseConfigs[i];
+//        const app = initializeApp(firebaseConfig, "secondaryApp"+i.toString());
+//        //const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp(firebaseConfig.authDomain);
+//        console.log('Open DB'+ (i+1).toString() + "   DB Name: " + firebaseConfig.authDomain + " - OK");
         
         // apps.push(app);
         // await deleteApp(app)
@@ -88,7 +98,31 @@ module.exports = async function handler(req, res)
         return res.status(300).json({ error: "No database URLs configured." });
       }
     }
-    console.log('All Apps are opened');
+
+    
+
+
+    // Safely initialize all named apps in a loop and store their database instances
+    // appConfigs.forEach(({ name, config }) => 
+    // {
+    //   const alreadyExists = getApps().some((app) => app.name === name);
+    //   if (!alreadyExists) 
+    //   {
+    //     const app = initializeApp(config, name);
+    //     apps.push(app);
+    //   }
+    // });
+    const databases = configs.reduce((acc, item) => 
+    {
+      const existingApp = getApps().find((a) => a.name === item.name);
+      const app = existingApp || initializeApp(item.config, item.name);
+      
+      // Explicitly pass the 'app' instance here
+      // acc[item.name] = getDatabase(app);
+      // return acc;
+    }, {});
+
+    console.log('All Apps are opened; ' + app.length.toString());
 
 
 
@@ -107,10 +141,14 @@ module.exports = async function handler(req, res)
         
         console.log("Open in loop - App"+ (i+1).toString());
         //const app = getApps().length === 0 ? initializeApp(firebaseConfigs[i]) : getApp(firebaseConfigs[i].authDomain);
-        const app = apps[i];
+
+        const app = getApp("db"+i.toString()); // Must pass the exact name string used in initializeApp
+        const db = getDatabase(app);    // Works cleanly without needing a [DEFAULT] app
+
+        //const app = apps[i];
         //const app = initializeApp(firebaseConfigs[i]); 
-        const db = getDatabase(app);
-        console.log("Open in loop - DB"+ (i+1).toString());
+        
+        
 
         const remindersRef = db.ref("TBL_Reminders");
 
@@ -123,6 +161,7 @@ module.exports = async function handler(req, res)
         }
 
         const data = snapshot.val();
+        console.log("After search records, find "+ data.length.toString());
         let sentCount = 0;
 
         for (const id in data) 

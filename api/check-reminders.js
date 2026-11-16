@@ -168,7 +168,7 @@ module.exports = async function handler(req, res)
         //   {
         //     console.log("Error deleting app:", error);
         //   });
-        }
+        //}
         
         results.push({ url, sent: sentCount });
       } 

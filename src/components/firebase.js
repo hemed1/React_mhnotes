@@ -758,19 +758,54 @@ export const requestForToken = async () =>
 {
   try 
   {
-    // 1. Force the permission check to be a reliable Promise
-    const permission = await new Promise((resolve) => {
-      const result = Notification.requestPermission(resolve);
-      if (result && typeof result.then === 'function') {
-        result.then(resolve);
-      }
-    });
+    // 1. Request notification permission
+    const permission = await Notification.requestPermission();
+
+    if (permission !== "granted") 
+    {
+      console.log("Notification permission denied by user.");
+      return null;
+    }
+    // // 1. Force the permission check to be a reliable Promise
+    // const permission = await new Promise((resolve) => 
+    // {
+    //   const result = Notification.requestPermission(resolve);
+    //   if (result && typeof result.then === 'function') 
+    //   {
+    //     result.then(resolve);
+    //   }
+    // });
+
 
     // 2. Now it will strictly wait here until the user clicks Allow/Block
     if (permission === "granted") 
     {
-      const currentToken = await getToken(messaging, {vapidKey: vapikey});
+      // 1. Register the Service Worker and wait until it is active
+      const registration = await navigator.serviceWorker.register("/firebase-messaging-sw.js");
+      await navigator.serviceWorker.ready;
       
+
+      // 3. Check if an old PushSubscription exists with a mismatched VAPID key
+      const existingSub = await registration.pushManager.getSubscription();
+      if (existingSub && existingSub.options?.applicationServerKey) 
+      {
+        // Unsubscribe if you recently rotated VAPID keys or switched projects
+        // (Optional: keep this active during testing so you always get a clean subscription)
+        await existingSub.unsubscribe();
+      }
+
+
+      // Initialize Firebase Cloud Messaging
+      messaging = getMessaging(app);
+      
+      // 2. Get the FCM token bound to that Service Worker and your project's VAPID key
+      const currentToken = await getToken(messaging, 
+        {
+          vapidKey: vapikey,
+          serviceWorkerRegistration: registration
+        });
+      
+
       if (currentToken) 
       {
         console.log("FCM Token secured:", currentToken);
@@ -780,10 +815,14 @@ export const requestForToken = async () =>
       {
         console.log("No registration token available.");
       }
-    } else {
+    } 
+    else
+    {
       console.log("Notification permission denied by user.");
     }
-  } catch (err) {
+  } 
+  catch (err) 
+  {
     console.error("An error occurred while retrieving token: ", err);
   }
 };

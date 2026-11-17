@@ -40,7 +40,7 @@ module.exports = async function handler(req, res)
     var firebaseConfigs   = databaseUrls.map((item) => item.split("?")[2]);
     console.log("firebaseConfigs: " + firebaseConfigs[0] + '\n' + firebaseConfigs[1]+ '\n');
     firebaseConfigs = firebaseConfigs.map((item) => JSON.parse(item));
-    console.log("firebaseConfigs+Json: " + firebaseConfigs[0] + '\n' + firebaseConfigs[1]+ '\n');
+    //console.log("firebaseConfigs+Json: " + firebaseConfigs[0] + '\n' + firebaseConfigs[1]+ '\n');
 
     //console.log("databaseUrlsClean: " + databaseUrlsClean[0] + "\n" + "serviceAccounts: " + serviceAccounts[0] + "\n" + "firebaseConfigs: " + firebaseConfigs[0]);
 
@@ -176,6 +176,7 @@ module.exports = async function handler(req, res)
            // Skip if token is missing
           if (!reminder.token) 
           {
+            console.error(`Error Tokenfor: ${url}:`, dbError);
             //await remindersRef.child(id).remove();
             continue;
           }
@@ -205,7 +206,7 @@ module.exports = async function handler(req, res)
           }
           catch (dbError) 
           {
-            console.error(`Error sendiing of: ${url}:`, dbError);
+            console.error(`Error sendiing message to: ${url}:`, dbError);
             results.push({ url, error: dbError.message });
           }
         }

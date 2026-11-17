@@ -171,44 +171,45 @@ module.exports = async function handler(req, res)
           console.log("Token (first 25 chars):", reminder.token?.substring(0, 25));
 
 
-          console.log("Sending message...");
-
-           // Skip if token is missing
-          if (!reminder.token) 
-          {
-            console.error(`Error Tokenfor: ${url}:`, dbError);
-            //await remindersRef.child(id).remove();
-            continue;
-          }
-
-          const message = 
-          {
-            notification: 
-            {
-              title: "⏰ תזכורת!",
-              body: reminder.text,
-            },
-            data: 
-            {
-              title: "⏰ תזכורת!",
-              body: reminder.text,
-              url: "/",
-            },
-            token: reminder.token,
-          };
           
-          try
-          {
-            await getMessaging(app).send(message);
+          // Skip if token is missing
+          if (!reminder.token) 
+            {
+              console.error(`Error: No Token for: ${url}:`);
+              //await remindersRef.child(id).remove();
+              continue;
+            }
+            
+            const message = 
+            {
+              notification: 
+              {
+                title: "⏰ תזכורת!",
+                body: reminder.text,
+              },
+              data: 
+              {
+                title: "⏰ תזכורת!",
+                body: reminder.text,
+                url: "/",
+              },
+              token: reminder.token,
+            };
+            
+            try
+            {
+              console.log("Sending message...");
+              
+              await getMessaging(app).send(message);
 
-            await remindersRef.child(id).remove();
-            sentCount++;
-          }
-          catch (dbError) 
-          {
-            console.error(`Error sendiing message to: ${url}:`, dbError);
-            results.push({ url, error: dbError.message });
-          }
+              await remindersRef.child(id).remove();
+              sentCount++;
+            }
+            catch (dbError) 
+            {
+              console.error(`Error sendiing message to: ${url}:`, dbError);
+              results.push({ url, error: dbError.message });
+            }
         }
 
         console.log("Finish to send messages, for db: " + firebaseConfigs[i].projectId);

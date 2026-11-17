@@ -97,7 +97,7 @@ export default function App( {dbData} )
                   },
                   // 1. You MUST define async success behavior in the global configuration options
                   async: {
-                    success: 'Task completed!' // This serves as the fallback title/toast flag
+                    success: 'הפעולה הסתיימה!' // This serves as the fallback title/toast flag
                   }
                 }));
 

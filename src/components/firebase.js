@@ -4,7 +4,7 @@
 // src/firebase.js
 import { initializeApp, getApps, getApp, deleteApp } from "firebase/app";
 import { getDatabase, ref, onValue, update, set, get, push, remove, query, orderByChild, equalTo, enableLogging } from "firebase/database";
-import { getMessaging, getToken, onMessage } from "firebase/messaging";
+import { getMessaging, getToken/* , onMessage */ } from "firebase/messaging";
 import  * as FirebaseConfig from './dataBasesConfig.js';
 import { useEffect, useState } from 'react';
 import { dateSetFormatLatin }  from '../globals.js';
@@ -43,10 +43,10 @@ var firebaseConfig = {};
 var funcWhenUpdate = null;
 var app;
 export var database;
-var DefaultUserEmail = '';  /* Globals.readFile('MyEmail.json'); */     //'hemedmeir@gmail.com';
 export var appVersion = '2.3.3';
 var isUpdatingInInsertMode = false;
 export var  messaging;
+export var G_UserID = 0;
 var vapikey = "BJzGRFAsiWNq8x6pGcgfoRbsfi0NZGVbY846c2WRHdUNeIYQw0ivtt1KdCxmD8_4L_rUz5Rm1E_LKBYU60miDgQ";
 const defaultVapiKey = vapikey;
 
@@ -153,7 +153,7 @@ export function UseListenToDatabase( tableName )
       {
         message = "🔴 Disconnected (Using Cache)";
       }
-      //console.debug(message);
+      console.debug(message);
     });
 
     return () => unsubscribe();
@@ -480,13 +480,17 @@ export async function InsertRecord( tableName, values )
   const tableRef = ref(database, tableName);
   
   await push(tableRef, values)
-    .then( snapshot => 
+    .then( (snapshot) => 
           {
             result = snapshot.key;
             if (values["FirebaseID"] !== null && values["FirebaseID"] !== undefined)
             {
                 values["FirebaseID"] = snapshot.key;
             }
+            // if (values["firebaseID"] !== null && values["firebaseID"] !== undefined)
+            // {
+            //     values["firebaseID"] = snapshot.key;
+            // }
             if (values["id"] !== null && values["id"] !== undefined)
             {
                 values["id"] = snapshot.key;
@@ -502,7 +506,7 @@ export async function InsertRecord( tableName, values )
 
 
     // Update field 'FirebaseID'
-    if (values["FirebaseID"] !== null && result !== '')
+    if (values["FirebaseID"] !== undefined && result !== '')
     {
       const funcWhenUpdate = getFuncWhenUpdate();
       setFuncWhenUpdate(null);
@@ -625,7 +629,7 @@ export async function UpdateField(tableName, recordKey, values)
   return result;
 }
 
-export async function DeleteRecord( tableName, recordKey, fieldName = "FirebaseID")
+export async function DeleteRecord( tableName, recordKey)
 {
   if (String(recordKey).trim() === "")
   {
@@ -633,7 +637,7 @@ export async function DeleteRecord( tableName, recordKey, fieldName = "FirebaseI
     return false;
   }
 
-  // const getTable = await GetQuerySync(tableName, fieldName, recordKey);
+  // const getTable = await GetQuerySync(tableName, , recordKey);
   //
   // if (!getTable)
   // {
@@ -780,19 +784,31 @@ export const requestForToken = async () =>
     // 2. Now it will strictly wait here until the user clicks Allow/Block
     if (permission === "granted") 
     {
+
+      // 2. Build the Service Worker URL with the active project's config parameters
+      //const { apiKey, authDomain, projectId, storageBucket, messagingSenderId, appId } = app.options;
+      // const swUrl = `/firebase-messaging-sw.js?apiKey=${encodeURIComponent(apiKey)}&
+      //                                          authDomain=${encodeURIComponent(authDomain)}&
+      //                                          projectId=${encodeURIComponent(projectId)}&
+      //                                          storageBucket=${encodeURIComponent(storageBucket)}&
+      //                                          messagingSenderId=${encodeURIComponent(messagingSenderId)}&
+      //                                          appId=${encodeURIComponent(appId)}
+      //                                          vapiKey=${encodeURIComponent(vapikey)}`;
+
       // 1. Register the Service Worker and wait until it is active
-      const registration = await navigator.serviceWorker.register("/firebase-messaging-sw.js");
+      const registration = await navigator.serviceWorker.register("/firebase-messaging-sw.js");   // swUrl
       await navigator.serviceWorker.ready;
       
+      
 
-      // 3. Check if an old PushSubscription exists with a mismatched VAPID key
-      const existingSub = await registration.pushManager.getSubscription();
-      if (existingSub && existingSub.options?.applicationServerKey) 
-      {
-        // Unsubscribe if you recently rotated VAPID keys or switched projects
-        // (Optional: keep this active during testing so you always get a clean subscription)
-        await existingSub.unsubscribe();
-      }
+      // // 3. Check if an old PushSubscription exists with a mismatched VAPID key
+      // const existingSub = await registration.pushManager.getSubscription();
+      // if (existingSub && existingSub.options?.applicationServerKey) 
+      // {
+      //   // Unsubscribe if you recently rotated VAPID keys or switched projects
+      //   // (Optional: keep this active during testing so you always get a clean subscription)
+      //   await existingSub.unsubscribe();
+      // }
 
 
       // Initialize Firebase Cloud Messaging
@@ -842,15 +858,15 @@ export const requestForToken = async () =>
 
 
 
-// Listen for foreground messages
-export const onMessageListener = () =>
-  new Promise((resolve) => 
-  {
-    onMessage(messaging, (payload) => 
-    {
-      resolve(payload);
-    });
-  });
+// // NOT in Use - Listen for foreground messages
+// export const onMessageListener = () =>
+//   new Promise((resolve) => 
+//   {
+//     onMessage(messaging, (payload) => 
+//     {
+//       resolve(payload);
+//     });
+//   });
 
 
 //** Save/Send scheduled Reminder notification*/
@@ -999,13 +1015,13 @@ export function AuthenticationScreen({onConfirm, onExit})
         if (dataUsers)
           {
           var values = {Email: email, Password: password};
-          var result = await UpdateField('TBL_Users', dataUsers['FirebaseID'], values);
+          await UpdateField('TBL_Users', dataUsers['FirebaseID'], values);
 
           const dataSettings = await GetTableDataSync('TBL_Serttins');
           if (dataSettings && dataSettings.length>0)
           {
             values = {UserEmail: email, UserPassword: password};
-            result = await UpdateField('TBL_Serttins', dataSettings[0].FirebaseID, values);
+            await UpdateField('TBL_Serttins', dataSettings[0].FirebaseID, values);
             setfirstEmail(email);
           }
           
@@ -1022,7 +1038,7 @@ export function AuthenticationScreen({onConfirm, onExit})
       if (!dataCheck || dataCheck.length===0)
         {
           setIsShowWaitMessage(false);
-          alert('משתמש לא מוכר במערכת');
+          alert('משתמש עם מייל כזה, לא מוכר במערכת');
           if (onConfirm!==undefined)
           {
             onConfirm(-1);
@@ -1030,11 +1046,13 @@ export function AuthenticationScreen({onConfirm, onExit})
           return -1;
       }
 
+      G_UserID = dataCheck[0].UserID;
+
       dbIndex = DataBasesConfigList.findIndex((item) => item['email']!==undefined && item['email'] === email)
       if (dbIndex===-1)
       {
         setIsShowWaitMessage(false);
-        alert('המערכת לא מצאה את המידע כדי להתחבר למסד-הנתונים שלך');
+        alert('המערכת לא מצאה את כתובת המייל כדי להתחבר למסד-הנתונים שלך');
         if (onConfirm!==undefined)
         {
           onConfirm(-1);
@@ -1042,12 +1060,12 @@ export function AuthenticationScreen({onConfirm, onExit})
         return -1;
       }
 
-      
-      /** Connect to db */
-      database = await changeDatabase(dbIndex);
-      
+
       // const json = {DefaultDatabaseID: 5, FirebaseID: '', MainDataName: 'mhnotes-mainsetting', MainDatabaseUrl: 'mhnotes-mainsettingdb-default-rtdb.firebaseio.com', UserEmail: 'hemedmeir@gmail.com', UserPassword: 'tom'};
       // const res = await InsertRecord('TBL_Settings', json);
+      
+      /** Connect to customer db */
+      database = await changeDatabase(dbIndex);
 
       dataCheck = await GetTableDataSync('TBL_Settings');
       

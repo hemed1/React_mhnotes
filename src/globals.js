@@ -2,7 +2,7 @@
 //import { exp } from 'firebase/firestore/pipelines';
 import React from 'react';
 import { useState, useEffect, useRef } from 'react';
-import {DeleteAllRecords, InsertRecord} from './components/firebase.js';
+import {DeleteAllRecords, InsertRecord, GetTableDataSync} from './components/firebase.js';
 import { Plus, Trash2/* , X, ChevronRight, Users, Subtitles, CheckLine, Check, CheckIcon, CheckLineIcon, EllipsisVertical */ } from "lucide-react";
 import AWN from 'awesome-notifications';
 import 'awesome-notifications/dist/style.css'; 
@@ -1244,4 +1244,21 @@ export function ShowNotification1(message, targetDate)
 
   return () => handleAsyncNotification();
 
+}
+
+export async function mapToLookupObject(tableName)
+{
+  const date = await  GetTableDataSync(tableName);
+
+  const dataTable = date.map((item) => 
+                  {
+                    return {
+                      label: item.Description,
+                      value: item.ID
+                    };
+                  });
+
+  const result = [...dataTable].sort((a, b) => String(a.label).localeCompare(String(b.label))); 
+
+  return ( result );
 }

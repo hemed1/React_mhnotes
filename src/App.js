@@ -11,8 +11,8 @@ import * as Globals from './globals.js';
 import Select/* , { StylesConfig }  */from 'react-select';
 import './components/menusComponent.css';
 import { Plus, Trash2/* , X, ChevronRight, Users, Subtitles, CheckLine, Check, CheckIcon, CheckLineIcon, EllipsisVertical */ } from "lucide-react";
-
-import { ref, push, set, onValue } from "firebase/database";
+//import { onMessage } from "firebase/messaging";
+import { ref /* , push, update */, onValue} from "firebase/database";
 
 
 // import * as FirebaseHandle from '@common/firebase.js';
@@ -72,8 +72,7 @@ export default function App( {dbData} )
   //const [isAddFromThisDevice, setIsAddFromThisDevice] = useState(false);
 
   const [token, setToken] = useState("");
-  const [reminderText, setReminderText] = useState("");
-  const [scheduleDateTime, setScheduleDateTime] = useState("");
+  
   
   dataNotes = data['dataNotes'];
   dataChilds = data['dataChilds'];
@@ -102,23 +101,65 @@ export default function App( {dbData} )
                 }));
 
 
-  //** Fetch token on mount */
+  //** Fetch Reminder Notification token on mount */
   useEffect(() => 
   {
     if (isShowPasswordScreen) return;
 
     // ** Fetch token on mount */
-      FirebaseHandle.requestForToken()
+    FirebaseHandle.requestForToken()
                             .then((rToken) => setToken(rToken));
     
 
-    // Listen for foreground push events
-    FirebaseHandle.onMessageListener()     // onMessage()
-      .then((payload) => 
+    // 2. Listen for foreground messages forwarded by firebase-messaging-sw.js
+    const handleSwMessage = (event) => 
+    {
+      if (event.data?.type === "FOREGROUND_PUSH") 
       {
-        alert(`Foreground Notification: ${payload.notification.title} - ${payload.notification.body}`);
-      })
-      .catch((err) => console.log("failed: ", err));
+        const payload = event.data.payload;
+        console.log("Foreground reminder received:", payload.data, "objectID: " + String(payload.data?.objectID) + "  firebaseID: " + (payload.data?.firebaseID || ""));
+        // Play your alert sound
+        Globals.PlaySound("maybe-one-day.mp3");
+      }
+    };
+
+    if ("serviceWorker" in navigator) 
+    {
+      navigator.serviceWorker.addEventListener("message", handleSwMessage);
+    }
+
+    return () => 
+    {
+      if ("serviceWorker" in navigator) 
+      {
+        navigator.serviceWorker.removeEventListener("message", handleSwMessage);
+      }
+    };
+
+
+    // Listen for foreground messages (when the tab is open on screen)
+    // const unsubscribe = onMessage(FirebaseHandle.messaging, (payload) => 
+    // {
+    //   console.log("Foreground message received:", payload);
+
+    //   // 1. Play your custom notification sound
+    //   const audio = new Audio("./assets/audio/whatsapp_new_notification.mp3"); // Place alert.mp3 inside your public/ folder
+    //   audio.play().catch((err) => 
+    //   {
+    //     console.log("Browser blocked autoplay until user clicks on the page:", err);
+    //   });
+    // });
+    //return () => unsubscribe();
+
+    // Listen for foreground push events
+    //onMessage(FirebaseHandle.messaging)
+    //FirebaseHandle.onMessageListener()     // onMessage()
+      // .then((payload) => 
+      // {
+      //   alert(`Foreground Notification: ${payload.notification.title} - ${payload.notification.body}`);
+      // })
+      // .catch((err) => console.log("failed: ", err));
+       // Clean up listener when component unmounts
   }, [isShowPasswordScreen]);
 
 
@@ -193,9 +234,8 @@ export default function App( {dbData} )
 
 
   //** Save/Send scheduled Reminder notification*/
-  const saveScheduleReminder = async (recordObject) => 
+  const saveScheduleReminder = async (recordObject, saveMode) => 
   {
-      //e.preventDefault();
 
       if (!token /* || !reminderText || !scheduleDateTime */) 
       {
@@ -208,29 +248,41 @@ export default function App( {dbData} )
           return;
       }
 
-      // Convert selected date/time to a UNIX timestamp (milliseconds)
-      const targetTimestamp = new Date(recordObject.DateDue).getTime();
-      const textReminder = recordObject.DateDue + " - " + recordObject.Title;
-      //const targetTimestamp = new Date(scheduleDateTime).getTime();
-      // setReminderText(recordObject.Title);
-      // setScheduleDateTime(recordObject.DateDue);
-
       try 
       {
-        const remindersRef = ref(FirebaseHandle.database, "TBL_Reminders");
-        const json = {token: token, text: textReminder, scheduledTime: targetTimestamp};
-        const newReminderRef = await push(remindersRef, json);
+        // Convert selected date/time to a UNIX timestamp (milliseconds)
+        const targetTimestamp = new Date(recordObject.DateDue).getTime();
+        const textReminder = recordObject.DateDue + " - " + recordObject.Title;
+      
         
-        // await set(newReminderRef, 
-        // {
-        //   token: token,
-        //   text: reminderText,
-        //   scheduledTime: targetTimestamp
-        // });
+        var json =  {
+                      token: token, 
+                      text: textReminder, 
+                      scheduledTime: targetTimestamp,
+                      objectID: recordObject.NoteID,
+                      firebaseID: recordObject.FirebaseID,
+                      url: "/NoteID=" + String(recordObject.NoteID)
+                    };
+        
+        var tableName = "TBL_Reminders";
 
-        //notifierRef.current.success("Reminder scheduled successfully!");
-        setReminderText("");
-        setScheduleDateTime("");
+        //** When update scheduledTime, Delete All the old records for objectID */
+        if (saveMode===2)
+        {
+          const data = await FirebaseHandle.GetQuerySync(tableName, "objectID", recordObject.NoteID);
+          for (const record of data) 
+          {
+            await FirebaseHandle.DeleteRecord(tableName, record["firebaseID"]);
+          }
+        }
+        
+        //** Add Record to Reminder table */
+        const newRecoredID = await FirebaseHandle.InsertRecord(tableName, json);
+        json = {"firebaseID": newRecoredID};
+        await FirebaseHandle.UpdateField(tableName, newRecoredID, json);
+        //var remindersRef = ref(FirebaseHandle.database, tableName);
+        //const newRecoredID = await push(remindersRef, json);
+        //remindersRef = ref(FirebaseHandle.database, table + "/" + newRecoredID.key);
       } 
       catch (error) 
       {
@@ -291,9 +343,9 @@ export default function App( {dbData} )
     /// Set the Sub-Tasks objects to the Parent Task object, based on the NoteID
     dataNotes = Globals.setSubTasksToParent(dataNotes, dataChilds);
   
-    dataListTypes = await  mapToLookupObject('TBL_ListTypes');
-    dataStatuses = await  mapToLookupObject('TBL_Statuses');
-    dataSubject = await  mapToLookupObject('TBL_Subjects');
+    dataListTypes = await  Globals.mapToLookupObject('TBL_ListTypes');
+    dataStatuses = await  Globals.mapToLookupObject('TBL_Statuses');
+    dataSubject = await  Globals.mapToLookupObject('TBL_Subjects');
     
     //await FirebaseHandle.getDatabaseIndexFromFile("launch.json");
     // await FirebaseHandle.dispose();
@@ -318,17 +370,14 @@ export default function App( {dbData} )
   }
 
   /** When save SubTasks **/
-  async function handleSaveData( notesData, recordObject, isHandleScheduleReminder )
+  async function handleSaveData( notesData, recordObject, isHandleScheduleReminder, saveMode )
   {
       const newList = {...data, dataNotes: notesData }
       setData(newList);
-      //dbData = newList;
-      
-      //setSelectedItem(recordObject);
 
       if (recordObject && isHandleScheduleReminder)
       {
-        await saveScheduleReminder(recordObject);
+        await saveScheduleReminder(recordObject, saveMode);
       }
   }
 
@@ -339,7 +388,6 @@ export default function App( {dbData} )
     
     dataSubject = sortedList;
     const newList = {...data, dataSubject: dataSubject }
-    
     dbData = newList;
     setData(newList);
 
@@ -530,7 +578,7 @@ export default function App( {dbData} )
     setSelectedCode(2)
 
 
-    await FirebaseHandle.changeDatabase(3);
+    //await FirebaseHandle.changeDatabase(3);
 
     const dataBaseTable = await FirebaseHandle.GetTableDataSync('TBL_Databases');
 
@@ -553,7 +601,7 @@ export default function App( {dbData} )
                               top='210px' left='150px' width='1730px' height='870px' onSaveFuncName={onGridSaveFuncName} />
     );
 
-    await FirebaseHandle.changeDatabase(0);
+    //await FirebaseHandle.changeDatabase(0);
   }
 
   async function showDataGridStatuses()
@@ -619,6 +667,72 @@ export default function App( {dbData} )
 
   }
 
+  async function showDataGridSettings()
+  {
+    if (!isShowGrid)
+    {
+      const data = await  FirebaseHandle.GetTableDataSync('TBL_Settings');
+
+      const arrayColumns = [
+                            {caption: 'מזהה', fieldName: 'FirebaseID', type: 'number', width: '100px', color: '#303033'},
+                            {caption: 'תוכן', fieldName: 'BuzzerMinutes', type: 'number', width: '400px', color: '#303033'},
+                            {caption: 'תוכן', fieldName: 'EarlyAlarmMinutes', type: 'number', width: '400px', color: '#303033'},
+                            {caption: 'תוכן', fieldName: 'MainDataName', type: 'string', width: '400px', color: '#303033'},
+                            {caption: 'תוכן', fieldName: 'MainDatabaseUrl', type: 'string', width: '400px', color: '#303033'},
+                            {caption: 'תוכן', fieldName: 'DefaultDatabaseID', type: 'string', width: '400px', color: '#303033'},
+                            {caption: 'תוכן', fieldName: 'UserEmail', type: 'string', width: '400px', color: '#303033'},
+                            {caption: 'תוכן', fieldName: 'UserPassword', type: 'string', width: '400px', color: '#303033'},
+                           ];
+
+      GridHandle.GridReset();
+
+      setGridData(
+          <GridHandle.GridWidget 
+                        data={data} 
+                        title='פרמטרים כלליים' 
+                        tableName='TBL_Settings' 
+                        arrayColumns={arrayColumns} 
+                        top='120px' 
+                        left='150px' 
+                        width='2080px' 
+                        height='900px' 
+                        onSaveFuncName={onGridSaveFuncName} />);
+    }
+     
+    setIsShowGrid(!isShowGrid);
+    setSelectedCode(2)
+  }
+
+  async function showDataGridSubjects()
+  {
+    if (!isShowGrid)
+    {
+      const data = await  FirebaseHandle.GetTableDataSync('TBL_Subjects');
+
+      const arrayColumns = [
+                            {caption: 'מזהה', fieldName: 'ID', type: 'number', width: '100px', color: '#303033'},
+                            {caption: 'תוכן', fieldName: 'Description', type: 'string', width: '400px', color: '#303033'},
+                           ];
+
+      GridHandle.GridReset();
+
+      setGridData(
+          <GridHandle.GridWidget 
+                        data={data} 
+                        title='ניהול תגיות, מילות-מפתח' 
+                        tableName='TBL_Subjects' 
+                        arrayColumns={arrayColumns} 
+                        top='120px' 
+                        left='150px' 
+                        width='560px' 
+                        height='900px' 
+                        onSaveFuncName={onGridSaveFuncName} />);
+    }
+     
+    setIsShowGrid(!isShowGrid);
+    setSelectedCode(2)
+  }
+
   function GetMenuComponent()
   {
     //Globals.ControMoveAndResizeInitialize('database-window', controlWindow);
@@ -639,45 +753,51 @@ export default function App( {dbData} )
                 
                     {/* <!-- Level 1 Dropdown --> */}
                     <ul className="submenu">
-                        <li>
-                            <a href="#web-design" className="has-children" onClick={(e) => toggleMenu1()}>מסד-נתונים</a>
-                            {/* <!-- Level 2 Dropdown (Submenu) --> */}
-                            <ul className="submenu">
-                                <li>
-                                  <a key={21} href='#note'  className='has-children'>החלפת מסד</a>
-                                    <ul className="submenu" value={selectedDatabaseIndex}  style={{listStyleType: 'none', direction: 'ltr', textAlign: 'left', backgroundColor: '#edcb8b'}}  onChange={(e) => handleSelectDatabase(Number(e.target.value))} >
-                                    {
-                                        FirebaseHandle.DataBasesConfigList.map((item, index) =>
-                                        (
-                                            <li key={index} style={{width: '200px'}} onClick={(e) => handleSelectDatabase(index)}>
-                                              <a href={`#${index}`} > {`${index+1} - ${item.projectId}`} </a> 
-                                            </li>
-                                        ))
-                                    }
-                                    </ul>
-                                </li>
-                                
-                                <li><a key={22} href="#child" onClick={(e) => FirebaseHandle.changeIDs('TBL_Notes')}>צמצום מזהי פתקים</a></li>
-                                <li><a key={23} href="#database2" /* onClick={(e) => showDataGridDatabase()} */>פנויי</a></li>
-                            </ul>
-                        </li>
-                            
-                        {/* <!-- Nested Submenu Parent --> */}
-                        <li>
-                            <a href='#development' className="has-children">ניהול נתונים</a>
-                            <ul className="submenu">
-                                <li><a key={21} href='#note'          onClick={(e) => showDataGridNotes()} className='has-children'>טבלת פתקים</a></li>
-                                <li><a key={22} href="#child"         onClick={(e) => showDataGridChilds()}>טבלת בנים</a></li>
-                                <li><a key={23} href="#database"      onClick={(e) => showDataGridDatabase()}>טבלת מסד-נתונים</a></li>
-                                <li><a key={23} href="#database-main" onClick={(e) => showDataGridMainDatabase()}>טבלת מסד-נתונים מרכזי</a></li>
-                                <li><a key={23} href="#statuses"      onClick={(e) => showDataGridStatuses()}>טבלת סטטוסים</a></li>
-                                <li><a key={23} href="#list_types"    onClick={(e) => showDataGridListTypes()}>טבלת סוגי-פריט</a></li>
-                            </ul>
-                        </li>
-                        
-                        <li><a href="#marketing">שוק</a></li>
+                      {FirebaseHandle.G_UserID ===1 &&
+                            <li>
+                                <a href="#web-design" className="has-children" onClick={(e) => toggleMenu1()}>מסד-נתונים</a>
+                                {/* //**  Level 2 Dropdown (Submenu) */}
+                                <ul className="submenu">
+                                    {/*  Change DB */}
+                                    <li>
+                                      <a key={21} href='#note'  className='has-children'>החלפת מסד</a>
+                                        <ul className="submenu" value={selectedDatabaseIndex}  style={{listStyleType: 'none', direction: 'ltr', textAlign: 'left', backgroundColor: '#edcb8b'}}  onChange={(e) => handleSelectDatabase(Number(e.target.value))} >
+                                        {
+                                            FirebaseHandle.DataBasesConfigList.map((item, index) =>
+                                            (
+                                                <li key={index} style={{width: '200px'}} onClick={(e) => handleSelectDatabase(index)}>
+                                                  <a href={`#${index}`} > {`${index+1} - ${item.projectId}`} </a> 
+                                                </li>
+                                            ))
+                                        }
+                                        </ul>
+                                    </li>
+                                    
+                                    <li><a key={22} href="#child" onClick={(e) => FirebaseHandle.changeIDs('TBL_Notes')}>צמצום מזהי פתקים</a></li>
+                                    <li><a key={23} href="#database2" /* onClick={(e) => showDataGridDatabase()} */>פנויי</a></li>
+                                </ul>
+                            </li>
+                      }
+                                  
+                      {/* <!-- Nested Submenu Parent --> */}
+                      <li>
+                          <a href='#development' className="has-children">ניהול נתונים</a>
+                          <ul className="submenu">
+                              <li><a key={21} href='#note'          onClick={(e) => showDataGridNotes()} className='has-children'>טבלת פתקים</a></li>
+                              <li><a key={22} href="#child"         onClick={(e) => showDataGridChilds()}>טבלת בנים</a></li>
+                              <li><a key={23} href="#database"      onClick={(e) => showDataGridDatabase()}>טבלת מסד-נתונים</a></li>
+                              <li><a key={23} href="#database-main" onClick={(e) => showDataGridMainDatabase()}>טבלת מסד-נתונים מרכזי</a></li>
+                              <li><a key={23} href="#statuses"      onClick={(e) => showDataGridStatuses()}>טבלת סטטוסים</a></li>
+                              <li><a key={23} href="#list_types"    onClick={(e) => showDataGridListTypes()}>טבלת סוגי-פריט</a></li>
+                              <li><a key={23} href="#subjects"      onClick={(e) => showDataGridSubjects()}>טבלת תגיות, נושאים, מילות-מפתח</a></li>
+                              <li><a key={23} href="#setting"       onClick={(e) => showDataGridSettings()}>טבלת פרמטרים כלליים</a></li>
+                          </ul>
+                      </li>
+                      
+                      {/* <li><a href="#marketing">שוק</a></li> */}
                     </ul>
                 </li>
+                
     
               
                 <li key='3' className="nav-item">
@@ -828,25 +948,6 @@ export default function App( {dbData} )
   
 //   return await getData();
 // }
-
-
-
-async function mapToLookupObject(tableName)
-{
-  const date = await  FirebaseHandle.GetTableDataSync(tableName);
-
-  const dataTable = date.map((item) => 
-                  {
-                    return {
-                      label: item.Description,
-                      value: item.ID
-                    };
-                  });
-
-  const result = [...dataTable].sort((a, b) => String(a.label).localeCompare(String(b.label))); 
-
-  return ( result );
-}
 
 
 /*   {isWindowOpen && <FloatingWindow 
@@ -1282,7 +1383,6 @@ function ListDataItem({index, selectedIndex, itemObject, selectedItem, onSelecte
       dataNotes = newArray;
       /// Refresh Note data table
       await onSaveData(itemObject, false);
-      //onSelectedItem(selectedItem);
     }
     
   }
@@ -1317,7 +1417,7 @@ function ListDataItem({index, selectedIndex, itemObject, selectedItem, onSelecte
               }
             </div>
           </div>
-          <p style={{ fontSize: '14px', color: color, textAlign: 'right', direction: 'rtl', paddingRight: '36px', paddingBottom: ((itemObject.DateDue!=='') ? '0px' : '18px')}}>
+          <p style={{ fontSize: '15px', color: color, textAlign: 'right', direction: 'rtl', paddingRight: '36px', paddingBottom: ((itemObject.DateDue!=='') ? '0px' : '18px')}}>
           {
             (itemObject.DateDue!=='') ? Globals.dateSetFormatHebrew(itemObject.DateDue) : ''
           }
@@ -1587,8 +1687,6 @@ function NoteScreen({ selectedItem, onSelectedItem, onSaveData, onSaveLookup })
           {
             message = "שגיאה בהוספת הפריט!";
           } 
-
-          //setSaveMode(saveModeEn.UPDATE);
           break;
 
         case saveModeEn.UPDATE:
@@ -1649,8 +1747,6 @@ function NoteScreen({ selectedItem, onSelectedItem, onSaveData, onSaveLookup })
           {
             notifierRef.current.alert("שגיאה בפעולת המחיקה!");
           } 
-
-          setSaveMode(2);
           break;
 
         default:
@@ -1665,7 +1761,7 @@ function NoteScreen({ selectedItem, onSelectedItem, onSaveData, onSaveLookup })
       }
 
       /// Refresh Note data table
-      await onSaveData(dataNotes, selectedObject, true);
+      await onSaveData(dataNotes, selectedObject, true, save);
 
       /// After Refresh records, Point to the Updated note
       if (saveMode === saveModeEn.INSERT || saveMode === saveModeEn.UPDATE)

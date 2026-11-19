@@ -26,22 +26,18 @@ module.exports = async function handler(req, res)
     }
 
 
-    const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
-    //console.log("process.env.FIREBASE_SERVICE_ACCOUNT: " + process.env.FIREBASE_SERVICE_ACCOUNT);
-
-
+    const rawServiceAccounts = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
     const rawUrls = process.env.FIREBASE_DATABASE_URLS || process.env.FIREBASE_DATABASE_URL || "";
 
     const databaseUrls = rawUrls.split(";").map((url) => url.trim()).filter(Boolean);
     const databaseUrlsClean = databaseUrls.map((item) => item.split("?")[0].replace(/\/$/, ""));
-    console.log("databaseUrlsClean: " + databaseUrlsClean[0] + '\n' + databaseUrlsClean[1]+ '\n');
-    const serviceAccounts   = databaseUrls.map((item) => JSON.parse(item.split("?")[1]));
-    console.log("serviceAccounts: " + serviceAccounts[0] + '\n' + serviceAccounts[1] + '\n');
-    var firebaseConfigs   = databaseUrls.map((item) => item.split("?")[2]);
-    console.log("firebaseConfigs: " + firebaseConfigs[0] + '\n' + firebaseConfigs[1]+ '\n');
+    const serviceAccounts   = rawServiceAccounts.map((item) => JSON.parse(item.split("?")[0]));
+    var firebaseConfigs   = databaseUrls.map((item) => item.split("?")[1]);
     firebaseConfigs = firebaseConfigs.map((item) => JSON.parse(item));
-    //console.log("firebaseConfigs+Json: " + firebaseConfigs[0] + '\n' + firebaseConfigs[1]+ '\n');
 
+    console.log("databaseUrlsClean: " + databaseUrlsClean[0] + '\n' + databaseUrlsClean[1]+ '\n');
+    console.log("firebaseConfigs: " + firebaseConfigs[0] + '\n' + firebaseConfigs[1]+ '\n');
+    console.log("serviceAccounts: " + serviceAccounts[0] + '\n' + serviceAccounts[1] + '\n');
     //console.log("databaseUrlsClean: " + databaseUrlsClean[0] + "\n" + "serviceAccounts: " + serviceAccounts[0] + "\n" + "firebaseConfigs: " + firebaseConfigs[0]);
 
 
@@ -155,7 +151,8 @@ module.exports = async function handler(req, res)
         }
 
         const data = snapshot.val();
-        //console.log("After search records, find "+ data.length.toString() + "records");
+        console.log("After search records, find "+ Object.keys(data).length.toString() + "records");
+        
         let sentCount = 0;
 
         for (const id in data) 
@@ -194,6 +191,7 @@ module.exports = async function handler(req, res)
               {
                 title: "⏰ תזכורת!",
                 body: reminder.text,
+                objectID: objectID,
                 firebaseID: firebaseID, 
                 url: "/NoteID=" + objectID,
               },

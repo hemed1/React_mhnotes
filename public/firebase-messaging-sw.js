@@ -12,10 +12,15 @@ self.addEventListener("push", function (event)
     const payload = event.data.json();
     console.log("Push message received in SW:", payload);
 
-    const title = payload.notification?.title || payload.data?.title || "⏰ תזכורת!";
+    const payloadData= payload.data || {};
+    const objectID = String(payloadData.objectID ?? "0");
+    const firebaseID = String(payloadData.firebaseID ?? "");
+
+
+    const title = payload.notification?.title || payloadData.title || "⏰ תזכורת!";
     const options = 
     {
-      body: payload.notification?.body || payload.data?.body || "יש לך תזכורת למשימה",
+      body: payload.notification?.body || payloadData.body || "יש לך תזכורת למשימה",
       icon: "/note_small.png",
       badge: "/note_small.png",
       image: "/note_big.jpg",
@@ -28,9 +33,9 @@ self.addEventListener("push", function (event)
       ],
       data: 
       {
-        url: payload.data?.url || self.location.origin,
-        objectID: payload.data?.NoteID || "",
-        firebaseID: payload.data?.firebaseID || "",
+        url: payloadData.url || self.location.origin,
+        objectID: objectID,
+        firebaseID: firebaseID,
       },
     };
 
@@ -61,12 +66,19 @@ self.addEventListener("notificationclick", function (event)
 {
   let url = event.notification.data?.url || "/";
   //url += String(url).endsWith("/") ? "" : "/";
+  const objectID = String(event.notification.data?.objectID ?? "0");
+  const firebaseID = String(event.notification.data?.firebaseID ?? "");
 
-  console.log(
-    "objectID: " + String(event.notification.data?.objectID) +
-    "   FirebaseID: " + event.notification.data?.FirebaseID +
-    "   Url: " + url
-  );
+  console.log(`When Click on notification - objectID: ${objectID} FirebaseID: ${firebaseID} Url: ${url}`);
+
+  if (objectID === "0" && firebaseID)
+  {
+    url = url.replace("NoteID", "FirebaseID");
+    const pos = url.indexOf("=");
+    url = url.substring(0, pos+1) + firebaseID;
+    console.log("Fix URL when FirebaseID With Value and objectID withOut:  Url=" + url);
+  }
+
 
   event.notification.close();
 

@@ -26,7 +26,7 @@ module.exports = async function handler(req, res)
     }
 
 
-    const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+    //const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
     //console.log("process.env.FIREBASE_SERVICE_ACCOUNT: " + process.env.FIREBASE_SERVICE_ACCOUNT);
 
 
@@ -155,31 +155,37 @@ module.exports = async function handler(req, res)
         }
 
         const data = snapshot.val();
-        //console.log("After search records, find "+ data.length.toString() + "records");
+
+        console.log("After search found "+ data.length.toString() + " reminders record");
         let sentCount = 0;
 
         for (const id in data) 
         {
-          const reminder = data[id];
+            const reminder = data[id];
 
-          console.log("--- SENDING DEBUG ---");
-          console.log("Loop Index:", i);
-          console.log("App Name:", app.name);
-          console.log("App Options ProjectId:", app.options.credential.projectId);
-          console.log("Database URL:", configs[i].databaseURL);
-          console.log("Reminder ID:", id);
-          console.log("Token (first 25 chars):", reminder.token?.substring(0, 25));
-
-
-          
-          // Skip if token is missing
-          if (!reminder.token) 
+            //** TODO: Just when need Check *//
+            // console.log("--- SENDING DEBUG ---");
+            // console.log("Loop Index:", i);
+            // console.log("App Name:", app.name);
+            // console.log("App Options ProjectId:", app.options.credential.projectId);
+            // console.log("Database URL:", configs[i].databaseURL);
+            // console.log("Reminder ID:", id);
+            // console.log("Token (first 25 chars):", reminder.token?.substring(0, 25));
+            
+            // Skip if token is missing
+            if (!reminder.token) 
             {
               console.error(`Error: No Token for: ${url}:`);
               //await remindersRef.child(id).remove();
               continue;
             }
             
+            
+            const objectID = String(reminder.objectID ?? "0");
+            const firebaseID = String(reminder.firebaseID || id); // Falls back to the RTDB push key 'id'
+
+            console.log(`Prepared reminder -> objectID: ${objectID}, firebaseID: ${firebaseID}`);
+
             const message = 
             {
               notification: 
@@ -191,15 +197,16 @@ module.exports = async function handler(req, res)
               {
                 title: "⏰ תזכורת!",
                 body: reminder.text,
-                url: "/",
+                objectID: objectID,
+                firebaseID: firebaseID,
+                url: "/NoteID=" + objectID
               },
               token: reminder.token,
             };
             
             try
             {
-              console.log("Sending message...");
-              
+              console.log("Sending FCM message:", JSON.stringify(message, null, 2), String(objectID) + " - " + reminder.text);
               await getMessaging(app).send(message);
 
               await remindersRef.child(id).remove();

@@ -26,7 +26,7 @@ module.exports = async function handler(req, res)
     }
 
 
-    const rawServiceAccounts = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+    const rawServiceAccounts = process.env.FIREBASE_SERVICE_ACCOUNT;
     const rawUrls = process.env.FIREBASE_DATABASE_URLS || process.env.FIREBASE_DATABASE_URL || "";
 
     const databaseUrls = rawUrls.split(";").map((url) => url.trim()).filter(Boolean);

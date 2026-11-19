@@ -6,26 +6,16 @@ self.addEventListener("push", function (event)
   if (!event.data) return;
 
 
+
   try 
   {
     const payload = event.data.json();
+    console.log("Push message received in SW:", payload);
 
-    const rawData = payload.data || {};
-    const objectID = rawData.objectID || rawData["gcm.notification.objectID"] || "0";
-    const firebaseID = rawData.firebaseID || rawData["gcm.notification.firebaseID"] || "";
-
-    const customData = payload.data || {};
-
-    // This prints the exact raw structure FCM sent to the browser:
-    console.log("RAW_FCM_PAYLOAD:", JSON.stringify(payload));
-    console.log("Push message received in SW:", payload, "objectID:", objectID, "firebaseID:", firebaseID);
-    
-
-    const title = payload.notification?.title || customData.title || "⏰ תזכורת!";
-    
+    const title = payload.notification?.title || payload.data?.title || "⏰ תזכורת!";
     const options = 
     {
-      body: payload.notification?.body || customData.body || "יש לך תזכורת למשימה",
+      body: payload.notification?.body || payload.data?.body || "יש לך תזכורת למשימה",
       icon: "/note_small.png",
       badge: "/note_small.png",
       image: "/note_big.jpg",
@@ -38,25 +28,19 @@ self.addEventListener("push", function (event)
       ],
       data: 
       {
-        url: customData.url || self.location.origin,
-        objectID: String(objectID ?? "0"),
-        firebaseID: String(firebaseID ?? ""), // Fixed casing to match notificationclick
+        url: payload.data?.url || self.location.origin,
+        objectID: payload.data?.NoteID || "",
+        firebaseID: payload.data?.firebaseID || "",
       },
     };
 
-
-
-     // Forward the payload to any open React tab so it can play sound
     const promiseChain = self.clients
       .matchAll({ type: "window", includeUncontrolled: true })
-      .then((windowClients) => 
-      {
+      .then((windowClients) => {
         // Forward the payload to any open React tab so it can play sound
-        windowClients.forEach((client) => 
-        {
+        windowClients.forEach((client) => {
           client.postMessage({ type: "FOREGROUND_PUSH", payload });
         });
-
 
         // Show the OS notification banner
         return self.registration.showNotification(title, options);
@@ -72,18 +56,17 @@ self.addEventListener("push", function (event)
 });
 
 
-
 // 5. Handle notification clicks
 self.addEventListener("notificationclick", function (event) 
 {
   let url = event.notification.data?.url || "/";
   //url += String(url).endsWith("/") ? "" : "/";
-  
 
-  console.log("When Click on notification - objectID: " + 
-              String(event.notification.data?.objectID ?? "0") + 
-              "   FirebaseID: " + (event.notification.data?.firebaseID || "") +
-              "   Url: " + url);
+  console.log(
+    "objectID: " + String(event.notification.data?.objectID) +
+    "   FirebaseID: " + event.notification.data?.FirebaseID +
+    "   Url: " + url
+  );
 
   event.notification.close();
 

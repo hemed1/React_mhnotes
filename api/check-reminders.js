@@ -32,16 +32,16 @@ module.exports = async function handler(req, res)
     const databaseUrls = rawUrls.split(";").map((url) => url.trim()).filter(Boolean);
     const databaseUrlsClean = databaseUrls.map((item) => item.split("?")[0].replace(/\/$/, ""));
     var firebaseConfigs     = databaseUrls.map((item) => item.split("?")[1]);
-    firebaseConfigs         = firebaseConfigs.map((item) => JSON.parse(item));
     var serviceAccounts     = rawServiceAccounts.split("?");  
+    //firebaseConfigs         = firebaseConfigs.map((item) => JSON.parse(item));
  
     console.log("databaseUrlsClean: " + databaseUrlsClean[0] + '\n' + databaseUrlsClean[1]+ '\n');
     console.log("firebaseConfigs: " + firebaseConfigs[0] + '\n' + firebaseConfigs[1]+ '\n');
     console.log("serviceAccounts: " + serviceAccounts[0] + '\n' + serviceAccounts[1] + '\n');
     //console.log("databaseUrlsClean: " + databaseUrlsClean[0] + "\n" + "serviceAccounts: " + serviceAccounts[0] + "\n" + "firebaseConfigs: " + firebaseConfigs[0]);
 
-    serviceAccounts = serviceAccounts.map((item) => JSON.parse(item));
-    console.log("serviceAccounts fix: " + serviceAccounts[0] + '\n' + serviceAccounts[1] + '\n');
+    //serviceAccounts = serviceAccounts.map((item) => JSON.parse(item));
+    //console.log("serviceAccounts fix: " + serviceAccounts[0] + '\n' + serviceAccounts[1] + '\n');
 
     if (databaseUrls.length === 0) 
     {

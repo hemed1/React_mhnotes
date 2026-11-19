@@ -108,7 +108,7 @@ export default function App( {dbData} )
 
     // ** Fetch token on mount */
     FirebaseHandle.requestForToken()
-                            .then((rToken) => setToken(rToken));
+                            .then((token) => setToken(token));
     
 
     // 2. Listen for foreground messages forwarded by firebase-messaging-sw.js
@@ -117,9 +117,9 @@ export default function App( {dbData} )
       if (event.data?.type === "FOREGROUND_PUSH") 
       {
         const payload = event.data.payload;
-        console.log("Foreground reminder received:", payload.data, "objectID: " + String(payload.data?.objectID) + "  firebaseID: " + (payload.data?.firebaseID || ""));
+        console.log("Foreground reminder received:", payload.data, "objectID: " + String(payload.data?.objectID ?? "0") + "  firebaseID: " + String(payload.data?.firebaseID ?? ""));
         // Play your alert sound
-        Globals.PlaySound("maybe-one-day.mp3");
+        Globals.PlaySound("inflicted.mp3");
       }
     };
 

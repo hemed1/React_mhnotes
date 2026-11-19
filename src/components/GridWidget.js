@@ -308,18 +308,18 @@ export function GridWidget( {data, title, tableName, arrayColumns,
       setSearchArray(original);
   }
 
-  function handleFilter(mode)
-  {
-      switch (mode)
-      {
-         default:
-         case 1:   // Today
-            const today = new Date();
-            const todayStr = today.toISOString().split('T')[0];
-            handleSearch(arrayColumns.findIndex((item) => item.fieldName === 'DateDue'), todayStr);
-            break;
-      }
-  }
+//   function handleFilter(mode)
+//   {
+//       switch (mode)
+//       {
+//          default:
+//          case 1:   // Today
+//             const today = new Date();
+//             const todayStr = today.toISOString().split('T')[0];
+//             handleSearch(arrayColumns.findIndex((item) => item.fieldName === 'DateDue'), todayStr);
+//             break;
+//       }
+//   }
 
   function getIDValue(record)
   {

@@ -82,20 +82,12 @@ console.log("Scheduler backend worker initialized successfully!");
 
 cron.schedule("*/1 * * * *", async () => 
 {
-  const now = Date.now();
-  console.log(/* new Date(now).toLocaleTimeString() *//* .substring(0, 16)  + " - " +*/ "Checking for due reminders...");
+    const now = Date.now();
+    console.log(new Date(now).toLocaleTimeString() + " - " + "Checking for due reminders...");
 
-  //** In case of Multiple Realtime Databases */
-  //for (const url of databaseUrls) {
 
     try 
-    {
-      // in case of Multiple Realtime Databases - Dynamically connect to each database URL */
-      // const db = getDatabase(url);
-      // const remindersRef = db.ref("TBL_Reminders");
-      // console.log("Will check on DB - " + url);
-
-     
+    {     
      // Look up the database reference
       const remindersRef = db.ref("TBL_Reminders");
 
@@ -127,9 +119,11 @@ cron.schedule("*/1 * * * *", async () =>
           {
             title: "⏰ תזכורת!",
             body: reminder.text,
-            url: "/"
+            objectID: reminder.NoteID,
+            fireebaseID: reminder.FirebaseID,
+            url: "/NoteID="+ String(reminder.NoteID)
           },
-          token: reminder.token
+          token: reminder.token,
         };
 
         try 

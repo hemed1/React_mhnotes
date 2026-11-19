@@ -1,49 +1,216 @@
+
 // Listen for push notifications sent from Firebase Cloud Messaging
-self.addEventListener('push', function(event) 
+self.addEventListener("push", function (event) 
 {
-  if (event.data) 
+
+  if (!event.data) return;
+
+
+  try 
   {
-    try 
-    {
-      const payload = event.data.json();
-      console.log('Background message received: ', payload);
+    const payload = event.data.json();
 
-      // Extract the notification details from the FCM payload
-      const title = payload.notification?.title || payload.data?.title || '⏰ תזכורת!';
-      const options = {
-        body: payload.notification?.body || payload.data?.body || 'יש לך תזכורת למשימה',    // 'You have a pending notification.',
-        icon: '/note_small.png',    // Square app icon
-        badge: '/note_small.png',   // Small status-bar icon
-        image: "/note_big.jpg",     // Optional wide picture inside the notification
-        requireInteraction: true,   // Keeps the banner visible until the user clicks or closes it
-        actions: [
-          { action: "open", title: "פתח משימה" },
-          { action: "dismiss", title: "סגור" }
-        ],
-        //vibrate:,
-        data: {url: self.location.origin}  // Opens your website when clicked
-      };
+    const rawData = payload.data || {};
+    const objectID = rawData.objectID || rawData["gcm.notification.objectID"] || "0";
+    const firebaseID = rawData.firebaseID || rawData["gcm.notification.firebaseID"] || "";
 
-      event.waitUntil(self.registration.showNotification(title, options));
-    } 
-    catch (e) 
+    const customData = payload.data || {};
+
+    // This prints the exact raw structure FCM sent to the browser:
+    console.log("RAW_FCM_PAYLOAD:", JSON.stringify(payload));
+    console.log("Push message received in SW:", payload, "objectID:", objectID, "firebaseID:", firebaseID);
+    
+
+    const title = payload.notification?.title || customData.title || "⏰ תזכורת!";
+    
+    const options = 
     {
-      console.error('Error parsing push data:', e);
-    }
+      body: payload.notification?.body || customData.body || "יש לך תזכורת למשימה",
+      icon: "/note_small.png",
+      badge: "/note_small.png",
+      image: "/note_big.jpg",
+      requireInteraction: true,
+      silent: false,
+      actions: 
+      [
+        { action: "open", title: "פתח משימה" },
+        { action: "dismiss", title: "סגור" },
+      ],
+      data: 
+      {
+        url: customData.url || self.location.origin,
+        objectID: String(objectID ?? "0"),
+        firebaseID: String(firebaseID ?? ""), // Fixed casing to match notificationclick
+      },
+    };
+
+
+
+     // Forward the payload to any open React tab so it can play sound
+    const promiseChain = self.clients
+      .matchAll({ type: "window", includeUncontrolled: true })
+      .then((windowClients) => 
+      {
+        // Forward the payload to any open React tab so it can play sound
+        windowClients.forEach((client) => 
+        {
+          client.postMessage({ type: "FOREGROUND_PUSH", payload });
+        });
+
+
+        // Show the OS notification banner
+        return self.registration.showNotification(title, options);
+      });
+
+    event.waitUntil(promiseChain);
+    
+  } 
+  catch (e) 
+  {
+    console.error("Error parsing push data:", e);
   }
 });
 
-// Optional: Open the app when the user clicks the notification
-self.addEventListener('notificationclick', function(event) 
+
+
+// 5. Handle notification clicks
+self.addEventListener("notificationclick", function (event) 
 {
+  let url = event.notification.data?.url || "/";
+  //url += String(url).endsWith("/") ? "" : "/";
+  
+
+  console.log("When Click on notification - objectID: " + 
+              String(event.notification.data?.objectID ?? "0") + 
+              "   FirebaseID: " + (event.notification.data?.firebaseID || "") +
+              "   Url: " + url);
+
   event.notification.close();
 
   if (event.action === "dismiss") 
   {
     return;
   }
-  event.waitUntil(clients.openWindow(event.notification.data?.url || '/'));
+
+  event.waitUntil(clients.openWindow(url));
 });
+
+
+
+
+
+/// 1. Import Firebase Compat SDKs (required inside Service Workers)
+// importScripts("https://gstatic.com");
+// importScripts("https://gstatic.com");
+
+// 2. Read the active project's config passed from React via URL query params
+//const params = new URL(location).searchParams;
+// const params = new URL(self.location.href).searchParams;
+
+// const apiKey = params.get("apiKey");
+// if (apiKey) 
+// {
+//   console.log("initializeApp: "+apiKey);
+//   firebase.initializeApp({
+//     apiKey: apiKey,
+//     authDomain: params.get("authDomain") || "",
+//     projectId: params.get("projectId") || "",
+//     storageBucket: params.get("storageBucket") || "",
+//     messagingSenderId: params.get("messagingSenderId") || "",
+//     appId: params.get("appId") || "",
+//   });
+// }
+
+
+// // 3. Initialize Firebase Messaging (this enables the bridge to React's onMessage)
+// const messaging = firebase.messaging();
+
+// // 4. Handle background messages (runs ONLY when the app tab is closed or hidden)
+// messaging.onBackgroundMessage(function (payload) 
+// {
+//   console.log("Background message received: ", payload);
+
+//   const title = payload.notification?.title || payload.data?.title || "⏰ תזכורת!";
+//   const options = {
+//     body: payload.notification?.body || payload.data?.body || "יש לך תזכורת למשימה",
+//     icon: "/note_small.png",
+//     badge: "/note_small.png",
+//     image: "/note_big.jpg",
+//     requireInteraction: true,
+//     silent: false,
+//     actions: 
+//     [
+//       { action: "open", title: "פתח משימה" },
+//       { action: "dismiss", title: "סגור" },
+//     ],
+//     data: 
+//     {
+//       url: payload.data?.url || self.location.origin,
+//       objectID: payload.data?.objectID || "",
+//       firebaseId: payload.data?.firebaseID || "",
+//     },
+//   };
+
+//   return self.registration.showNotification(title, options);
+// });
+
+
+
+
+
+
+
+// // Listen for push notifications sent from Firebase Cloud Messaging
+// self.addEventListener('push', function(event) 
+// {
+//   if (event.data) 
+//   {
+//     try 
+//     {
+//       const payload = event.data.json();
+//       console.log('Background message received: ', payload);
+
+//       // Extract the notification details from the FCM payload
+//       const title = payload.notification?.title || payload.data?.title || '⏰ תזכורת!';
+//       const options = 
+//       {
+//         body: payload.notification?.body || payload.data?.body || 'יש לך תזכורת למשימה',    // 'You have a pending notification.',
+//         icon: '/note_small.png',    // Square app icon
+//         badge: '/note_small.png',   // Small status-bar icon
+//         image: "/note_big.jpg",     // Optional wide picture inside the notification
+//         requireInteraction: true,   // Keeps the banner visible until the user clicks or closes it
+//         actions: [
+//           { action: "open", title: "פתח משימה" },
+//           { action: "dismiss", title: "סגור" }
+//         ],
+//         //vibrate:,
+//         data: {url: self.location.origin}  // Opens your website when clicked
+//       };
+
+//       event.waitUntil(self.registration.showNotification(title, options));
+//     } 
+//     catch (e) 
+//     {
+//       console.error('Error parsing push data:', e);
+//     }
+//   }
+// });
+
+
+
+
+// // Optional: Open the app when the user clicks the notification
+// self.addEventListener('notificationclick', function(event) 
+// {
+//   event.notification.close();
+
+//   if (event.action === "dismiss") 
+//   {
+//     return;
+//   }
+//   event.waitUntil(clients.openWindow(event.notification.data?.url || '/'));
+// });
+
 
 
 

@@ -33,8 +33,8 @@ module.exports = async function handler(req, res)
     const databaseUrlsClean = databaseUrls.map((item) => item.split("?")[0].replace(/\/$/, ""));
     var firebaseConfigs     = databaseUrls.map((item) => item.split("?")[1]);
     firebaseConfigs         = firebaseConfigs.map((item) => JSON.parse(item));
-    var serviceAccounts     = rawServiceAccounts.split("?");
-
+    var serviceAccounts     = rawServiceAccounts.split("?");  
+ 
     console.log("databaseUrlsClean: " + databaseUrlsClean[0] + '\n' + databaseUrlsClean[1]+ '\n');
     console.log("firebaseConfigs: " + firebaseConfigs[0] + '\n' + firebaseConfigs[1]+ '\n');
     console.log("serviceAccounts: " + serviceAccounts[0] + '\n' + serviceAccounts[1] + '\n');

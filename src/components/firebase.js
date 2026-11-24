@@ -487,10 +487,6 @@ export async function InsertRecord( tableName, values )
             {
                 values["FirebaseID"] = snapshot.key;
             }
-            // if (values["firebaseID"] !== null && values["firebaseID"] !== undefined)
-            // {
-            //     values["firebaseID"] = snapshot.key;
-            // }
             if (values["id"] !== null && values["id"] !== undefined)
             {
                 values["id"] = snapshot.key;

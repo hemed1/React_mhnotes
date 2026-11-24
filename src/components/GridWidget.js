@@ -50,7 +50,7 @@ export function GridWidget( {data, title, tableName, arrayColumns,
       }
       setSearchArray(list);
       setDataItems(data);
-      data.filter((item) => getFilterQuery(item))
+      data.filter((item) => setSums(item))
    }
 
 
@@ -344,7 +344,6 @@ export function GridWidget( {data, title, tableName, arrayColumns,
       var i=0;
       var found = true;
 
-
       //** Filter data by Search line */
       for (i=0; i<searchArray.length; i++)
       {
@@ -359,22 +358,22 @@ export function GridWidget( {data, title, tableName, arrayColumns,
          }
       }
 
-
-      //** Sum Columns */
-      for (i=0; i<arrayColumns.length; i++)
-      {
-         const column = arrayColumns[i]; 
-         if (column['isSum'] !== undefined)
-         {
-            column['isSum'] += record[column.fieldName];
-         }
-      }
-
+      setSums(record);
 
       return found;
   }
 
+  //** Sum Columns */
+  function setSums(record)
+  {
+      const sumColumns = arrayColumns.filter((item) => item["isSum"] !== undefined);
 
+      for (i=0; i<sumColumns.length; i++)
+      {
+         const column = sumColumns[i]; 
+         column['isSum'] += record[column.fieldName];
+      }
+   }
 
 
 
@@ -411,23 +410,23 @@ export function GridWidget( {data, title, tableName, arrayColumns,
 
          {/* // Search */}
          {isWithSearch &&
-                  <div style={{display: 'flex', flexDirection: 'row', gap: '1px', paddingRight: '6px'}}>
-                     {searchArray.map((col, colIndex) =>
-                        <input type="text"
-                              style={{
-                                       backgroundColor: 'rgba(164, 201, 237, 0.5)', 
-                                       color: '#fff',
-                                       minWidth: arrayColumns[colIndex].width,      //String(Number(arrayColumns[colIndex].width.substring(0, arrayColumns[colIndex].width.length - 2))-10)+'px',  
-                                       paddingLeft: '7px', 
-                                       paddingRight: '7px', 
-                                       marginBottom: '7px',
-                                       marginLeft: '0px',
-                                       marginRight: '0px',
-                                       boxSizing: 'border-box' }}    /* , minWidth: '3000px'   */
-                              value={String(col['value'])}
-                              onChange={(e) => handleSearch(colIndex, e.target.value)}/>
-                     )}
-                  </div>
+               <div style={{display: 'flex', flexDirection: 'row', gap: '1px', paddingRight: '6px'}}>
+                  {searchArray.map((col, colIndex) =>
+                     <input type="text"
+                           style={{
+                                    backgroundColor: 'rgba(164, 201, 237, 0.5)', 
+                                    color: '#fff',
+                                    minWidth: arrayColumns[colIndex].width,      //String(Number(arrayColumns[colIndex].width.substring(0, arrayColumns[colIndex].width.length - 2))-10)+'px',  
+                                    paddingLeft: '7px', 
+                                    paddingRight: '7px', 
+                                    marginBottom: '7px',
+                                    marginLeft: '0px',
+                                    marginRight: '0px',
+                                    boxSizing: 'border-box' }}    /* , minWidth: '3000px'   */
+                           value={String(col['value'])}
+                           onChange={(e) => handleSearch(colIndex, e.target.value)}/>
+                  )}
+               </div>
          }
 
          <table  style={{tableLayout: 'fixed', borderCollapse: 'collapse'}}>   
@@ -468,7 +467,8 @@ export function GridWidget( {data, title, tableName, arrayColumns,
                                        ?  (col.lookupTable === undefined || col.lookupTable === null || col.lookupTable.length === 0) 
                                           ? String(item[col.fieldName])  
                                           : (col.lookupTable.find((lookupItem) => lookupItem.value === item[col.fieldName]))?.label || String(item[col.fieldName])
-                                       : (col['isCanEdit']===undefined || col['isCanEdit']===true) 
+
+                                       : (col['isCanEdit'] === undefined || col['isCanEdit'] === true) 
                                           ? (<input 
                                                 type='text'     //{(col.type==='number') ? "number": "text"}
                                                 style={{width: String(Number(col.width.substring(0, col.width.length - 2))-25)+'px'}}

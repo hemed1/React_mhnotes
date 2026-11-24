@@ -52,7 +52,7 @@ const newRowId = () => `row-${Date.now()}-${rowCounter++}`;
 // let app ;  //= initializeApp(firebaseConfig);
 // let database; // = getDatabase(app);
 
-var isAddFromThisDevice = false;
+var isAddFromThisDevice = true;
 var notifierRef;
 
 
@@ -107,10 +107,8 @@ export default function App( {dbData} )
     if (isShowPasswordScreen) return;
 
     // ** Fetch token on mount */
-    FirebaseHandle.requestForToken()
-                            .then((token) => setToken(token));
+    FirebaseHandle.requestForToken().then((token) => setToken(token));
     
-
     // 2. Listen for foreground messages forwarded by firebase-messaging-sw.js
     const handleSwMessage = (event) => 
     {
@@ -135,7 +133,6 @@ export default function App( {dbData} )
         navigator.serviceWorker.removeEventListener("message", handleSwMessage);
       }
     };
-
 
     // Listen for foreground messages (when the tab is open on screen)
     // const unsubscribe = onMessage(FirebaseHandle.messaging, (payload) => 
@@ -176,41 +173,41 @@ export default function App( {dbData} )
                                           {
                                             if (snapshot.exists()) 
                                             {
-                                              if (snapshot.val()) 
-                                              {
-                                                console.debug("🟢 Get data live from Firebase server!");
-                                              } 
-                                              else 
-                                              {
-                                                console.debug("🔴 Error when get data! Listening only to local cache.");
-                                              }
+                                              // if (snapshot.val()) 
+                                              // {
+                                              //   console.debug("🟢 Get data live from Firebase server!");
+                                              // } 
+                                              // else 
+                                              // {
+                                              //   console.debug("🔴 Error when get data! Listening only to local cache.");
+                                              // }
                                               const dataItems = [];
                                               let formattedData;
-                                              snapshot.forEach( (childSnapshot) => 
-                                                                {
-                                                                  const record = childSnapshot.val();
-                                                                  formattedData = {...record, FirebaseID: childSnapshot.key};      //Object.keys(record).map(key => ({...record, id: key }));
-                                                                  if (record['id']!==undefined)
+                                              const isFromThisDevice = FirebaseHandle.getIsUpdatingInInsertMode();
+                                              if (!isFromThisDevice)
+                                              {
+                                                snapshot.forEach( (childSnapshot) => 
                                                                   {
-                                                                    formattedData = {...record, id: childSnapshot.key} 
-                                                                  }
-                                                                  // if (record['ID']!==undefined)
-                                                                  // {
-                                                                  //   formattedData = {...record, ID: childSnapshot.key} 
-                                                                  // }
-                                                                  dataItems.push( formattedData )});
+                                                                    const record = childSnapshot.val();
+                                                                    formattedData = {...record, FirebaseID: childSnapshot.key};      //Object.keys(record).map(key => ({...record, id: key }));
+                                                                    if (record['id']!==undefined)
+                                                                    {
+                                                                      formattedData = {...record, id: childSnapshot.key} 
+                                                                    }
+                                                                    dataItems.push( formattedData )});
+                                              }
                                               /// Function to execute - will Fired when other device add/update records
                                               const func = FirebaseHandle.getFuncWhenUpdate();
-                                              const isFromThisDevice = FirebaseHandle.getIsUpdatingInInsertMode();
-                                              if (isFromThisDevice)
-                                              {
-                                                isAddFromThisDevice = isFromThisDevice;
-                                              }
                                               if (func !== null && !isFromThisDevice) 
                                               {
                                                 func();
                                               }
-                                              ListenToDB(dataItems);
+                                              if (!isFromThisDevice)
+                                              {
+                                                //** Load fresh data feom DB */
+                                                ListenToDB(dataItems);
+                                              }
+
                                               return (dataItems)
                                             }
                                             return ([]);
@@ -224,6 +221,9 @@ export default function App( {dbData} )
                                             //setLoading(false);
                                             return ([]);
                                           }); 
+
+                                           /** Load data from DB when other device add/update records */
+    // FirebaseHandle.setFuncWhenUpdate(eventWhenUpdated);
 
     // Execute the Function var
     return () => firebaseData();
@@ -296,13 +296,13 @@ export default function App( {dbData} )
     // NOT need - Come from parameter 'newData'
     //var newData = UseListenToDatabase("TBL_Notes");
     
-    if (isListenDatabase && newData && newData?.length > 0) 
+    if (isListenDatabase && newData && newData.length > 0) 
     {
       setIsListenDatabase(false);
       
       /** Set the Sub-Tasks objects to the Parent Task object, based on the NoteID **/
       newData = Globals.setSubTasksToParent(newData, dataChilds);
-      
+    
       handleSaveData(newData, null, false); 
 
       FirebaseHandle.setFuncWhenUpdate(eventWhenUpdated);
@@ -322,8 +322,8 @@ export default function App( {dbData} )
   /** Fired when other device add/update records */
   function eventWhenUpdated()
   {
-      setIsListenDatabase(true);
       FirebaseHandle.setFuncWhenUpdate(null);
+      setIsListenDatabase(true);
 
       isAddFromThisDevice = false;
       //Globals.PlaySound("dream_bonus_notification.mp3");
@@ -341,11 +341,13 @@ export default function App( {dbData} )
     dataChilds = await FirebaseHandle.GetTableDataSync("TBL_NotesChilds");
   
     /// Set the Sub-Tasks objects to the Parent Task object, based on the NoteID
-    dataNotes = Globals.setSubTasksToParent(dataNotes, dataChilds);
+    dataNotes = Globals.setSubTasksToParent(dataNotes, dataChilds, "NoteID", "SubTasks");
   
     dataListTypes = await  Globals.mapToLookupObject('TBL_ListTypes');
     dataStatuses = await  Globals.mapToLookupObject('TBL_Statuses');
     dataSubject = await  Globals.mapToLookupObject('TBL_Subjects');
+    
+    //FirebaseHandle.setFuncWhenUpdate(eventWhenUpdated);
     
     //await FirebaseHandle.getDatabaseIndexFromFile("launch.json");
     // await FirebaseHandle.dispose();
@@ -1653,17 +1655,21 @@ function NoteScreen({ selectedItem, onSelectedItem, onSaveData, onSaveLookup })
 
           const funcWhenUpdate = FirebaseHandle.getFuncWhenUpdate();
           FirebaseHandle.setFuncWhenUpdate(null);
+          isAddFromThisDevice = true;
 
           result = await FirebaseHandle.InsertRecord("TBL_Notes", values);
           
           if (result==='')
           {
+            message = "שגיאה בהוספת הפריט!";
+            notifierRef.current.alert(message);
             return false;
           }
 
           /// Save the Sub-Task
           result = await saveSubTasks();
 
+          //** Update field 'NumeratorNotesID' in main db */
           result = await FirebaseHandle.UpdateField('TBL_Databases', dataBaseTable[0].FirebaseID, {NumeratorNotesID: noteID});
 
           FirebaseHandle.setFuncWhenUpdate(funcWhenUpdate);
@@ -1677,7 +1683,7 @@ function NoteScreen({ selectedItem, onSelectedItem, onSaveData, onSaveLookup })
             selectedItem.FirebaseID = values.FirebaseID;
             //newArray.push({...selectedObject});
             dataNotes = newArray;
-            const objUpdated = dataNotes.find((item) => item.NoteID === noteID);
+            const objUpdated = selectedObject;    //dataNotes.find((item) => item.NoteID === noteID);
             if (objUpdated)
             {
               message = `הפריט נוסף בהצלחה! (${objUpdated?.NoteID.toLocaleString()})`;

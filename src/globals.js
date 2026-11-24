@@ -1027,28 +1027,29 @@ export function PlaySound(file)
   //       // );
 
 }
+
 /// Set the Sub-Tasks objects to the Parent Task object, based on the NoteID
-export function setSubTasksToParent(dataNotes, dataChilds)
+export function setSubTasksToParent(dataNotes, dataChilds, idFieldName, childListName)
 {
-  const subsSorted = [...dataChilds].sort((a, b) => a.NoteID - b.NoteID);
+  const subsSorted = [...dataChilds].sort((a, b) => String(a[idFieldName]).localeCompare(String(b[idFieldName])));
 
   for (var i = 0; i < subsSorted.length; i++)
   {
     const sub = subsSorted[i];
-    const noteID = sub.NoteID;
-    const note = dataNotes.find((n) => n.NoteID === noteID);
+    const objectID = sub.NoteID;
+    const note = dataNotes.find((n) => n[idFieldName] === objectID);
     
-    const subList = subsSorted.filter((sub) => sub.NoteID === noteID);
+    const subList = subsSorted.filter((sub) => sub.NoteID === objectID);
     i = i + subList.length - 1;
     if (note)
     {
       if (subList.length > 0)
       {
-        note["SubTasks"] = subList;
+        note[childListName] = subList;
       }
       else
       {
-        note["SubTasks"] = [];
+        note[childListName] = [];
       }
     }
   }
@@ -1246,15 +1247,15 @@ export function ShowNotification1(message, targetDate)
 
 }
 
-export async function mapToLookupObject(tableName)
+export async function mapToLookupObject(tableName, idFieldName = "ID", descFieldName = "Description")
 {
   const date = await  GetTableDataSync(tableName);
 
   const dataTable = date.map((item) => 
                   {
                     return {
-                      label: item.Description,
-                      value: item.ID
+                      label: item[descFieldName],
+                      value: item[idFieldName]
                     };
                   });
 
